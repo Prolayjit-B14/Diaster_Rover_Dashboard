@@ -1,0 +1,67 @@
+:root {
+  /* ADVANCED COLOR PALETTE */
+  --bg-main: #0a0b0d;
+  --bg-panel: #14161a;
+  --bg-surface: #1c1f26;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-bright: rgba(255, 255, 255, 0.15);
+  
+  --text-main: #f0f2f5;
+  --text-muted: #8e95a2;
+  --text-dim: #5c6370;
+  
+  --accent: #2563eb;
+  --accent-glow: rgba(37, 99, 235, 0.4);
+  --accent-soft: rgba(37, 99, 235, 0.1);
+  
+  --danger: #ef4444;
+  --danger-glow: rgba(239, 68, 68, 0.4);
+  --danger-soft: rgba(239, 68, 68, 0.1);
+  
+  --warning: #f59e0b;
+  --warning-glow: rgba(245, 158, 11, 0.4);
+  
+  --safe: #10b981;
+  --safe-glow: rgba(16, 185, 129, 0.4);
+  
+  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
+/* CUSTOM SCROLLBAR */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-bright);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-dim);
+}
