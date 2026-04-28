@@ -5,7 +5,7 @@ import './pages/pages.css';
 import {
   LayoutDashboard, Map as MapIcon, Video, BarChart3,
   Gamepad2, LifeBuoy, Settings as SettingsIcon,
-  Activity, Drone as DroneIcon,
+  Activity,
   Clock, Cpu, Menu, X, Wifi, WifiOff, Loader
 } from 'lucide-react';
 
@@ -38,22 +38,22 @@ function AppShell() {
       label: 'Monitoring',
       items: [
         { id: 'overview', label: 'Dashboard', icon: <LayoutDashboard size={22} /> },
-        { id: 'map', label: 'Tactical Map', icon: <MapIcon size={22} /> },
-        { id: 'camera', label: 'AI Video Feed', icon: <Video size={22} /> },
-        { id: 'analytics', label: 'Sensor Data', icon: <BarChart3 size={22} /> },
+        { id: 'map', label: 'Live Map', icon: <MapIcon size={22} /> },
+        { id: 'camera', label: 'AI Camera', icon: <Video size={22} /> },
+        { id: 'analytics', label: 'Data History', icon: <BarChart3 size={22} /> },
       ]
     },
     {
-      label: 'Operations',
+      label: 'Control',
       items: [
-        { id: 'control', label: 'Manual Control', icon: <Gamepad2 size={22} /> },
-        { id: 'rescue', label: 'Rescue Ops', icon: <LifeBuoy size={22} /> },
+        { id: 'control', label: 'Remote Drive', icon: <Gamepad2 size={22} /> },
+        { id: 'rescue', label: 'Rescue Center', icon: <LifeBuoy size={22} /> },
       ]
     },
     {
       label: 'System',
       items: [
-        { id: 'settings', label: 'Settings', icon: <SettingsIcon size={22} /> },
+        { id: 'settings', label: 'Setup', icon: <SettingsIcon size={22} /> },
       ]
     }
   ];
@@ -85,8 +85,8 @@ function AppShell() {
       {/* SIDEBAR */}
       <aside className={`app-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <div className="logo-main">DRR CONTROL<span className="logo-badge">Live</span></div>
-          <div className="logo-sub">Search &amp; Rescue Div.</div>
+          <div className="logo-main">COMMAND CENTER<span className="logo-badge">INDIA</span></div>
+          <div className="logo-sub">Emergency Response Division</div>
           <button className="sidebar-close" onClick={() => setSidebarOpen(false)}><X size={20} /></button>
         </div>
 
@@ -139,15 +139,15 @@ function AppShell() {
           <div className="telemetry-badge" style={{ color: connColor, gap: '6px' }}>
             <ConnIcon size={13} style={status === 'connecting' ? { animation: 'spin 1s linear infinite' } : {}} />
             <span style={{ color: connColor }}>
-              {status === 'connected' ? 'IOT LIVE'
-                : status === 'connecting' ? 'CONNECTING'
-                : 'NO SIGNAL'}
+              {status === 'connected' ? 'ESP32 LIVE'
+                : status === 'connecting' ? 'SYNCING...'
+                : 'OFFLINE'}
             </span>
           </div>
 
           <div className="telemetry-badge hide-mobile">
-            <DroneIcon size={14} color="var(--accent)" />
-            DRONE <span>RECON</span>
+            <Cpu size={14} color="var(--accent)" />
+            RPi4 <span>{sensors.status ? 'ACTIVE' : 'IDLE'}</span>
           </div>
         </div>
 
@@ -158,15 +158,15 @@ function AppShell() {
               <span className="alert-msg-scroll">
                 {status === 'connected' ? (
                   <>
-                    SYSTEM ONLINE &nbsp;•&nbsp; 
-                    {sensors.status === 'nominal' ? 'ALL SYSTEMS NOMINAL' : sensors.status?.toUpperCase()} &nbsp;•&nbsp;
-                    {sensors.gas != null && sensors.gas > 70 && <span style={{ color: 'var(--danger)' }}>GAS ALERT DETECTED &nbsp;•&nbsp;</span>}
-                    {sensors.temp != null && sensors.temp > 50 && <span style={{ color: 'var(--danger)' }}>HIGH TEMPERATURE WARNING &nbsp;•&nbsp;</span>}
-                    {sensors.battery != null && sensors.battery < 20 && <span style={{ color: 'var(--danger)' }}>LOW BATTERY &nbsp;•&nbsp;</span>}
-                    TELEMETRY ACTIVE &nbsp;•&nbsp;
+                    TRIPOD SYSTEM ONLINE &nbsp;•&nbsp; 
+                    {sensors.status === 'nominal' ? 'ALL MODULES NOMINAL' : sensors.status?.toUpperCase()} &nbsp;•&nbsp;
+                    {sensors.flame && <span style={{ color: 'var(--danger)' }}>FIRE DETECTED &nbsp;•&nbsp;</span>}
+                    {sensors.gas != null && sensors.gas > 70 && <span style={{ color: 'var(--danger)' }}>GAS ALERT &nbsp;•&nbsp;</span>}
+                    {sensors.motion && <span style={{ color: 'var(--warning)' }}>MOTION DETECTED &nbsp;•&nbsp;</span>}
+                    TELEMETRY ACTIVE (10Hz) &nbsp;•&nbsp;
                   </>
                 ) : (
-                  'WAITING FOR HARDWARE CONNECTION...'
+                  'WAITING FOR ESP32 HANDSHAKE...'
                 )}
               </span>
             </div>
@@ -180,7 +180,7 @@ function AppShell() {
           </div>
           <div className="latency-info">
             <Activity size={12} />
-            {sensors.rssi != null ? `${sensors.rssi} dBm` : '--'}
+            {sensors.rssi != null ? `${sensors.rssi} dBm` : '---'}
           </div>
         </div>
       </header>
@@ -188,7 +188,7 @@ function AppShell() {
       {/* MAIN CONTENT */}
       <main className={`app-main ${sidebarOpen ? 'scaled' : ''}`}>
         <div className="app-page-container">
-          {activeView === 'overview'  && <Overview />}
+          {activeView === 'overview'  && <Overview onNavigate={setActiveView} />}
           {activeView === 'map'       && <MapTracking />}
           {activeView === 'camera'    && <CameraAI />}
           {activeView === 'analytics' && <Analytics />}

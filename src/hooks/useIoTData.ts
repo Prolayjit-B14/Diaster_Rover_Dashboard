@@ -54,6 +54,8 @@ export function useIoTData(): IoTState {
               humidity: payload.humidity,
               distance: payload.distance,
               vibration: payload.vibration,
+              flame: payload.flame,
+              motion: payload.motion,
             };
             const next = [...prev, point];
             return next.length > HISTORY_LIMIT ? next.slice(-HISTORY_LIMIT) : next;
