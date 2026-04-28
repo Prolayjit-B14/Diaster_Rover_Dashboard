@@ -17,7 +17,7 @@ const tooltipStyle = {
 };
 
 export const Analytics: React.FC = () => {
-  const { sensors, history, status } = useIoT();
+  const { sensors, history } = useIoT();
 
   const gasAlert = sensors.gas != null && sensors.gas > 70;
   const tempAlert = sensors.temp != null && sensors.temp > 50;

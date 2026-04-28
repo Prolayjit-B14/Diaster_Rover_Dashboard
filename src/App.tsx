@@ -5,8 +5,7 @@ import './styles/pages.css';
 import {
   LayoutDashboard, Map as MapIcon, Video, BarChart3,
   Gamepad2, LifeBuoy, Settings as SettingsIcon,
-  Activity,
-  Clock, Cpu, Menu, X, Wifi, WifiOff, Loader
+  Menu, X, Wifi, WifiOff, Loader, Activity
 } from 'lucide-react';
 
 import { IoTProvider, useIoT } from './context/IoTContext';
