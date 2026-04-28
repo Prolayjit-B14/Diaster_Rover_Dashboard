@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sliders, Save, Server } from 'lucide-react';
 import { useIoT } from '../context/IoTContext';
-import './pages.css';
+import '../styles/pages.css';
 
 export const Settings: React.FC = () => {
   const { status, wsUrl, sensors } = useIoT();

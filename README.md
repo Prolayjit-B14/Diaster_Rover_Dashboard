@@ -1,73 +1,40 @@
-# React + TypeScript + Vite
+# Tripod: Disaster Response IoT Command Center
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A high-performance, real-time IoT dashboard designed for search-and-rescue operations. Fully integrated with **ESP32** (Main Control) and **Raspberry Pi 4** (Vision & AI) hardware.
 
-Currently, two official plugins are available:
+## 🚀 Key Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Real-Time Telemetry**: Live sensor data from MQ-2 (Smoke), DHT11 (Temp/Hum), MPU6050 (Vibration), and HC-SR04 (Ultrasonic).
+- **Tactical Mapping**: Live GPS tracking powered by the NEO-6M module.
+- **AI Vision**: Dual-stream video feed from RPi4 (Main Stream) and ESP32-CAM (Detection Node).
+- **Remote Control**: Manual robot drive with L298N motor driver support and First Aid kit deployment via Servo.
+- **Compact UI**: Professional, high-density tactical interface localized for mission-critical operations.
 
-## React Compiler
+## 🛠️ Hardware Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Core**: ESP32 Dev Board + Raspberry Pi 4 Model B.
+- **Sensors**: MQ-2, Flame Sensor, DHT11, MPU6050, PIR, NEO-6M, HC-SR04.
+- **Actuators**: L298N Motor Driver + MG996R Servos.
+- **Communication**: WebSocket (Local/Remote) via WiFi/GSM.
 
-## Expanding the ESLint configuration
+## 📂 Project Structure
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+src/
+├── assets/          # Media & static images
+├── context/         # IoT State & Global Context
+├── hooks/           # WebSocket & Data Processing hooks
+├── pages/           # Modular Dashboard Screens
+├── styles/          # Unified Design System (CSS)
+├── types/           # Hardware Payload Schemas
+└── App.tsx          # Main Application Shell
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## ⚙️ Setup
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. **Environment**: Create a `.env` file and set `VITE_WS_URL` to your robot's IP (e.g., `ws://192.168.1.100:81`).
+2. **Install**: `npm install`
+3. **Run**: `npm run dev`
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+*Command Center Station: Kolkata, India*

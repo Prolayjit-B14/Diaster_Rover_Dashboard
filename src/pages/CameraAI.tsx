@@ -2,7 +2,7 @@ import React from 'react';
 import { Camera, Video, Square, Moon, Image as ImageIcon, List, Download } from 'lucide-react';
 import { useIoT } from '../context/IoTContext';
 import cameraFeedImage from '../assets/camera-feed.png';
-import './pages.css';
+import '../styles/pages.css';
 
 export const CameraAI: React.FC = () => {
   const { sensors, status } = useIoT();

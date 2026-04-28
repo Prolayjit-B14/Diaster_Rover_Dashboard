@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useIoT } from '../context/IoTContext';
-import './pages.css';
+import '../styles/pages.css';
 
 const createIcon = (color: string) => new L.DivIcon({
   className: '',

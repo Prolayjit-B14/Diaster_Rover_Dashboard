@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Target, Lightbulb, Bell, Zap, Terminal, ZapOff } from 'lucide-react';
 import { useIoT } from '../context/IoTContext';
-import './pages.css';
+import '../styles/pages.css';
 
 const fmt = (v: number | null, unit = '', d = 1) => v != null ? `${v.toFixed(d)}${unit}` : '---';
 

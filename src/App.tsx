@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import './App.css';
-import './pages/pages.css';
+import './styles/App.css';
+import './styles/pages.css';
 
 import {
   LayoutDashboard, Map as MapIcon, Video, BarChart3,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Activity, Battery, Wifi, AlertCircle, Map as MapIcon, Camera, List } from 'lucide-react';
 import { useIoT } from '../context/IoTContext';
-import './pages.css';
+import '../styles/pages.css';
 
 const fmt = (v: number | null, unit = '', decimals = 1) =>
   v != null ? `${v.toFixed(decimals)}${unit}` : '---';

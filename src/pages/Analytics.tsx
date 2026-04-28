@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { Thermometer, Activity, Ruler, Flame, Table as TableIcon, Download, Users, Navigation } from 'lucide-react';
 import { useIoT } from '../context/IoTContext';
-import './pages.css';
+import '../styles/pages.css';
 
 const fmt = (v: number | null, unit = '', d = 1) => v != null ? `${v.toFixed(d)}${unit}` : '---';
 
