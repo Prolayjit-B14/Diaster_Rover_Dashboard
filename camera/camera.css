@@ -1,144 +1,116 @@
-.cam-container {
+.camera-layout {
     display: grid;
-    grid-template-columns: 1fr 350px;
-    gap: 24px;
+    grid-template-columns: 1fr 320px;
+    gap: 32px;
     height: 100%;
 }
 
-/* VIDEO MAIN */
-.video-feed-section {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.video-main {
-    flex: 1;
-    position: relative;
-    background: #000;
-    border-radius: var(--radius-lg);
+/* VISION MAIN */
+.vision-main-card {
+    padding: 0;
     overflow: hidden;
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--shadow-premium);
-}
-
-.stream-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.video-overlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    pointer-events: none;
-    padding: 30px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
 }
 
-.overlay-top {
+.vision-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-light);
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
-.badge-live {
-    background: rgba(239, 68, 68, 0.8);
-    padding: 6px 12px;
-    border-radius: 6px;
+.vision-header h2 { font-size: 1rem; color: var(--primary-deep); }
+[data-theme="dark"] .vision-header h2 { color: white; }
+
+.live-indicator {
+    padding: 4px 12px;
+    background: var(--danger);
+    color: white;
+    border-radius: 4px;
     font-size: 0.7rem;
     font-weight: 800;
-    letter-spacing: 0.1em;
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
-.badge-live::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    background: var(--text-main);
-    border-radius: 50%;
-    animation: pulse 1s infinite;
+.video-container {
+    flex: 1;
+    background: #000;
+    position: relative;
 }
 
-.overlay-bottom {
+#esp32-stream {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.vision-controls {
+    padding: 20px 24px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-light);
     display: flex;
     justify-content: center;
     gap: 16px;
-    pointer-events: auto;
 }
 
-.control-btn {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: rgba(15, 17, 26, 0.8);
-    border: 1px solid var(--glass-border);
+.ctrl-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    background: var(--bg-app);
     color: var(--text-main);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: var(--transition-bounce);
-    backdrop-filter: blur(10px);
+    transition: var(--transition-smooth);
 }
 
-.control-btn:hover {
-    background: var(--primary);
-    transform: scale(1.1);
-    box-shadow: 0 0 20px var(--primary-glow);
-}
+.ctrl-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
 
 /* SIDEBAR */
-.cam-sidebar {
+.vision-sidebar {
     display: flex;
     flex-direction: column;
     gap: 24px;
 }
 
-.side-panel {
-    padding: 24px;
+.analysis-card {
+    padding: 20px;
 }
 
-.panel-title {
+.analysis-title {
     font-size: 0.75rem;
     font-weight: 800;
-    color: var(--text-dim);
-    margin-bottom: 20px;
-    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-bottom: 16px;
     text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-.toggle-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--glass-border);
-}
-
-.toggle-label { font-size: 0.85rem; font-weight: 600; }
-
-.log-container {
+.log-list {
     flex: 1;
     overflow-y: auto;
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+    font-size: 0.85rem;
 }
 
-.log-entry {
-    color: var(--text-muted);
-    padding-bottom: 4px;
+.log-item {
+    padding: 8px 12px;
+    background: var(--bg-app);
+    border-radius: 6px;
+    border-left: 3px solid var(--primary);
 }
 
-.log-entry span { color: var(--primary); }
+.log-item span { font-weight: 700; color: var(--text-muted); font-size: 0.75rem; display: block; margin-bottom: 2px; }
 
 @media (max-width: 1000px) {
-    .cam-container { grid-template-columns: 1fr; }
+    .camera-layout { grid-template-columns: 1fr; }
 }

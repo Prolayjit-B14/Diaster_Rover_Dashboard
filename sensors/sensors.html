@@ -1,14 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RescueBOT | High-Density Telemetry</title>
+    <title>RescueBOT | Safety Telemetry</title>
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./sensors.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -17,116 +14,121 @@
         <nav class="top-navbar">
             <div class="nav-left">
                 <div class="logo-box">R</div>
-                <h1 class="nav-title">RescueBOT <span class="nav-divider">/</span> <span class="nav-page">TELEMETRY</span></h1>
+                <div class="nav-title-group">
+                    <span class="nav-title">RescueBOT Support</span>
+                    <span class="nav-subtitle">Safety Telemetry</span>
+                </div>
             </div>
 
             <div class="nav-center">
-                <div class="status-capsule">
-                    <div class="status-dot disconnected" id="mqtt-dot"></div>
-                    <span id="mqtt-status-text">SYSTEM OFFLINE</span>
+                <div class="status-pill">
+                    <div class="status-dot active" id="mqtt-dot"></div>
+                    <span id="mqtt-status-text">NETWORK SECURE</span>
                 </div>
-                <div class="status-capsule mono">
-                    <i data-lucide="clock" style="width: 14px; color: var(--primary);"></i>
+                <div class="status-pill">
+                    <i data-lucide="clock" style="width: 14px;"></i>
                     <span id="current-time">00:00:00</span>
                 </div>
             </div>
 
-            <div class="nav-right"><button id="theme-toggle" class="theme-toggle" title="Toggle Theme"><i data-lucide="sun"></i></button>
-                <a href="../dashboard/dashboard.html" class="nav-item" title="Dashboard">
-                    <i data-lucide="layout-grid" class="nav-icon"></i>
+            <div class="nav-right">
+                <button id="theme-toggle" class="theme-toggle" title="Toggle Theme"><i data-lucide="sun"></i></button>
+                <a href="../dashboard/dashboard.html" class="nav-link" title="Dashboard">
+                    <i data-lucide="layout-grid"></i>
                 </a>
-                <a href="../map/map.html" class="nav-item" title="Map">
-                    <i data-lucide="map" class="nav-icon"></i>
+                <a href="../map/map.html" class="nav-link" title="Map">
+                    <i data-lucide="map"></i>
                 </a>
-                <a href="../camera/camera.html" class="nav-item" title="Camera">
-                    <i data-lucide="camera" class="nav-icon"></i>
+                <a href="../camera/camera.html" class="nav-link" title="Vision">
+                    <i data-lucide="video"></i>
                 </a>
-                <a href="../sensors/sensors.html" class="nav-item active" title="Sensors">
-                    <i data-lucide="activity" class="nav-icon"></i>
+                <a href="../sensors/sensors.html" class="nav-link active" title="Telemetry">
+                    <i data-lucide="activity"></i>
                 </a>
             </div>
         </nav>
 
         <!-- MAIN VIEWPORT -->
         <main class="workspace">
-            <div class="sensors-layout">
-                <section class="sensors-header-section">
-                    <div class="header-meta">
-                        <h1>High-Density Telemetry</h1>
-                        <p>Real-time synchronization with RescueBOT neural engine.</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="btn-premium"><i data-lucide="download"></i> EXPORT LOGS</button>
-                    </div>
-                </section>
+            <div class="sensors-container">
+                <header class="sensors-header">
+                    <h1>Environment Safety Monitor</h1>
+                    <button class="btn-solid"><i data-lucide="download"></i> Download Report</button>
+                </header>
 
-                <div class="sensor-main-grid">
+                <div class="sensor-grid">
                     <!-- TEMPERATURE -->
-                    <div class="glass-card sensor-monitor-card stagger-1">
-                        <div class="card-top">
-                            <div class="sensor-identity">
-                                <div class="sensor-icon-circle" style="color: var(--primary);"><i data-lucide="thermometer"></i></div>
-                                <div class="sensor-name-group">
-                                    <span class="sensor-tag">Node 01</span>
-                                    <span class="sensor-label">TEMPERATURE</span>
+                    <div class="card-soft monitor-card">
+                        <div class="card-top-info">
+                            <div class="sensor-brand">
+                                <div class="sensor-icon"><i data-lucide="thermometer"></i></div>
+                                <div class="sensor-meta">
+                                    <span>Sensor Unit 01</span>
+                                    <span>Ambient Temp</span>
                                 </div>
                             </div>
-                            <span class="status-badge">OPTIMAL</span>
+                            <i data-lucide="check-circle" style="color: var(--success); width: 20px;"></i>
                         </div>
-                        <div class="sensor-reading-area">
-                            <span class="sensor-value-main" id="val-temp">--.-</span>
-                            <span class="sensor-unit">DEGREES CELSIUS</span>
-                            <div class="sensor-sparkline"></div>
+                        <div class="reading-main">
+                            <div class="val-large" id="val-temp">--.-</div>
+                            <div class="val-unit">Celsius</div>
                         </div>
-                        <div class="sensor-footer">
-                            <span>PRECISION: ±0.5°C</span>
-                            <span>FREQ: 10Hz</span>
+                        <div class="health-bar">
+                            <div class="health-progress" style="width: 65%;"></div>
+                        </div>
+                        <div class="card-footer-info">
+                            <span>LIMIT: 45°C</span>
+                            <span>STATUS: NOMINAL</span>
                         </div>
                     </div>
 
-                    <!-- GAS SENSOR -->
-                    <div class="glass-card sensor-monitor-card stagger-2">
-                        <div class="card-top">
-                            <div class="sensor-identity">
-                                <div class="sensor-icon-circle" style="color: var(--accent);"><i data-lucide="wind"></i></div>
-                                <div class="sensor-name-group">
-                                    <span class="sensor-tag">Node 02</span>
-                                    <span class="sensor-label">GAS / SMOKE</span>
+                    <!-- GAS -->
+                    <div class="card-soft monitor-card" style="border-top-color: var(--accent-amber);">
+                        <div class="card-top-info">
+                            <div class="sensor-brand">
+                                <div class="sensor-icon"><i data-lucide="wind"></i></div>
+                                <div class="sensor-meta">
+                                    <span>Sensor Unit 02</span>
+                                    <span>Air Quality / Gas</span>
                                 </div>
                             </div>
-                            <span class="status-badge">SECURE</span>
+                            <i data-lucide="shield-check" style="color: var(--primary); width: 20px;"></i>
                         </div>
-                        <div class="sensor-reading-area">
-                            <span class="sensor-value-main" id="val-gas">---</span>
-                            <span class="sensor-unit">PARTS PER MILLION</span>
-                            <div class="sensor-sparkline"></div>
+                        <div class="reading-main">
+                            <div class="val-large" id="val-gas">---</div>
+                            <div class="val-unit">ppm</div>
                         </div>
-                        <div class="sensor-footer">
+                        <div class="health-bar">
+                            <div class="health-progress" style="width: 20%; background: var(--primary);"></div>
+                        </div>
+                        <div class="card-footer-info">
                             <span>LIMIT: 400 PPM</span>
-                            <span>FREQ: 10Hz</span>
+                            <span>STATUS: SECURE</span>
                         </div>
                     </div>
 
                     <!-- VIBRATION -->
-                    <div class="glass-card sensor-monitor-card stagger-3">
-                        <div class="card-top">
-                            <div class="sensor-identity">
-                                <div class="sensor-icon-circle" style="color: var(--success);"><i data-lucide="activity"></i></div>
-                                <div class="sensor-name-group">
-                                    <span class="sensor-tag">Node 03</span>
-                                    <span class="sensor-label">VIBRATION</span>
+                    <div class="card-soft monitor-card" style="border-top-color: var(--success);">
+                        <div class="card-top-info">
+                            <div class="sensor-brand">
+                                <div class="sensor-icon"><i data-lucide="activity"></i></div>
+                                <div class="sensor-meta">
+                                    <span>Sensor Unit 03</span>
+                                    <span>Structural Pulse</span>
                                 </div>
                             </div>
-                            <span class="status-badge">STABLE</span>
+                            <i data-lucide="activity" style="color: var(--success); width: 20px;"></i>
                         </div>
-                        <div class="sensor-reading-area">
-                            <span class="sensor-value-main" id="val-vib">-.--</span>
-                            <span class="sensor-unit">METERS / SEC²</span>
-                            <div class="sensor-sparkline"></div>
+                        <div class="reading-main">
+                            <div class="val-large" id="val-vib">-.--</div>
+                            <div class="val-unit">m/s²</div>
                         </div>
-                        <div class="sensor-footer">
+                        <div class="health-bar">
+                            <div class="health-progress" style="width: 10%;"></div>
+                        </div>
+                        <div class="card-footer-info">
                             <span>AXIS: X-Y-Z</span>
-                            <span>FREQ: 50Hz</span>
+                            <span>STATUS: STABLE</span>
                         </div>
                     </div>
                 </div>
@@ -139,8 +141,6 @@
     <script type="module" src="../shared/mqtt-client.js"></script>
     <script type="module" src="../shared/shared.js"></script>
     <script type="module" src="./sensors.js"></script>
-    <script>
-        lucide.createIcons();
-    </script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>
