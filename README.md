@@ -7,11 +7,12 @@
 ## 🏆 Hackathon Edition
 Built for reliability, speed, and real-time visualization, RescueBOT provides first responders with a unified tactical interface to monitor hazardous environments.
 
-### 👥 The Team: TRIPOD
-- **Prolayjit Biswas** (Project Lead & Software Architect)
-- **Arghya** (Hardware Integration)
-- **Papan** (Systems Design)
+### 👥 The Team: RescueBOT (TRIPOD)
+- **Prolayjit Biswas** (Team Lead & Main Software-Hardware Support)
+- **Arghya Roy** (Lead Hardware Engineer)
 - **Shubhajit Haldar** (Hardware Support)
+- **Papan Chowdhury** (Hardware Support)
+
 
 ---
 
@@ -103,4 +104,4 @@ This project is fully optimized for **Vercel**. Every push to the `main` branch 
 
 ---
 **RescueBOT Mission Control** | *Empowering Rescue Missions through IoT & AI*  
-© 2026 TEAM TRIPOD | KGEC, West Bengal
+© 2026 TEAM BOT THINGS
