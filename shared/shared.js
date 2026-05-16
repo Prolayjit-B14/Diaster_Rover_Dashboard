@@ -50,7 +50,28 @@ document.addEventListener('DOMContentLoaded', () => {
     markActiveNav();
 
     // --- PAGE TRANSITION EFFECT ---
-    document.body.classList.add('page-loaded');
+    const frame = document.querySelector('.app-frame');
+    if (frame) {
+        frame.style.opacity = '1';
+    }
+
+    // Intercept all internal links for smooth exit
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href');
+            if (href && !href.startsWith('http') && !href.startsWith('#')) {
+                e.preventDefault();
+                if (frame) {
+                    frame.style.opacity = '0';
+                    frame.style.transform = 'scale(0.98)';
+                    frame.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                }
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 400);
+            }
+        });
+    });
 });
 
 /**

@@ -29,21 +29,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mqtt) {
         // Telemetry Data Ingestion
         mqtt.on('telemetry', (data) => {
-            const elementId = sensorIdMap[data.sensor.toLowerCase()];
-            const card = document.getElementById(elementId);
-            if (!card) return;
+            const valEl = document.getElementById(`val-${data.sensor.toLowerCase()}`);
+            if (!valEl) return;
 
-            const valEl = card.querySelector('.sensor-monitor-value');
-            if (valEl) {
-                valEl.textContent = data.value;
-                valEl.classList.add('pulse-update');
-                setTimeout(() => valEl.classList.remove('pulse-update'), 500);
-            }
-
-            // Update status if provided in telemetry packet
-            if (data.status) {
-                updateSensorStatus(card, data.status);
-            }
+            valEl.textContent = data.value;
+            valEl.style.color = 'var(--primary)';
+            valEl.style.textShadow = '0 0 30px var(--primary-glow)';
+            
+            setTimeout(() => {
+                valEl.style.color = '';
+                valEl.style.textShadow = '';
+            }, 800);
         });
 
         // Hardware Status Updates

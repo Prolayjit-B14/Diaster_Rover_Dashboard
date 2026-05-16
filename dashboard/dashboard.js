@@ -57,18 +57,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Telemetry Updates
         mqtt.on('telemetry', (data) => {
             // data: { sensor: 'TEMP', value: '24.5', unit: '°C' }
-            const cards = document.querySelectorAll('.quick-card');
-            cards.forEach(card => {
-                const labelEl = card.querySelector('.q-label');
-                if (labelEl && labelEl.textContent.trim().toUpperCase() === data.sensor.toUpperCase()) {
-                    const valEl = card.querySelector('.q-value');
-                    if (valEl) {
-                        valEl.textContent = data.value + (data.unit || '');
-                        valEl.classList.add('pulse-update');
-                        setTimeout(() => valEl.classList.remove('pulse-update'), 600);
-                    }
-                }
-            });
+            const sensorId = `val-${data.sensor.toLowerCase()}`;
+            const valEl = document.getElementById(sensorId);
+            
+            if (valEl) {
+                valEl.textContent = data.value + (data.unit || '');
+                valEl.style.color = 'var(--primary)';
+                valEl.style.textShadow = '0 0 20px var(--primary-glow)';
+                
+                setTimeout(() => {
+                    valEl.style.color = '';
+                    valEl.style.textShadow = '';
+                }, 1000);
+            }
         });
 
         // Alerts Updates

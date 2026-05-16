@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RescueBOT | Mission Overview</title>
+    <title>RescueBOT | Mission Command</title>
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./dashboard.css">
-    <!-- Leaflet for Mini Map -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -17,32 +19,32 @@
         <nav class="top-navbar">
             <div class="nav-left">
                 <div class="logo-box">R</div>
-                <h1 class="nav-title">Robot <span class="nav-divider">/</span> <span class="nav-page color-dash">DASHBOARD</span></h1>
+                <h1 class="nav-title">RescueBOT <span class="nav-divider">/</span> <span class="nav-page">DASHBOARD</span></h1>
             </div>
 
             <div class="nav-center">
-                <div class="mqtt-status">
-                    <div class="mqtt-status-dot disconnected"></div>
-                    <span class="mqtt-status-text" data-status="DISCONNECTED">SYSTEM OFFLINE</span>
+                <div class="status-capsule">
+                    <div class="status-dot disconnected" id="mqtt-dot"></div>
+                    <span id="mqtt-status-text">SYSTEM OFFLINE</span>
                 </div>
-                <div class="mission-clock">
-                    <i data-lucide="clock" class="clock-icon"></i>
+                <div class="status-capsule mono">
+                    <i data-lucide="clock" style="width: 14px; color: var(--primary);"></i>
                     <span id="current-time">00:00:00</span>
                 </div>
             </div>
 
             <div class="nav-right">
-                <a href="../dashboard/dashboard.html" class="nav-item active dash" title="Dashboard">
-                    <i data-lucide="layout-grid" class="nav-icon dash"></i>
+                <a href="../dashboard/dashboard.html" class="nav-item active" title="Dashboard">
+                    <i data-lucide="layout-grid" class="nav-icon"></i>
                 </a>
-                <a href="../map/map.html" class="nav-item map" title="Map">
-                    <i data-lucide="map" class="nav-icon map"></i>
+                <a href="../map/map.html" class="nav-item" title="Map">
+                    <i data-lucide="map" class="nav-icon"></i>
                 </a>
-                <a href="../camera/camera.html" class="nav-item cam" title="Camera">
-                    <i data-lucide="camera" class="nav-icon cam"></i>
+                <a href="../camera/camera.html" class="nav-item" title="Camera">
+                    <i data-lucide="camera" class="nav-icon"></i>
                 </a>
-                <a href="../sensors/sensors.html" class="nav-item sens" title="Sensors">
-                    <i data-lucide="activity" class="nav-icon sens"></i>
+                <a href="../sensors/sensors.html" class="nav-item" title="Sensors">
+                    <i data-lucide="activity" class="nav-icon"></i>
                 </a>
             </div>
         </nav>
@@ -51,109 +53,93 @@
         <main class="workspace">
             <div class="dashboard-content">
                 <!-- MISSION HERO -->
-                <section class="mission-hero">
-                    <div class="hero-header">MISSION CONTROL CENTER</div>
-                    <div class="hero-body">
+                <section class="glass-card mission-hero stagger-1">
+                    <div class="hero-text">
+                        <div class="hero-header">MISSION CONTROL CENTER</div>
                         <h1 class="system-title">Autonomous Disaster Monitoring System</h1>
                         <p class="system-subtitle">Real-time Telemetry • Field Observation • Active Rescue Support</p>
-                        <div class="status-list">
-                            <div class="status-line"><i data-lucide="circle" style="color: var(--success); width: 14px;"></i> Robot Online</div>
-                            <div class="status-line"><i data-lucide="map-pin" style="color: var(--primary); width: 14px;"></i> GPS Active</div>
-                            <div class="status-line"><i data-lucide="video" style="color: var(--primary); width: 14px;"></i> Feed Live</div>
-                            <div class="status-line"><i data-lucide="activity" style="color: var(--primary); width: 14px;"></i> Sensors Active</div>
+                        <div class="status-grid">
+                            <div class="status-line"><i data-lucide="check-circle" style="color: var(--success); width: 16px;"></i> Robot Online</div>
+                            <div class="status-line"><i data-lucide="map-pin" style="color: var(--primary); width: 16px;"></i> GPS Active</div>
+                            <div class="status-line"><i data-lucide="zap" style="color: var(--accent); width: 16px;"></i> AI Neural Link</div>
                         </div>
+                    </div>
+                    <div class="hero-actions">
+                        <button class="btn-premium accent"><i data-lucide="alert-triangle"></i> EMERGENCY ABORT</button>
                     </div>
                 </section>
 
                 <!-- ACTIVE ALERTS -->
-                <section class="boxed-alerts">
-                    <div class="alerts-header">ACTIVE ALERTS</div>
-                    <div class="alerts-list">
-                        <div class="empty-alerts">
-                            <i data-lucide="shield-check"></i>
-                            <span>NO ACTIVE ALERTS / SYSTEM DISCONNECTED</span>
+                <section class="boxed-alerts stagger-2">
+                    <div class="alerts-header">ACTIVE MISSION ALERTS</div>
+                    <div class="alerts-scroll" id="alerts-container">
+                        <div class="glass-card alert-card">
+                            <div class="alert-icon-box"><i data-lucide="shield-check" style="color: var(--success);"></i></div>
+                            <div class="alert-details">
+                                <div class="alert-title">SYSTEM SECURE</div>
+                                <div class="alert-msg">No active threats detected in immediate vicinity.</div>
+                            </div>
                         </div>
                     </div>
                 </section>
 
                 <!-- GRID CONTENT -->
                 <div class="overview-grid">
-                    <!-- CAMERA -->
-                    <section class="preview-card camera-preview">
+                    <!-- CAMERA PREVIEW -->
+                    <section class="glass-card preview-card stagger-3">
                         <div class="preview-header">
                             <h3>LIVE MISSION FEED</h3>
-                            <a href="../camera/camera.html" class="hero-btn">Full Screen</a>
+                            <a href="../camera/camera.html" class="btn-premium"><i data-lucide="maximize-2"></i> EXPLORE</a>
                         </div>
-                        <div class="preview-content stream-container">
+                        <div class="preview-content">
+                            <!-- Stream logic managed by JS -->
                             <div class="status-overlay" id="mini-cam-status">
                                 <i data-lucide="video-off"></i>
-                                <span>VIDEO SIGNAL LOST / OFFLINE</span>
+                                <span>WAITING FOR SIGNAL</span>
                             </div>
                         </div>
                     </section>
 
-                    <!-- MAP -->
-                    <section class="preview-card mini-map-preview">
+                    <!-- MAP PREVIEW -->
+                    <section class="glass-card preview-card stagger-4">
                         <div class="preview-header">
-                            <h3>GPS TRACKING</h3>
-                            <a href="../map/map.html" class="hero-btn">Full Map</a>
+                            <h3>TACTICAL GPS TRACKING</h3>
+                            <a href="../map/map.html" class="btn-premium"><i data-lucide="compass"></i> VIEW MAP</a>
                         </div>
-                        <div class="preview-content mini-map-wrapper">
-                            <div id="mini-map"></div>
-                            <div class="mini-map-controls">
-                                <button id="mini-zoom-in">+</button>
-                                <button id="mini-zoom-out">-</button>
-                            </div>
-                            <div class="status-overlay" id="mini-map-status">
-                                <i data-lucide="gps-off"></i>
-                                <span>SIGNAL LOST / DISCONNECTED</span>
-                            </div>
+                        <div class="preview-content">
+                            <div id="mini-map" style="width: 100%; height: 100%;"></div>
                         </div>
                     </section>
 
-                    <!-- SENSORS -->
-                    <section class="sensor-summary">
+                    <!-- SENSORS SUMMARY -->
+                    <section class="sensor-summary stagger-4">
                         <div class="mini-grid">
-                            <div class="quick-card">
-                                <div class="q-icon blue"><i data-lucide="thermometer"></i></div>
+                            <div class="glass-card quick-card">
+                                <div class="q-icon-box" style="color: var(--primary);"><i data-lucide="thermometer"></i></div>
                                 <div class="q-data">
-                                    <span class="q-label">TEMPERATURE</span>
-                                    <span class="q-value">---</span>
+                                    <span class="q-label">Temperature</span>
+                                    <span class="q-value" id="val-temp">--°C</span>
                                 </div>
                             </div>
-                            <div class="quick-card">
-                                <div class="q-icon orange"><i data-lucide="wind"></i></div>
+                            <div class="glass-card quick-card">
+                                <div class="q-icon-box" style="color: var(--accent);"><i data-lucide="wind"></i></div>
                                 <div class="q-data">
-                                    <span class="q-label">GAS SENSOR</span>
-                                    <span class="q-value">---</span>
+                                    <span class="q-label">Gas Level</span>
+                                    <span class="q-value" id="val-gas">-- ppm</span>
                                 </div>
                             </div>
-                            <div class="quick-card">
-                                <div class="q-icon blue"><i data-lucide="ruler"></i></div>
+                            <div class="glass-card quick-card">
+                                <div class="q-icon-box" style="color: var(--success);"><i data-lucide="activity"></i></div>
                                 <div class="q-data">
-                                    <span class="q-label">ULTRASONIC</span>
-                                    <span class="q-value">---</span>
+                                    <span class="q-label">Vibration</span>
+                                    <span class="q-value" id="val-vib">-- m/s²</span>
                                 </div>
                             </div>
-                            <div class="quick-card">
-                                <div class="q-icon blue"><i data-lucide="activity"></i></div>
+                            <div class="glass-card quick-card">
+                                <div class="q-icon-box" style="color: var(--primary);"><i data-lucide="battery"></i></div>
                                 <div class="q-data">
-                                    <span class="q-label">VIBRATION</span>
-                                    <span class="q-value">---</span>
-                                </div>
-                            </div>
-                            <div class="quick-card">
-                                <div class="q-icon blue"><i data-lucide="wifi"></i></div>
-                                <div class="q-data">
-                                    <span class="q-label">CONNECTION</span>
-                                    <span class="q-value">---</span>
-                                </div>
-                            </div>
-                            <div class="quick-card">
-                                <div class="q-icon blue"><i data-lucide="battery"></i></div>
-                                <div class="q-data">
-                                    <span class="q-label">BATTERY</span>
-                                    <span class="q-value">---</span>
+                                    <span class="q-label">Power Level</span>
+                                    <span class="q-value" id="val-battery">--%</span>
                                 </div>
                             </div>
                         </div>
@@ -164,23 +150,19 @@
                     <div class="footer-attribution">
                         <div class="attr-group">
                             <span class="attr-label">SYSTEM</span>
-                            <span class="attr-value">RescueBOT MISSION CONTROL</span>
+                            <span class="attr-value">RESCUEBOT CONTROL</span>
+                        </div>
+                        <div class="attr-group">
+                            <span class="attr-label">LEAD DEVELOPER</span>
+                            <span class="attr-value">PROLAYJIT BISWAS</span>
+                        </div>
+                        <div class="attr-group">
+                            <span class="attr-label">TEAM</span>
+                            <span class="attr-value">BOT THINGS</span>
                         </div>
                         <div class="attr-group">
                             <span class="attr-label">VERSION</span>
-                            <span class="attr-value">V2.4.1-STABLE</span>
-                        </div>
-                        <div class="attr-group">
-                            <span class="attr-label">DEVELOPER</span>
-                            <span class="attr-value">PROLOYJIT BISWAS</span>
-                        </div>
-                        <div class="attr-group">
-                            <span class="attr-label">SOURCE</span>
-                            <a href="#" class="attr-link">GITHUB REPO</a>
-                        </div>
-                        <div class="attr-group">
-                            <span class="attr-label">COPYRIGHT</span>
-                            <span class="attr-value">© 2026 TEAM RescueBOT Team</span>
+                            <span class="attr-value">V3.0.0-PREMIUM</span>
                         </div>
                     </div>
                 </footer>
@@ -188,12 +170,13 @@
         </main>
     </div>
 
-    <!-- MQTT LIBRARY -->
+    <!-- SCRIPTS -->
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script type="module" src="../shared/mqtt-client.js"></script>
     <script type="module" src="../shared/shared.js"></script>
     <script type="module" src="./dashboard.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>
-
-

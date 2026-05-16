@@ -141,19 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         handleAIDetection(data) {
-            const overlay = document.getElementById('ai-overlay');
-            if (!overlay) return;
-
-            if (data.detected) {
-                overlay.innerHTML = `
-                    <div class="detection-box" style="top:${data.y}%; left:${data.x}%; width:${data.w}px; height:${data.h}px;">
-                        <div class="detection-label">${data.label} (${Math.round(data.conf * 100)}%)</div>
-                    </div>
-                `;
-                this.addLog(`AI EVENT: ${data.label} DETECTED`);
-            } else {
-                overlay.innerHTML = '';
-            }
+            this.addLog(`AI EVENT: ${data.label} DETECTED`);
         }
 
         addLog(message) {
@@ -162,10 +150,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const now = new Date();
             const ts = now.toLocaleTimeString('en-GB', { hour12: false });
             const item = document.createElement('div');
-            item.className = 'log-row';
+            item.className = 'log-entry';
             item.innerHTML = `<span>[${ts}]</span> ${message}`;
             container.prepend(item);
-            if (container.children.length > 20) container.removeChild(container.lastChild);
+            
+            // Keep the header
+            const header = container.querySelector('.panel-title');
+            if (header && container.firstChild !== header) {
+                container.insertBefore(header, container.firstChild);
+            }
+
+            if (container.children.length > 20) container.lastElementChild.remove();
         }
     }
 

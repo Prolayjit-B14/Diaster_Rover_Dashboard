@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sensors | RescueBOT Robot</title>
+    <title>RescueBOT | High-Density Telemetry</title>
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./sensors.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -14,256 +17,116 @@
         <nav class="top-navbar">
             <div class="nav-left">
                 <div class="logo-box">R</div>
-                <h1 class="nav-title">Robot <span class="nav-divider">/</span> <span class="nav-page color-sens">SENSORS</span></h1>
+                <h1 class="nav-title">RescueBOT <span class="nav-divider">/</span> <span class="nav-page">TELEMETRY</span></h1>
             </div>
 
             <div class="nav-center">
-                <div class="mqtt-status">
-                    <div class="mqtt-status-dot disconnected"></div>
-                    <span class="mqtt-status-text" data-status="DISCONNECTED">SYSTEM OFFLINE</span>
+                <div class="status-capsule">
+                    <div class="status-dot disconnected" id="mqtt-dot"></div>
+                    <span id="mqtt-status-text">SYSTEM OFFLINE</span>
                 </div>
-                <div class="mission-clock">
-                    <i data-lucide="clock" class="clock-icon"></i>
+                <div class="status-capsule mono">
+                    <i data-lucide="clock" style="width: 14px; color: var(--primary);"></i>
                     <span id="current-time">00:00:00</span>
                 </div>
             </div>
 
             <div class="nav-right">
-                <a href="../dashboard/dashboard.html" class="nav-item dash" title="Dashboard">
-                    <i data-lucide="layout-grid" class="nav-icon dash"></i>
+                <a href="../dashboard/dashboard.html" class="nav-item" title="Dashboard">
+                    <i data-lucide="layout-grid" class="nav-icon"></i>
                 </a>
-                <a href="../map/map.html" class="nav-item map" title="Map">
-                    <i data-lucide="map" class="nav-icon map"></i>
+                <a href="../map/map.html" class="nav-item" title="Map">
+                    <i data-lucide="map" class="nav-icon"></i>
                 </a>
-                <a href="../camera/camera.html" class="nav-item cam" title="Camera">
-                    <i data-lucide="camera" class="nav-icon cam"></i>
+                <a href="../camera/camera.html" class="nav-item" title="Camera">
+                    <i data-lucide="camera" class="nav-icon"></i>
                 </a>
-                <a href="../sensors/sensors.html" class="nav-item active sens" title="Sensors">
-                    <i data-lucide="activity" class="nav-icon sens"></i>
+                <a href="../sensors/sensors.html" class="nav-item active" title="Sensors">
+                    <i data-lucide="activity" class="nav-icon"></i>
                 </a>
             </div>
         </nav>
 
-        <!-- MAIN CONTENT -->
-        <main class="main-content">
-            <div class="content-view">
+        <!-- MAIN VIEWPORT -->
+        <main class="workspace">
+            <div class="sensors-layout">
+                <section class="sensors-header-section">
+                    <div class="header-meta">
+                        <h1>High-Density Telemetry</h1>
+                        <p>Real-time synchronization with RescueBOT neural engine.</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn-premium"><i data-lucide="download"></i> EXPORT LOGS</button>
+                    </div>
+                </section>
 
-
-                <div class="sensor-monitor-grid">
-                    <!-- SENSOR CARDS -->
-                    <div class="sensor-monitor-card status-optimal" id="sensor-temp">
-                        <div class="sensor-monitor-header">
-                            <div class="sensor-monitor-name">
-                                <div class="sensor-icon-box"><i data-lucide="thermometer"></i></div>
-                                <span>Temperature Sensor</span>
+                <div class="sensor-main-grid">
+                    <!-- TEMPERATURE -->
+                    <div class="glass-card sensor-monitor-card stagger-1">
+                        <div class="card-top">
+                            <div class="sensor-identity">
+                                <div class="sensor-icon-circle" style="color: var(--primary);"><i data-lucide="thermometer"></i></div>
+                                <div class="sensor-name-group">
+                                    <span class="sensor-tag">Node 01</span>
+                                    <span class="sensor-label">TEMPERATURE</span>
+                                </div>
                             </div>
-                            <div class="sensor-status-indicator">OFFLINE</div>
+                            <span class="status-badge">OPTIMAL</span>
                         </div>
-                        <div class="sensor-monitor-value-box">
-                            <span class="sensor-monitor-value">---</span>
-                            <span class="sensor-monitor-unit">°C</span>
+                        <div class="sensor-reading-area">
+                            <span class="sensor-value-main" id="val-temp">--.-</span>
+                            <span class="sensor-unit">DEGREES CELSIUS</span>
+                            <div class="sensor-sparkline"></div>
                         </div>
-                        <div class="sensor-monitor-footer">
-                            <span class="sensor-range-label">Range:</span>
-                            <span class="sensor-range-value">-10 / 50°C</span>
+                        <div class="sensor-footer">
+                            <span>PRECISION: ±0.5°C</span>
+                            <span>FREQ: 10Hz</span>
                         </div>
                     </div>
 
-                    <div class="sensor-monitor-card status-warning" id="sensor-gas">
-                        <div class="sensor-monitor-header">
-                            <div class="sensor-monitor-name">
-                                <div class="sensor-icon-box"><i data-lucide="wind"></i></div>
-                                <span>Gas Sensor</span>
+                    <!-- GAS SENSOR -->
+                    <div class="glass-card sensor-monitor-card stagger-2">
+                        <div class="card-top">
+                            <div class="sensor-identity">
+                                <div class="sensor-icon-circle" style="color: var(--accent);"><i data-lucide="wind"></i></div>
+                                <div class="sensor-name-group">
+                                    <span class="sensor-tag">Node 02</span>
+                                    <span class="sensor-label">GAS / SMOKE</span>
+                                </div>
                             </div>
-                            <div class="sensor-status-indicator">OFFLINE</div>
+                            <span class="status-badge">SECURE</span>
                         </div>
-                        <div class="sensor-monitor-value-box">
-                            <span class="sensor-monitor-value">---</span>
-                            <span class="sensor-monitor-unit">ppm</span>
+                        <div class="sensor-reading-area">
+                            <span class="sensor-value-main" id="val-gas">---</span>
+                            <span class="sensor-unit">PARTS PER MILLION</span>
+                            <div class="sensor-sparkline"></div>
                         </div>
-                        <div class="sensor-monitor-footer">
-                            <span class="sensor-range-label">Range:</span>
-                            <span class="sensor-range-value">0 - 1000 ppm</span>
+                        <div class="sensor-footer">
+                            <span>LIMIT: 400 PPM</span>
+                            <span>FREQ: 10Hz</span>
                         </div>
                     </div>
 
-                    <div class="sensor-monitor-card status-optimal" id="sensor-fire">
-                        <div class="sensor-monitor-header">
-                            <div class="sensor-monitor-name">
-                                <div class="sensor-icon-box"><i data-lucide="flame"></i></div>
-                                <span>Fire Sensor</span>
+                    <!-- VIBRATION -->
+                    <div class="glass-card sensor-monitor-card stagger-3">
+                        <div class="card-top">
+                            <div class="sensor-identity">
+                                <div class="sensor-icon-circle" style="color: var(--success);"><i data-lucide="activity"></i></div>
+                                <div class="sensor-name-group">
+                                    <span class="sensor-tag">Node 03</span>
+                                    <span class="sensor-label">VIBRATION</span>
+                                </div>
                             </div>
-                            <div class="sensor-status-indicator">OFFLINE</div>
+                            <span class="status-badge">STABLE</span>
                         </div>
-                        <div class="sensor-monitor-value-box">
-                            <span class="sensor-monitor-value">---</span>
-                            <span class="sensor-monitor-unit">DETECTED</span>
+                        <div class="sensor-reading-area">
+                            <span class="sensor-value-main" id="val-vib">-.--</span>
+                            <span class="sensor-unit">METERS / SEC²</span>
+                            <div class="sensor-sparkline"></div>
                         </div>
-                        <div class="sensor-monitor-footer">
-                            <span class="sensor-range-label">Range:</span>
-                            <span class="sensor-range-value">Binary (IR)</span>
-                        </div>
-                    </div>
-
-                    <div class="sensor-monitor-card status-optimal" id="sensor-ultrasonic">
-                        <div class="sensor-monitor-header">
-                            <div class="sensor-monitor-name">
-                                <div class="sensor-icon-box"><i data-lucide="ruler"></i></div>
-                                <span>Ultrasonic Sensor</span>
-                            </div>
-                            <div class="sensor-status-indicator">OFFLINE</div>
-                        </div>
-                        <div class="sensor-monitor-value-box">
-                            <span class="sensor-monitor-value">---</span>
-                            <span class="sensor-monitor-unit">cm</span>
-                        </div>
-                        <div class="sensor-monitor-footer">
-                            <span class="sensor-range-label">Range:</span>
-                            <span class="sensor-range-value">2 - 400 cm</span>
-                        </div>
-                    </div>
-
-                    <div class="sensor-monitor-card status-optimal" id="sensor-pir">
-                        <div class="sensor-monitor-header">
-                            <div class="sensor-monitor-name">
-                                <div class="sensor-icon-box"><i data-lucide="eye"></i></div>
-                                <span>PIR Motion Sensor</span>
-                            </div>
-                            <div class="sensor-status-indicator">OFFLINE</div>
-                        </div>
-                        <div class="sensor-monitor-value-box">
-                            <span class="sensor-monitor-value">---</span>
-                            <span class="sensor-monitor-unit">MOTION</span>
-                        </div>
-                        <div class="sensor-monitor-footer">
-                            <span class="sensor-range-label">Range:</span>
-                            <span class="sensor-range-value">5m / 120°</span>
-                        </div>
-                    </div>
-
-                    <div class="sensor-monitor-card status-optimal" id="sensor-vibration">
-                        <div class="sensor-monitor-header">
-                            <div class="sensor-monitor-name">
-                                <div class="sensor-icon-box"><i data-lucide="activity"></i></div>
-                                <span>Vibration Sensor</span>
-                            </div>
-                            <div class="sensor-status-indicator">OFFLINE</div>
-                        </div>
-                        <div class="sensor-monitor-value-box">
-                            <span class="sensor-monitor-value">---</span>
-                            <span class="sensor-monitor-unit">g</span>
-                        </div>
-                        <div class="sensor-monitor-footer">
-                            <span class="sensor-range-label">Range:</span>
-                            <span class="sensor-range-value">±16g / 3-Axis</span>
-                        </div>
-                    </div>
-
-                    <div class="sensor-monitor-card status-optimal" id="sensor-tilt">
-                        <div class="sensor-monitor-header">
-                            <div class="sensor-monitor-name">
-                                <div class="sensor-icon-box"><i data-lucide="rotate-cw"></i></div>
-                                <span>Tilt Sensor</span>
-                            </div>
-                            <div class="sensor-status-indicator">OFFLINE</div>
-                        </div>
-                        <div class="sensor-monitor-value-box">
-                            <span class="sensor-monitor-value">---</span>
-                            <span class="sensor-monitor-unit">deg</span>
-                        </div>
-                        <div class="sensor-monitor-footer">
-                            <span class="sensor-range-label">Range:</span>
-                            <span class="sensor-range-value">0 - 180 deg</span>
-                        </div>
-                    </div>
-
-                    <div class="sensor-monitor-card status-optimal" id="sensor-gyro">
-                        <div class="sensor-monitor-header">
-                            <div class="sensor-monitor-name">
-                                <div class="sensor-icon-box"><i data-lucide="navigation-2"></i></div>
-                                <span>Gyroscope Module</span>
-                            </div>
-                            <div class="sensor-status-indicator">OFFLINE</div>
-                        </div>
-                        <div class="sensor-monitor-value-box">
-                            <span class="sensor-monitor-value">---</span>
-                            <span class="sensor-monitor-unit">°/s</span>
-                        </div>
-                        <div class="sensor-monitor-footer">
-                            <span class="sensor-range-label">Range:</span>
-                            <span class="sensor-range-value">±250 °/s</span>
-                        </div>
-                    </div>
-
-                    <div class="sensor-monitor-card status-optimal" id="sensor-gps">
-                        <div class="sensor-monitor-header">
-                            <div class="sensor-monitor-name">
-                                <div class="sensor-icon-box"><i data-lucide="map-pin"></i></div>
-                                <span>GPS Module</span>
-                            </div>
-                            <div class="sensor-status-indicator">OFFLINE</div>
-                        </div>
-                        <div class="sensor-monitor-value-box">
-                            <span class="sensor-monitor-value">---</span>
-                            <span class="sensor-monitor-unit">3D</span>
-                        </div>
-                        <div class="sensor-monitor-footer">
-                            <span class="sensor-range-label">Accuracy:</span>
-                            <span class="sensor-range-value">&lt; 2.5m CEP</span>
-                        </div>
-                    </div>
-
-                    <div class="sensor-monitor-card status-optimal" id="sensor-batt">
-                        <div class="sensor-monitor-header">
-                            <div class="sensor-monitor-name">
-                                <div class="sensor-icon-box"><i data-lucide="battery"></i></div>
-                                <span>Battery Monitor</span>
-                            </div>
-                            <div class="sensor-status-indicator">OFFLINE</div>
-                        </div>
-                        <div class="sensor-monitor-value-box">
-                            <span class="sensor-monitor-value">---</span>
-                            <span class="sensor-monitor-unit">V</span>
-                        </div>
-                        <div class="sensor-monitor-footer">
-                            <span class="sensor-range-label">Nominal:</span>
-                            <span class="sensor-range-value">11.1V - 12.6V</span>
-                        </div>
-                    </div>
-
-                    <div class="sensor-monitor-card status-optimal" id="sensor-wifi">
-                        <div class="sensor-monitor-header">
-                            <div class="sensor-monitor-name">
-                                <div class="sensor-icon-box"><i data-lucide="wifi"></i></div>
-                                <span>WiFi Signal</span>
-                            </div>
-                            <div class="sensor-status-indicator">OFFLINE</div>
-                        </div>
-                        <div class="sensor-monitor-value-box">
-                            <span class="sensor-monitor-value">---</span>
-                            <span class="sensor-monitor-unit">dBm</span>
-                        </div>
-                        <div class="sensor-monitor-footer">
-                            <span class="sensor-range-label">Range:</span>
-                            <span class="sensor-range-value">-90 to -30 dBm</span>
-                        </div>
-                    </div>
-
-                    <div class="sensor-monitor-card status-optimal" id="sensor-camera">
-                        <div class="sensor-monitor-header">
-                            <div class="sensor-monitor-name">
-                                <div class="sensor-icon-box"><i data-lucide="video"></i></div>
-                                <span>Camera Stream</span>
-                            </div>
-                            <div class="sensor-status-indicator">OFFLINE</div>
-                        </div>
-                        <div class="sensor-monitor-value-box">
-                            <span class="sensor-monitor-value">---</span>
-                            <span class="sensor-monitor-unit">30 FPS</span>
-                        </div>
-                        <div class="sensor-monitor-footer">
-                            <span class="sensor-range-label">Bitrate:</span>
-                            <span class="sensor-range-value">4.2 Mbps</span>
+                        <div class="sensor-footer">
+                            <span>AXIS: X-Y-Z</span>
+                            <span>FREQ: 50Hz</span>
                         </div>
                     </div>
                 </div>
@@ -271,11 +134,13 @@
         </main>
     </div>
 
-    <!-- MQTT LIBRARY -->
+    <!-- SCRIPTS -->
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script type="module" src="../shared/mqtt-client.js"></script>
     <script type="module" src="../shared/shared.js"></script>
     <script type="module" src="./sensors.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>
-

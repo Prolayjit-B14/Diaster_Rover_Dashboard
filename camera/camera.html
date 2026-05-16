@@ -3,43 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera | RescueBOT</title>
+    <title>RescueBOT | AI Vision Array</title>
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./camera.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <div class="app-frame">
-        <!-- TOP NAVIGATION -->
+        <!-- TOP NAVBAR -->
         <nav class="top-navbar">
             <div class="nav-left">
                 <div class="logo-box">R</div>
-                <h1 class="nav-title">Robot <span class="nav-divider">/</span> <span class="nav-page color-cam">CAMERA</span></h1>
+                <h1 class="nav-title">RescueBOT <span class="nav-divider">/</span> <span class="nav-page">VISION ARRAY</span></h1>
             </div>
 
             <div class="nav-center">
-                <div class="mqtt-status">
-                    <div class="mqtt-status-dot disconnected"></div>
-                    <span class="mqtt-status-text" data-status="DISCONNECTED">SYSTEM OFFLINE</span>
+                <div class="status-capsule">
+                    <div class="status-dot disconnected" id="mqtt-dot"></div>
+                    <span id="mqtt-status-text">SYSTEM OFFLINE</span>
                 </div>
-                <div class="mission-clock">
-                    <i data-lucide="clock" class="clock-icon"></i>
+                <div class="status-capsule mono">
+                    <i data-lucide="clock" style="width: 14px; color: var(--primary);"></i>
                     <span id="current-time">00:00:00</span>
                 </div>
             </div>
 
             <div class="nav-right">
-                <a href="../dashboard/dashboard.html" class="nav-item dash" title="Dashboard">
-                    <i data-lucide="layout-grid" class="nav-icon dash"></i>
+                <a href="../dashboard/dashboard.html" class="nav-item" title="Dashboard">
+                    <i data-lucide="layout-grid" class="nav-icon"></i>
                 </a>
-                <a href="../map/map.html" class="nav-item map" title="Map">
-                    <i data-lucide="map" class="nav-icon map"></i>
+                <a href="../map/map.html" class="nav-item" title="Map">
+                    <i data-lucide="map" class="nav-icon"></i>
                 </a>
-                <a href="../camera/camera.html" class="nav-item active cam" title="Camera">
-                    <i data-lucide="camera" class="nav-icon cam"></i>
+                <a href="../camera/camera.html" class="nav-item active" title="Camera">
+                    <i data-lucide="camera" class="nav-icon"></i>
                 </a>
-                <a href="../sensors/sensors.html" class="nav-item sens" title="Sensors">
-                    <i data-lucide="activity" class="nav-icon sens"></i>
+                <a href="../sensors/sensors.html" class="nav-item" title="Sensors">
+                    <i data-lucide="activity" class="nav-icon"></i>
                 </a>
             </div>
         </nav>
@@ -47,66 +50,64 @@
         <!-- MAIN VIEWPORT -->
         <main class="workspace">
             <div class="cam-container">
-                <!-- VIDEO FEED (LEFT) -->
-                <div class="video-feed card">
-                    <div class="video-wrapper">
-                        <!-- Placeholder for real MJPEG stream -->
-                        <img id="esp32-stream" src="" alt="MJPEG Stream" class="stream-hidden">
+                <!-- VIDEO MAIN -->
+                <div class="video-feed-section">
+                    <div class="video-main">
+                        <img id="esp32-stream" src="" alt="Stream" class="stream-img" style="display: none;">
                         
                         <!-- NO SIGNAL INDICATOR -->
-                        <div class="no-signal" id="stream-placeholder">
-                            <i data-lucide="video-off"></i>
-                            <span>WAITING FOR HARDWARE SIGNAL...</span>
+                        <div class="status-overlay" id="stream-placeholder">
+                            <i data-lucide="video-off" style="width: 48px; height: 48px;"></i>
+                            <span style="font-size: 0.9rem; letter-spacing: 0.2em;">ESTABLISHING NEURAL LINK...</span>
                         </div>
 
-                        <div id="ai-overlay" class="overlay"></div>
-                        <div class="hud">
-                            <div class="hud-top">LIVE | 1280x720</div>
+                        <!-- HUD OVERLAY -->
+                        <div class="video-overlay">
+                            <div class="overlay-top">
+                                <div class="badge-live">LIVE FEED</div>
+                                <div class="badge-live" style="background: rgba(0,0,0,0.5)">1280 x 720 | 30 FPS</div>
+                            </div>
                             
-                            <!-- OVERLAY CONTROLS -->
-                            <div class="video-controls-overlay">
-                                <button class="overlay-btn" id="btn-stream-toggle" title="Start/Stop Stream"><i data-lucide="play"></i></button>
-                                <button class="overlay-btn" id="btn-capture" title="Snapshot"><i data-lucide="camera"></i></button>
-                                <button class="overlay-btn" id="btn-record" title="Record"><i data-lucide="video"></i></button>
-                                <button class="overlay-btn" id="btn-night-mode" title="Night Mode"><i data-lucide="moon"></i></button>
-                                <button class="overlay-btn" id="btn-fullscreen" title="Fullscreen"><i data-lucide="maximize"></i></button>
+                            <div class="overlay-bottom">
+                                <button class="control-btn" id="btn-stream-toggle"><i data-lucide="play"></i></button>
+                                <button class="control-btn"><i data-lucide="camera"></i></button>
+                                <button class="control-btn"><i data-lucide="maximize"></i></button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- SIDEBAR (RIGHT) -->
+                <!-- SIDEBAR -->
                 <aside class="cam-sidebar">
-                    <!-- AI ANALYTICS -->
-                    <div class="side-panel card">
-                        <div class="panel-header">AI ANALYTICS</div>
-                        <div class="toggle-row">
-                            <span>Human Detect</span>
-                            <input type="checkbox" checked id="toggle-human-detect">
+                    <div class="glass-card side-panel stagger-1">
+                        <div class="panel-title">AI ANALYTICS</div>
+                        <div class="toggle-item">
+                            <span class="toggle-label">Human Detection</span>
+                            <i data-lucide="toggle-right" style="color: var(--success); cursor: pointer;"></i>
                         </div>
-                        <div class="toggle-row">
-                            <span>Motion Detect</span>
-                            <input type="checkbox" id="toggle-motion-detect">
+                        <div class="toggle-item">
+                            <span class="toggle-label">Motion Alerts</span>
+                            <i data-lucide="toggle-right" style="color: var(--success); cursor: pointer;"></i>
                         </div>
                     </div>
 
-                    <!-- EVENT LOGS -->
-                    <div class="side-panel card log-panel">
-                        <div class="panel-header">DETECTION LOGS</div>
-                        <div class="log-list" id="cam-event-logs">
-                            <div class="log-row"><span>[12:42:03]</span> SYSTEM READY</div>
-                        </div>
+                    <div class="glass-card side-panel log-container stagger-2" id="cam-event-logs">
+                        <div class="panel-title">DETECTION LOGS</div>
+                        <div class="log-entry"><span>[16:04:12]</span> SYSTEM INITIALIZED</div>
+                        <div class="log-entry"><span>[16:04:15]</span> SEARCHING FOR TARGETS...</div>
                     </div>
                 </aside>
             </div>
         </main>
     </div>
 
-    <!-- MQTT LIBRARY -->
+    <!-- SCRIPTS -->
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script type="module" src="../shared/mqtt-client.js"></script>
     <script type="module" src="../shared/shared.js"></script>
     <script type="module" src="./camera.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>
-

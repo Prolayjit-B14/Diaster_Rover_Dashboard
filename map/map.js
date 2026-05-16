@@ -170,15 +170,24 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (this.isFollowing) this.map.panTo([lat, lng]);
             
-            const latEl = document.getElementById('map-lat');
-            const lngEl = document.getElementById('map-lng');
-            const headingEl = document.getElementById('map-heading');
-            const speedEl = document.getElementById('map-speed');
+            this.currentPos = { lat, lng, heading };
+            this.RobotMarker.setLatLng([lat, lng]);
+            
+            const arrowEl = this.RobotMarker.getElement()?.querySelector('.Robot-arrow');
+            if (arrowEl) arrowEl.style.transform = `rotate(${heading}deg)`;
+            
+            this.pathCoords.push([lat, lng]);
+            this.pathLine.setLatLngs(this.pathCoords);
+            
+            if (this.isFollowing) this.map.panTo([lat, lng]);
+            
+            const latEl = document.getElementById('lat-display');
+            const lngEl = document.getElementById('lng-display');
+            const satEl = document.getElementById('sat-count');
 
-            if (latEl) latEl.textContent = lat.toFixed(5);
-            if (lngEl) lngEl.textContent = lng.toFixed(5);
-            if (headingEl) headingEl.textContent = Math.floor(heading) + '°';
-            if (speedEl) speedEl.textContent = speed.toFixed(1);
+            if (latEl) latEl.textContent = lat.toFixed(6) + '°';
+            if (lngEl) lngEl.textContent = lng.toFixed(6) + '°';
+            if (satEl) satEl.textContent = Math.floor(Math.random() * 5) + 8; // Simulated satellite count
         }
 
         getDistMeters(lat1, lon1, lat2, lon2) {
