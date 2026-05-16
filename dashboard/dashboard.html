@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARES-1 | Mission Overview</title>
+    <link rel="stylesheet" href="../shared/shared.css">
+    <link rel="stylesheet" href="./dashboard.css">
+    <!-- Leaflet for Mini Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-frame">
+        <!-- TOP NAVBAR -->
+        <nav class="top-navbar">
+            <div class="nav-left">
+                <div class="logo-box">A</div>
+                <h1 class="nav-title">Rover <span class="nav-divider">/</span> <span class="nav-page color-dash">DASHBOARD</span></h1>
+            </div>
+
+            <div class="nav-center">
+                <div class="mqtt-status">
+                    <div class="mqtt-status-dot disconnected"></div>
+                    <span class="mqtt-status-text" data-status="DISCONNECTED">SYSTEM OFFLINE</span>
+                </div>
+                <div class="mission-clock">
+                    <i data-lucide="clock" class="clock-icon"></i>
+                    <span id="current-time">00:00:00</span>
+                </div>
+            </div>
+
+            <div class="nav-right">
+                <a href="../dashboard/dashboard.html" class="nav-item active dash" title="Dashboard">
+                    <i data-lucide="layout-grid" class="nav-icon dash"></i>
+                </a>
+                <a href="../map/map.html" class="nav-item map" title="Map">
+                    <i data-lucide="map" class="nav-icon map"></i>
+                </a>
+                <a href="../camera/camera.html" class="nav-item cam" title="Camera">
+                    <i data-lucide="camera" class="nav-icon cam"></i>
+                </a>
+                <a href="../sensors/sensors.html" class="nav-item sens" title="Sensors">
+                    <i data-lucide="activity" class="nav-icon sens"></i>
+                </a>
+            </div>
+        </nav>
+
+        <!-- MAIN WORKSPACE -->
+        <main class="workspace">
+            <div class="dashboard-content">
+                <!-- MISSION HERO -->
+                <section class="mission-hero">
+                    <div class="hero-header">MISSION CONTROL CENTER</div>
+                    <div class="hero-body">
+                        <h1 class="system-title">Autonomous Disaster Monitoring System</h1>
+                        <p class="system-subtitle">Real-time Telemetry • Field Observation • Active Rescue Support</p>
+                        <div class="status-list">
+                            <div class="status-line"><i data-lucide="circle" style="color: var(--success); width: 14px;"></i> Rover Online</div>
+                            <div class="status-line"><i data-lucide="map-pin" style="color: var(--primary); width: 14px;"></i> GPS Active</div>
+                            <div class="status-line"><i data-lucide="video" style="color: var(--primary); width: 14px;"></i> Feed Live</div>
+                            <div class="status-line"><i data-lucide="activity" style="color: var(--primary); width: 14px;"></i> Sensors Active</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ACTIVE ALERTS -->
+                <section class="boxed-alerts">
+                    <div class="alerts-header">ACTIVE ALERTS</div>
+                    <div class="alerts-list">
+                        <div class="empty-alerts">
+                            <i data-lucide="shield-check"></i>
+                            <span>NO ACTIVE ALERTS / SYSTEM DISCONNECTED</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- GRID CONTENT -->
+                <div class="overview-grid">
+                    <!-- CAMERA -->
+                    <section class="preview-card camera-preview">
+                        <div class="preview-header">
+                            <h3>LIVE MISSION FEED</h3>
+                            <a href="../camera/camera.html" class="hero-btn">Full Screen</a>
+                        </div>
+                        <div class="preview-content stream-container">
+                            <div class="status-overlay" id="mini-cam-status">
+                                <i data-lucide="video-off"></i>
+                                <span>VIDEO SIGNAL LOST / OFFLINE</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- MAP -->
+                    <section class="preview-card mini-map-preview">
+                        <div class="preview-header">
+                            <h3>GPS TRACKING</h3>
+                            <a href="../map/map.html" class="hero-btn">Full Map</a>
+                        </div>
+                        <div class="preview-content mini-map-wrapper">
+                            <div id="mini-map"></div>
+                            <div class="mini-map-controls">
+                                <button id="mini-zoom-in">+</button>
+                                <button id="mini-zoom-out">-</button>
+                            </div>
+                            <div class="status-overlay" id="mini-map-status">
+                                <i data-lucide="gps-off"></i>
+                                <span>SIGNAL LOST / DISCONNECTED</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SENSORS -->
+                    <section class="sensor-summary">
+                        <div class="mini-grid">
+                            <div class="quick-card">
+                                <div class="q-icon blue"><i data-lucide="thermometer"></i></div>
+                                <div class="q-data">
+                                    <span class="q-label">TEMPERATURE</span>
+                                    <span class="q-value">---</span>
+                                </div>
+                            </div>
+                            <div class="quick-card">
+                                <div class="q-icon orange"><i data-lucide="wind"></i></div>
+                                <div class="q-data">
+                                    <span class="q-label">GAS SENSOR</span>
+                                    <span class="q-value">---</span>
+                                </div>
+                            </div>
+                            <div class="quick-card">
+                                <div class="q-icon blue"><i data-lucide="ruler"></i></div>
+                                <div class="q-data">
+                                    <span class="q-label">ULTRASONIC</span>
+                                    <span class="q-value">---</span>
+                                </div>
+                            </div>
+                            <div class="quick-card">
+                                <div class="q-icon blue"><i data-lucide="activity"></i></div>
+                                <div class="q-data">
+                                    <span class="q-label">VIBRATION</span>
+                                    <span class="q-value">---</span>
+                                </div>
+                            </div>
+                            <div class="quick-card">
+                                <div class="q-icon blue"><i data-lucide="wifi"></i></div>
+                                <div class="q-data">
+                                    <span class="q-label">CONNECTION</span>
+                                    <span class="q-value">---</span>
+                                </div>
+                            </div>
+                            <div class="quick-card">
+                                <div class="q-icon blue"><i data-lucide="battery"></i></div>
+                                <div class="q-data">
+                                    <span class="q-label">BATTERY</span>
+                                    <span class="q-value">---</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <footer class="dash-footer">
+                    <div class="footer-attribution">
+                        <div class="attr-group">
+                            <span class="attr-label">SYSTEM</span>
+                            <span class="attr-value">ARES-1 MISSION CONTROL</span>
+                        </div>
+                        <div class="attr-group">
+                            <span class="attr-label">VERSION</span>
+                            <span class="attr-value">V2.4.1-STABLE</span>
+                        </div>
+                        <div class="attr-group">
+                            <span class="attr-label">DEVELOPER</span>
+                            <span class="attr-value">PROLOYJIT BISWAS</span>
+                        </div>
+                        <div class="attr-group">
+                            <span class="attr-label">SOURCE</span>
+                            <a href="#" class="attr-link">GITHUB REPO</a>
+                        </div>
+                        <div class="attr-group">
+                            <span class="attr-label">COPYRIGHT</span>
+                            <span class="attr-value">© 2026 TEAM TRIPOD</span>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <!-- MQTT LIBRARY -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script type="module" src="../shared/mqtt-client.js"></script>
+    <script type="module" src="../shared/shared.js"></script>
+    <script type="module" src="./dashboard.js"></script>
+</body>
+</html>
+
+

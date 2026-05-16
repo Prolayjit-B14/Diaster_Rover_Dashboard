@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera | ARES-1</title>
+    <link rel="stylesheet" href="../shared/shared.css">
+    <link rel="stylesheet" href="./camera.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-frame">
+        <!-- TOP NAVIGATION -->
+        <nav class="top-navbar">
+            <div class="nav-left">
+                <div class="logo-box">A</div>
+                <h1 class="nav-title">Rover <span class="nav-divider">/</span> <span class="nav-page color-cam">CAMERA</span></h1>
+            </div>
+
+            <div class="nav-center">
+                <div class="mqtt-status">
+                    <div class="mqtt-status-dot disconnected"></div>
+                    <span class="mqtt-status-text" data-status="DISCONNECTED">SYSTEM OFFLINE</span>
+                </div>
+                <div class="mission-clock">
+                    <i data-lucide="clock" class="clock-icon"></i>
+                    <span id="current-time">00:00:00</span>
+                </div>
+            </div>
+
+            <div class="nav-right">
+                <a href="../dashboard/dashboard.html" class="nav-item dash" title="Dashboard">
+                    <i data-lucide="layout-grid" class="nav-icon dash"></i>
+                </a>
+                <a href="../map/map.html" class="nav-item map" title="Map">
+                    <i data-lucide="map" class="nav-icon map"></i>
+                </a>
+                <a href="../camera/camera.html" class="nav-item active cam" title="Camera">
+                    <i data-lucide="camera" class="nav-icon cam"></i>
+                </a>
+                <a href="../sensors/sensors.html" class="nav-item sens" title="Sensors">
+                    <i data-lucide="activity" class="nav-icon sens"></i>
+                </a>
+            </div>
+        </nav>
+
+        <!-- MAIN VIEWPORT -->
+        <main class="workspace">
+            <div class="cam-container">
+                <!-- VIDEO FEED (LEFT) -->
+                <div class="video-feed card">
+                    <div class="video-wrapper">
+                        <!-- Placeholder for real MJPEG stream -->
+                        <img id="esp32-stream" src="" alt="MJPEG Stream" class="stream-hidden">
+                        
+                        <!-- NO SIGNAL INDICATOR -->
+                        <div class="no-signal" id="stream-placeholder">
+                            <i data-lucide="video-off"></i>
+                            <span>WAITING FOR HARDWARE SIGNAL...</span>
+                        </div>
+
+                        <div id="ai-overlay" class="overlay"></div>
+                        <div class="hud">
+                            <div class="hud-top">LIVE | 1280x720</div>
+                            
+                            <!-- OVERLAY CONTROLS -->
+                            <div class="video-controls-overlay">
+                                <button class="overlay-btn" id="btn-stream-toggle" title="Start/Stop Stream"><i data-lucide="play"></i></button>
+                                <button class="overlay-btn" id="btn-capture" title="Snapshot"><i data-lucide="camera"></i></button>
+                                <button class="overlay-btn" id="btn-record" title="Record"><i data-lucide="video"></i></button>
+                                <button class="overlay-btn" id="btn-night-mode" title="Night Mode"><i data-lucide="moon"></i></button>
+                                <button class="overlay-btn" id="btn-fullscreen" title="Fullscreen"><i data-lucide="maximize"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SIDEBAR (RIGHT) -->
+                <aside class="cam-sidebar">
+                    <!-- AI ANALYTICS -->
+                    <div class="side-panel card">
+                        <div class="panel-header">AI ANALYTICS</div>
+                        <div class="toggle-row">
+                            <span>Human Detect</span>
+                            <input type="checkbox" checked id="toggle-human-detect">
+                        </div>
+                        <div class="toggle-row">
+                            <span>Motion Detect</span>
+                            <input type="checkbox" id="toggle-motion-detect">
+                        </div>
+                    </div>
+
+                    <!-- EVENT LOGS -->
+                    <div class="side-panel card log-panel">
+                        <div class="panel-header">DETECTION LOGS</div>
+                        <div class="log-list" id="cam-event-logs">
+                            <div class="log-row"><span>[12:42:03]</span> SYSTEM READY</div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <!-- MQTT LIBRARY -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script type="module" src="../shared/mqtt-client.js"></script>
+    <script type="module" src="../shared/shared.js"></script>
+    <script type="module" src="./camera.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Mapping | ARES-1 Rover</title>
+    <link rel="stylesheet" href="../shared/shared.css">
+    <link rel="stylesheet" href="./map.css">
+    <!-- Leaflet Maps API -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-frame">
+        <!-- TOP NAVIGATION -->
+        <nav class="top-navbar">
+            <div class="nav-left">
+                <div class="logo-box">A</div>
+                <h1 class="nav-title">Rover <span class="nav-divider">/</span> <span class="nav-page color-map">MAP</span></h1>
+            </div>
+
+            <div class="nav-center">
+                <div class="mqtt-status">
+                    <div class="mqtt-status-dot disconnected"></div>
+                    <span class="mqtt-status-text" data-status="DISCONNECTED">SYSTEM OFFLINE</span>
+                </div>
+                <div class="mission-clock">
+                    <i data-lucide="clock" class="clock-icon"></i>
+                    <span id="current-time">00:00:00</span>
+                </div>
+            </div>
+
+            <div class="nav-right">
+                <a href="../dashboard/dashboard.html" class="nav-item dash" title="Dashboard">
+                    <i data-lucide="layout-grid" class="nav-icon dash"></i>
+                </a>
+                <a href="../map/map.html" class="nav-item active map" title="Map">
+                    <i data-lucide="map" class="nav-icon map"></i>
+                </a>
+                <a href="../camera/camera.html" class="nav-item cam" title="Camera">
+                    <i data-lucide="camera" class="nav-icon cam"></i>
+                </a>
+                <a href="../sensors/sensors.html" class="nav-item sens" title="Sensors">
+                    <i data-lucide="activity" class="nav-icon sens"></i>
+                </a>
+            </div>
+        </nav>
+
+        <!-- MAIN WORKSPACE -->
+        <main class="workspace">
+            <div class="map-dashboard">
+                <!-- MAP INTERFACE (LEFT) -->
+                <section class="map-view">
+                    <!-- LEAFLET CONTAINER -->
+                    <div id="map-canvas"></div>
+
+                    <!-- TOP OVERLAY: MAP MODES -->
+                    <div class="map-overlay-top">
+                        <div class="mode-toggles">
+                            <button class="mode-btn active" id="btn-street" title="Street View">
+                                <i data-lucide="map"></i>
+                            </button>
+                            <button class="mode-btn" id="btn-satellite" title="Satellite View">
+                                <i data-lucide="layers"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- LEFT OVERLAY: TOOLS & NAVIGATION -->
+                    <div class="map-overlay-left">
+                        <!-- Landmark Pin Tools -->
+                        <div class="tool-card">
+                            <button class="tool-btn" data-type="danger" title="Danger Zone">
+                                <i data-lucide="octagon-alert" style="color: #EF4444;"></i>
+                            </button>
+                            <button class="tool-btn" data-type="safe" title="Safe Zone">
+                                <i data-lucide="shield-check" style="color: #10B981;"></i>
+                            </button>
+                            <button class="tool-btn" data-type="survivor" title="Survivor">
+                                <i data-lucide="user-search" style="color: #2563EB;"></i>
+                            </button>
+                            <button class="tool-btn" data-type="fire" title="Fire Detected">
+                                <i data-lucide="flame" style="color: #F97316;"></i>
+                            </button>
+                            <button class="tool-btn" data-type="blocked" title="Blocked Path">
+                                <i data-lucide="ban" style="color: #64748B;"></i>
+                            </button>
+                            <button class="tool-btn" data-type="base" title="Base Station">
+                                <i data-lucide="home" style="color: #6366F1;"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT OVERLAY: ZOOM CONTROLS -->
+                    <div class="map-overlay-right">
+                        <div class="control-group">
+                            <button class="control-btn" id="btn-zoom-in" title="Zoom In">+</button>
+                            <button class="control-btn" id="btn-zoom-out" title="Zoom Out">-</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TELEMETRY SIDEBAR (RIGHT) -->
+                <aside class="sidebar">
+                    <div class="sidebar-scroll-area">
+                        <!-- TELEMETRY SECTION -->
+                        <div class="sidebar-section">
+                            <h3 class="section-title">ROVER TELEMETRY</h3>
+                            <div class="telemetry-grid">
+                                <div class="tel-item">
+                                    <span class="l">LATITUDE</span>
+                                    <span class="v" id="map-lat">---</span>
+                                </div>
+                                <div class="tel-item">
+                                    <span class="l">LONGITUDE</span>
+                                    <span class="v" id="map-lng">---</span>
+                                </div>
+                                <div class="tel-item">
+                                    <span class="l">HEADING</span>
+                                    <span class="v" id="map-heading">---</span>
+                                </div>
+                                <div class="tel-item">
+                                    <span class="l">SPEED</span>
+                                    <span class="v" id="map-speed">---</span>
+                                </div>
+                                <div class="tel-item">
+                                    <span class="l">DISTANCE</span>
+                                    <span class="v" id="map-dist">---</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LANDMARK LIST -->
+                        <div class="sidebar-section">
+                            <h3 class="section-title">OPERATIONAL LANDMARKS</h3>
+                            <div class="landmark-list" id="landmark-list">
+                                <div class="empty-list">No landmarks recorded.</div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MQTT LIBRARY -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script type="module" src="../shared/mqtt-client.js"></script>
+    <script type="module" src="../shared/shared.js"></script>
+    <script type="module" src="./map.js"></script>
+</body>
+</html>
+
