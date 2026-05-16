@@ -2,11 +2,11 @@
   --primary: #3B82F6;
   --primary-dark: #2563EB;
   --primary-glow: rgba(37, 99, 235, 0.3);
-  --bg-color: #0c0a09; /* DEEP BROWNISH BLACK */
-  --card-bg: rgba(23, 18, 15, 0.8);
-  --glass-bg: rgba(23, 18, 15, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.05);
-  --border-color: rgba(255, 255, 255, 0.03);
+  --bg-color: #14100e; /* RICHER BROWNISH BLACK */
+  --card-bg: rgba(28, 22, 19, 0.85);
+  --glass-bg: rgba(28, 22, 19, 0.65);
+  --glass-border: rgba(255, 160, 100, 0.1); /* Warm-tinted border */
+  --border-color: rgba(255, 160, 100, 0.05);
   --text-main: #F8FAFC;
   --text-muted: #94A3B8;
   --navbar-height: 70px;
@@ -29,8 +29,8 @@ body {
   width: 100vw;
   overflow: hidden;
   background-image: 
-    radial-gradient(circle at 0% 0%, rgba(41, 37, 36, 0.2) 0%, transparent 50%), 
-    radial-gradient(circle at 100% 100%, rgba(28, 25, 23, 0.1) 0%, transparent 50%);
+    radial-gradient(circle at 0% 0%, rgba(68, 44, 30, 0.2) 0%, transparent 50%), 
+    radial-gradient(circle at 100% 100%, rgba(38, 25, 18, 0.15) 0%, transparent 50%);
 }
 
 
