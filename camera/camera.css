@@ -1,116 +1,71 @@
-.camera-layout {
+.camera-grid {
     display: grid;
     grid-template-columns: 1fr 320px;
-    gap: 32px;
+    gap: var(--s-6);
     height: 100%;
 }
 
-/* VISION MAIN */
-.vision-main-card {
+.main-view-card {
     padding: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
-.vision-header {
-    padding: 16px 24px;
+.view-header {
+    padding: var(--s-4) var(--s-5);
     border-bottom: 1px solid var(--border-light);
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.vision-header h2 { font-size: 1rem; color: var(--primary-deep); }
-[data-theme="dark"] .vision-header h2 { color: white; }
-
-.live-indicator {
-    padding: 4px 12px;
-    background: var(--danger);
-    color: white;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.video-container {
+.video-view-area {
     flex: 1;
     background: #000;
     position: relative;
+    min-height: 400px;
 }
 
-#esp32-stream {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.vision-controls {
-    padding: 20px 24px;
+.control-bar {
+    padding: var(--s-4) var(--s-5);
     background: var(--bg-surface);
+    display: flex;
+    justify-content: center;
+    gap: var(--s-4);
     border-top: 1px solid var(--border-light);
-    display: flex;
-    justify-content: center;
-    gap: 16px;
 }
 
-.ctrl-btn {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    border: 1px solid var(--border-light);
-    background: var(--bg-app);
-    color: var(--text-main);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: var(--transition-smooth);
-}
-
-.ctrl-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
-
-/* SIDEBAR */
-.vision-sidebar {
+.sidebar-content {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: var(--s-5);
 }
 
-.analysis-card {
-    padding: 20px;
+.log-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: var(--s-5);
+    overflow: hidden;
 }
 
-.analysis-title {
+.log-title {
     font-size: 0.75rem;
     font-weight: 800;
     color: var(--text-muted);
-    margin-bottom: 16px;
+    margin-bottom: var(--s-4);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
 }
 
-.log-list {
+.log-entries {
     flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    font-size: 0.85rem;
+    gap: var(--s-3);
 }
 
-.log-item {
-    padding: 8px 12px;
-    background: var(--bg-app);
-    border-radius: 6px;
-    border-left: 3px solid var(--primary);
-}
-
-.log-item span { font-weight: 700; color: var(--text-muted); font-size: 0.75rem; display: block; margin-bottom: 2px; }
-
-@media (max-width: 1000px) {
-    .camera-layout { grid-template-columns: 1fr; }
+@media (max-width: 1100px) {
+    .camera-grid { grid-template-columns: 1fr; }
 }

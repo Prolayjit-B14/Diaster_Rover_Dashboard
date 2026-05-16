@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RescueBOT | Vision Support Node</title>
+    <title>RescueBOT | Vision Node</title>
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./camera.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <div class="app-frame">
-        <!-- TOP NAVBAR -->
         <nav class="top-navbar">
             <div class="nav-left">
                 <div class="logo-box">R</div>
                 <div class="nav-title-group">
                     <span class="nav-title">RescueBOT Support</span>
-                    <span class="nav-subtitle">Live Vision Array</span>
+                    <span class="nav-subtitle">Vision Array</span>
                 </div>
             </div>
 
@@ -25,69 +24,49 @@
                     <div class="status-dot active" id="mqtt-dot"></div>
                     <span id="mqtt-status-text">NETWORK SECURE</span>
                 </div>
-                <div class="status-pill">
-                    <i data-lucide="clock" style="width: 14px;"></i>
-                    <span id="current-time">00:00:00</span>
-                </div>
             </div>
 
             <div class="nav-right">
-                <button id="theme-toggle" class="theme-toggle" title="Toggle Theme"><i data-lucide="sun"></i></button>
-                <a href="../dashboard/dashboard.html" class="nav-link" title="Dashboard">
-                    <i data-lucide="layout-grid"></i>
-                </a>
-                <a href="../map/map.html" class="nav-link" title="Map">
-                    <i data-lucide="map"></i>
-                </a>
-                <a href="../camera/camera.html" class="nav-link active" title="Vision">
-                    <i data-lucide="video"></i>
-                </a>
-                <a href="../sensors/sensors.html" class="nav-link" title="Telemetry">
-                    <i data-lucide="activity"></i>
-                </a>
+                <button id="theme-toggle" class="btn-standard" title="Toggle Theme"><i data-lucide="sun"></i></button>
+                <a href="../dashboard/dashboard.html" class="nav-link" title="Dashboard"><i data-lucide="layout-grid"></i></a>
+                <a href="../map/map.html" class="nav-link" title="Map"><i data-lucide="map"></i></a>
+                <a href="../camera/camera.html" class="nav-link active" title="Vision"><i data-lucide="video"></i></a>
+                <a href="../sensors/sensors.html" class="nav-link" title="Telemetry"><i data-lucide="activity"></i></a>
             </div>
         </nav>
 
-        <!-- MAIN VIEWPORT -->
         <main class="workspace">
-            <div class="camera-layout">
-                <!-- VISION MAIN -->
-                <section class="card-soft vision-main-card">
-                    <div class="vision-header">
+            <div class="camera-grid">
+                <section class="card-standard main-view-card">
+                    <div class="view-header">
                         <h2>PRIMARY FIELD FEED</h2>
-                        <div class="live-indicator">LIVE SUPPORT</div>
+                        <span class="status-pill">LIVE</span>
                     </div>
-                    <div class="video-container">
-                        <img id="esp32-stream" src="" alt="Stream" style="display: none;">
+                    <div class="video-view-area">
+                        <img id="esp32-stream" src="" alt="Stream" style="display: none; width: 100%; height: 100%; object-fit: contain;">
                         <div class="status-overlay" id="stream-placeholder">
-                            <i data-lucide="video-off" style="width: 48px;"></i>
+                            <i data-lucide="video-off"></i>
                             <span>WAITING FOR FIELD SIGNAL...</span>
                         </div>
                     </div>
-                    <div class="vision-controls">
-                        <button class="ctrl-btn" id="btn-stream-toggle"><i data-lucide="play"></i></button>
-                        <button class="ctrl-btn"><i data-lucide="camera"></i></button>
-                        <button class="ctrl-btn"><i data-lucide="maximize"></i></button>
+                    <div class="control-bar">
+                        <button class="btn-standard" id="btn-stream-toggle"><i data-lucide="play"></i> Start Stream</button>
+                        <button class="btn-standard"><i data-lucide="camera"></i> Capture</button>
                     </div>
                 </section>
 
-                <!-- SIDEBAR -->
-                <aside class="vision-sidebar">
-                    <div class="card-soft analysis-card">
-                        <div class="analysis-title">Support Analytics</div>
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">AI human detection is active to assist responders in locating survivors.</p>
-                    </div>
-                    
-                    <div class="card-soft log-list" id="cam-event-logs">
-                        <div class="analysis-title">MISSION LOGS</div>
-                        <!-- Log rows added by JS -->
+                <aside class="sidebar-content">
+                    <div class="card-standard log-panel">
+                        <div class="log-title">Detection History</div>
+                        <div class="log-entries" id="cam-event-logs">
+                            <!-- Logs here -->
+                        </div>
                     </div>
                 </aside>
             </div>
         </main>
     </div>
 
-    <!-- SCRIPTS -->
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script type="module" src="../shared/mqtt-client.js"></script>
     <script type="module" src="../shared/shared.js"></script>

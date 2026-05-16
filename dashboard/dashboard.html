@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RescueBOT | Disaster Relief Coordination</title>
+    <title>RescueBOT | Coordinator Dashboard</title>
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./dashboard.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -12,13 +12,12 @@
 </head>
 <body>
     <div class="app-frame">
-        <!-- TOP NAVBAR -->
         <nav class="top-navbar">
             <div class="nav-left">
                 <div class="logo-box">R</div>
                 <div class="nav-title-group">
                     <span class="nav-title">RescueBOT Support</span>
-                    <span class="nav-subtitle">Humanitarian Coordination</span>
+                    <span class="nav-subtitle">Field Coordination</span>
                 </div>
             </div>
 
@@ -27,59 +26,37 @@
                     <div class="status-dot active" id="mqtt-dot"></div>
                     <span id="mqtt-status-text">NETWORK SECURE</span>
                 </div>
-                <div class="status-pill">
-                    <i data-lucide="clock" style="width: 14px;"></i>
-                    <span id="current-time">00:00:00</span>
-                </div>
             </div>
 
             <div class="nav-right">
-                <button id="theme-toggle" class="theme-toggle" title="Toggle Theme"><i data-lucide="sun"></i></button>
-                <a href="../dashboard/dashboard.html" class="nav-link active" title="Dashboard">
-                    <i data-lucide="layout-grid"></i>
-                </a>
-                <a href="../map/map.html" class="nav-link" title="Map">
-                    <i data-lucide="map"></i>
-                </a>
-                <a href="../camera/camera.html" class="nav-link" title="Vision">
-                    <i data-lucide="video"></i>
-                </a>
-                <a href="../sensors/sensors.html" class="nav-link" title="Telemetry">
-                    <i data-lucide="activity"></i>
-                </a>
+                <button id="theme-toggle" class="btn-standard" title="Toggle Theme"><i data-lucide="sun"></i></button>
+                <a href="../dashboard/dashboard.html" class="nav-link active" title="Dashboard"><i data-lucide="layout-grid"></i></a>
+                <a href="../map/map.html" class="nav-link" title="Map"><i data-lucide="map"></i></a>
+                <a href="../camera/camera.html" class="nav-link" title="Vision"><i data-lucide="video"></i></a>
+                <a href="../sensors/sensors.html" class="nav-link" title="Telemetry"><i data-lucide="activity"></i></a>
             </div>
         </nav>
 
-        <!-- MAIN WORKSPACE -->
         <main class="workspace">
-            <div class="dashboard-content">
-                <!-- COORDINATION HEADER -->
-                <header class="coord-header">
-                    <div class="header-meta">
-                        <h1>Coordination Overview</h1>
-                        <p>Providing real-time support for active rescue operations.</p>
+            <div class="dashboard-grid">
+                <header class="dash-header">
+                    <div class="header-content">
+                        <h1>Operational Overview</h1>
+                        <p>Real-time data synchronization with active rescue units.</p>
                     </div>
-                    <div class="quick-stats">
-                        <div class="stat-pill"><i data-lucide="radio" style="color: var(--primary);"></i> Satellite Active</div>
-                        <div class="stat-pill"><i data-lucide="users" style="color: var(--success);"></i> 4 Responders Online</div>
+                    <div class="header-actions">
+                        <button class="btn-standard primary"><i data-lucide="plus"></i> New Incident</button>
                     </div>
                 </header>
 
-                <!-- TOP GRID -->
-                <div class="overview-top-grid">
-                    <!-- TACTICAL MAP -->
-                    <section class="card-soft map-preview-card">
-                        <div class="card-header-overlay">TACTICAL FIELD POSITIONING</div>
+                <div class="top-row-grid">
+                    <section class="card-standard map-card">
                         <div id="mini-map" style="width: 100%; height: 100%;"></div>
                     </section>
 
-                    <!-- LIVE FEED -->
-                    <section class="card-soft feed-preview-card">
-                        <div class="feed-title">
-                            <span>PRIMARY VISION NODE</span>
-                            <i data-lucide="maximize" style="width: 16px; cursor: pointer;"></i>
-                        </div>
-                        <div class="feed-content">
+                    <section class="card-standard feed-card">
+                        <div class="feed-header">Primary Vision Node</div>
+                        <div class="feed-content-area">
                             <div class="status-overlay" id="mini-cam-status">
                                 <i data-lucide="video-off"></i>
                                 <span>Establishing Neural Link...</span>
@@ -88,54 +65,33 @@
                     </section>
                 </div>
 
-                <!-- SENSOR SUMMARY -->
-                <div class="sensor-summary-row">
-                    <div class="card-soft relief-stat-card">
-                        <div class="relief-icon-box" style="background: #e0f2fe; color: #0369a1;"><i data-lucide="thermometer"></i></div>
-                        <div>
-                            <div class="relief-label">Environment Temp</div>
-                            <div class="relief-value" id="val-temp">--.-°C</div>
+                <div class="stats-row">
+                    <div class="card-standard stat-item">
+                        <div class="icon-box"><i data-lucide="thermometer"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Environment Temp</span>
+                            <span class="stat-value" id="val-temp">--.-°C</span>
                         </div>
                     </div>
-                    <div class="card-soft relief-stat-card">
-                        <div class="relief-icon-box" style="background: #fff7ed; color: #9a3412;"><i data-lucide="wind"></i></div>
-                        <div>
-                            <div class="relief-label">Hazardous Gas</div>
-                            <div class="relief-value" id="val-gas">--- ppm</div>
+                    <div class="card-standard stat-item">
+                        <div class="icon-box"><i data-lucide="wind"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Gas Level</span>
+                            <span class="stat-value" id="val-gas">--- ppm</span>
                         </div>
                     </div>
-                    <div class="card-soft relief-stat-card">
-                        <div class="relief-icon-box" style="background: #f0fdf4; color: #15803d;"><i data-lucide="activity"></i></div>
-                        <div>
-                            <div class="relief-label">Structural Stability</div>
-                            <div class="relief-value" id="val-vib">-.-- m/s²</div>
-                        </div>
-                    </div>
-                    <div class="card-soft relief-stat-card">
-                        <div class="relief-icon-box" style="background: #fef2f2; color: #991b1b;"><i data-lucide="battery"></i></div>
-                        <div>
-                            <div class="relief-label">Node Power</div>
-                            <div class="relief-value" id="val-battery">--%</div>
+                    <div class="card-standard stat-item">
+                        <div class="icon-box"><i data-lucide="activity"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">Vibration</span>
+                            <span class="stat-value" id="val-vib">-.-- m/s²</span>
                         </div>
                     </div>
                 </div>
-
-                <!-- ALERTS -->
-                <div class="alert-strip">
-                    <i data-lucide="info"></i>
-                    <span>MISSION ADVISORY: All systems performing within nominal humanitarian response thresholds.</span>
-                </div>
-
-                <footer class="coord-footer">
-                    <span>© 2026 BOT THINGS | Humanitarian Support Division</span>
-                    <span>Lead Coordinator: Prolayjit Biswas</span>
-                    <span>KGEC Disaster Response Team</span>
-                </footer>
             </div>
         </main>
     </div>
 
-    <!-- SCRIPTS -->
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script type="module" src="../shared/mqtt-client.js"></script>
     <script type="module" src="../shared/shared.js"></script>
