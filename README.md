@@ -7,7 +7,7 @@
 ## 🏆 Hackathon Edition
 Built for reliability, speed, and real-time visualization, RescueBOT provides first responders with a unified tactical interface to monitor hazardous environments.
 
-### 👥 The Team: RescueBOT (TRIPOD)
+### 👥 The Team: RescueBOT (BOT THINGS)
 - **Prolayjit Biswas** (Team Lead | Lead Software | Hardware Support)
 - **Arghya Roy** (Lead Hardware Engineer)
 - **Shubhajit Haldar** (Team Member)
