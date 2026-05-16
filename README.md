@@ -8,10 +8,11 @@
 Built for reliability, speed, and real-time visualization, RescueBOT provides first responders with a unified tactical interface to monitor hazardous environments.
 
 ### 👥 The Team: RescueBOT (TRIPOD)
-- **Prolayjit Biswas** (Team Lead & Main Software-Hardware Support)
+- **Prolayjit Biswas** (Team Lead | Lead Software | Hardware Support)
 - **Arghya Roy** (Lead Hardware Engineer)
-- **Shubhajit Haldar** (Hardware Support)
-- **Papan Chowdhury** (Hardware Support)
+- **Shubhajit Haldar** (Team Member)
+- **Papan Chowdhury** (Team Member)
+
 
 
 ---
