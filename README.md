@@ -14,13 +14,22 @@ The **ARES-1 Mission Control** is a premium, multi-module dashboard that synchro
 - **Vision Array**: Live stream control with AI detection capabilities.
 - **Premium UI**: Dark-mode glassmorphism interface powered by Outfit & JetBrains Mono.
 
-## 🛠️ Technology Stack
+## 🛠️ Hardware Integration
 
-- **Frontend**: Vanilla JavaScript + Vite (Multi-page Architecture)
-- **Styling**: Modern CSS3 (Custom Design System + Glassmorphism)
-- **Communication**: MQTT (Real-time telemetry & Hardware commands)
-- **Deployment**: Optimized for **Vercel** & GitHub Pages
-- **Hardware**: ESP32 (Main Control) + ESP32-CAM (Detection Node)
+The ARES-1 system is built on a distributed hardware architecture for maximum reliability in disaster zones.
+
+### Core Components
+- **Primary Controller (ESP32 Dev Board)**: Manages sensor data acquisition, actuator control, and MQTT telemetry.
+- **Vision Node (Raspberry Pi 4)**: Handles high-definition MJPEG streaming and edge-AI object detection.
+- **Sensor Array**: 
+    - **MQ-2**: Gas/Smoke detection for fire hazards.
+    - **DHT11**: Environment temperature and humidity.
+    - **NEO-6M**: GPS localization for tactical mapping.
+    - **HC-SR04**: Ultrasonic ranging for collision avoidance.
+    - **MPU6050**: 6-axis vibration and orientation monitoring.
+
+### Communication Protocol
+The dashboard communicates via a lightweight **MQTT** pipeline over WebSockets (`wss://`). This ensures sub-100ms latency for critical command dispatches and real-time telemetry updates.
 
 ## 📂 Project Structure
 
@@ -30,29 +39,30 @@ The **ARES-1 Mission Control** is a premium, multi-module dashboard that synchro
 ├── map/             # Tactical GPS tracking module
 ├── sensors/         # High-density telemetry module
 ├── shared/          # Shared Design System & MQTT Client
-├── assets/          # Static mission assets
+├── assets/          # Static mission assets (UI images)
+├── firmware/        # ESP32/Arduino source code
 ├── public/          # Global assets & icons
 └── index.html       # Mission Initialization entry point
 ```
 
-## ⚙️ Deployment & Development
+## 📖 Documentation & Setup
 
-### Local Development
+### 1. Development Environment
+Ensure you have **Node.js 18+** installed.
 ```bash
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
-
-# Build for production
-npm run build
 ```
 
-### Production Deployment
-The system is pre-configured for **Vercel**. Simply push to GitHub and the platform will handle the optimized bundling and clean URL routing.
+### 2. Hardware Synchronization
+Update the MQTT broker settings in `shared/mqtt-client.js` to match your rover's configuration. The default configuration uses the EMQX public broker for testing.
+
+### 3. Production Deployment
+This repository is optimized for **Vercel**. Every push to the `main` branch triggers an automated build using **Vite**, generating a high-performance static distribution in the `dist` folder.
 
 ---
-**Developed by:** Prolayjit Biswas  
-**Team:** TRIPOD | Kolkata, India  
+**Mission Lead:** Prolayjit Biswas  
+**Organization:** TRIPOD | KGEC, Kolkata  
+**Project Goal:** Developing autonomous solutions for active rescue support.  
 © 2026 ARES-1 MISSION CONTROL
+
