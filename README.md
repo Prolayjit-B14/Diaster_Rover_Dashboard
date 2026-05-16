@@ -1,40 +1,58 @@
-# Tripod: Disaster Response IoT Command Center
+# ARES-1 | Mission Control System
 
-A high-performance, real-time IoT dashboard designed for search-and-rescue operations. Fully integrated with **ESP32** (Main Control) and **Raspberry Pi 4** (Vision & AI) hardware.
+A high-performance, real-time tactical dashboard designed for autonomous disaster monitoring and search-and-rescue operations. Fully optimized for production deployment and hardware integration.
 
-## 🚀 Key Features
+![Mission Overview](./assets/map_view.png)
 
-- **Real-Time Telemetry**: Live sensor data from MQ-2 (Smoke), DHT11 (Temp/Hum), MPU6050 (Vibration), and HC-SR04 (Ultrasonic).
-- **Tactical Mapping**: Live GPS tracking powered by the NEO-6M module.
-- **AI Vision**: Dual-stream video feed from RPi4 (Main Stream) and ESP32-CAM (Detection Node).
-- **Remote Control**: Manual robot drive with L298N motor driver support and First Aid kit deployment via Servo.
-- **Compact UI**: Professional, high-density tactical interface localized for mission-critical operations.
+## 🚀 System Overview
 
-## 🛠️ Hardware Stack
+The **ARES-1 Mission Control** is a premium, multi-module dashboard that synchronizes with the ARES-1 Rover hardware. It provides a unified interface for telemetry, vision, and geospatial tracking.
 
-- **Core**: ESP32 Dev Board + Raspberry Pi 4 Model B.
-- **Sensors**: MQ-2, Flame Sensor, DHT11, MPU6050, PIR, NEO-6M, HC-SR04.
-- **Actuators**: L298N Motor Driver + MG996R Servos.
-- **Communication**: WebSocket (Local/Remote) via WiFi/GSM.
+- **Mission Initialization**: High-tech entry sequence with system diagnostics.
+- **Unified Dashboard**: Real-time telemetry monitoring (Temp, Gas, Ultrasonic, Vibration).
+- **Tactical Mapping**: GPS tracking with synchronized mission waypoints.
+- **Vision Array**: Live stream control with AI detection capabilities.
+- **Premium UI**: Dark-mode glassmorphism interface powered by Outfit & JetBrains Mono.
+
+## 🛠️ Technology Stack
+
+- **Frontend**: Vanilla JavaScript + Vite (Multi-page Architecture)
+- **Styling**: Modern CSS3 (Custom Design System + Glassmorphism)
+- **Communication**: MQTT (Real-time telemetry & Hardware commands)
+- **Deployment**: Optimized for **Vercel** & GitHub Pages
+- **Hardware**: ESP32 (Main Control) + ESP32-CAM (Detection Node)
 
 ## 📂 Project Structure
 
 ```text
-src/
-├── assets/          # Media & static images
-├── context/         # IoT State & Global Context
-├── hooks/           # WebSocket & Data Processing hooks
-├── pages/           # Modular Dashboard Screens
-├── styles/          # Unified Design System (CSS)
-├── types/           # Hardware Payload Schemas
-└── App.tsx          # Main Application Shell
+├── dashboard/       # Main Mission Overview module
+├── camera/          # Live vision & AI analytics module
+├── map/             # Tactical GPS tracking module
+├── sensors/         # High-density telemetry module
+├── shared/          # Shared Design System & MQTT Client
+├── assets/          # Static mission assets
+├── public/          # Global assets & icons
+└── index.html       # Mission Initialization entry point
 ```
 
-## ⚙️ Setup
+## ⚙️ Deployment & Development
 
-1. **Environment**: Create a `.env` file and set `VITE_WS_URL` to your robot's IP (e.g., `ws://192.168.1.100:81`).
-2. **Install**: `npm install`
-3. **Run**: `npm run dev`
+### Local Development
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+### Production Deployment
+The system is pre-configured for **Vercel**. Simply push to GitHub and the platform will handle the optimized bundling and clean URL routing.
 
 ---
-*Command Center Station: Kolkata, India*
+**Developed by:** Prolayjit Biswas  
+**Team:** TRIPOD | Kolkata, India  
+© 2026 ARES-1 MISSION CONTROL
