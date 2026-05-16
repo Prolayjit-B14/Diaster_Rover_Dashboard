@@ -1,5 +1,5 @@
 /**
- * ARES-1 Production IoT MQTT Client
+ * RescueBOT Production IoT MQTT Client
  * Handles real-time communication with ESP32 hardware.
  * Decoupled event-based architecture for production reliability.
  */
@@ -11,12 +11,12 @@ class MqttController {
             broker: 'wss://broker.emqx.io:8084/mqtt',
             clientId: 'ares_dashboard_' + Math.random().toString(16).substring(2, 10),
             topics: {
-                telemetry: 'ares1/rover/telemetry',
-                gps: 'ares1/rover/gps',
-                camera: 'ares1/rover/camera',
-                alerts: 'ares1/rover/alerts',
-                command: 'ares1/rover/command',
-                status: 'ares1/rover/status'
+                telemetry: 'ares1/Robot/telemetry',
+                gps: 'ares1/Robot/gps',
+                camera: 'ares1/Robot/camera',
+                alerts: 'ares1/Robot/alerts',
+                command: 'ares1/Robot/command',
+                status: 'ares1/Robot/status'
             }
         };
         this.status = 'DISCONNECTED';

@@ -1,5 +1,5 @@
 /**
- * ARES-1 Industrial GPS Mapping Logic
+ * RescueBOT Industrial GPS Mapping Logic
  * Rewritten for live hardware data ingestion via MQTT.
  */
 
@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     class MapDashboard {
         constructor() {
             this.map = null;
-            this.roverMarker = null;
+            this.RobotMarker = null;
             this.pathLine = null;
             this.pathCoords = [];
             this.isFollowing = true;
@@ -34,9 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
             this.streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.map);
             this.satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
 
-            const roverIcon = L.divIcon({
-                className: 'rover-marker-icon',
-                html: `<div class="rover-arrow" style="transform: rotate(0deg);">
+            const RobotIcon = L.divIcon({
+                className: 'Robot-marker-icon',
+                html: `<div class="Robot-arrow" style="transform: rotate(0deg);">
                         <svg width="44" height="44" viewBox="0 0 24 24" fill="#2563EB" stroke="white" stroke-width="2">
                             <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
                         </svg>
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 iconAnchor: [22, 22]
             });
 
-            this.roverMarker = L.marker([0, 0], { icon: roverIcon }).addTo(this.map);
+            this.RobotMarker = L.marker([0, 0], { icon: RobotIcon }).addTo(this.map);
             
             this.pathLine = L.polyline([], { 
                 color: '#2563EB', 
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             mqtt.on('gps', (data) => {
                 // data format: { lat: 22.57, lng: 88.36, heading: 120, speed: 5.2 }
-                this.updateRover(data.lat, data.lng, data.heading || 0, data.speed || 0);
+                this.updateRobot(data.lat, data.lng, data.heading || 0, data.speed || 0);
             });
         }
 
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `).join('');
         }
 
-        updateRover(lat, lng, heading, speed = 0) {
+        updateRobot(lat, lng, heading, speed = 0) {
             if (this.pathCoords.length > 0) {
                 const prev = this.pathCoords[this.pathCoords.length - 1];
                 const d = this.getDistMeters(prev[0], prev[1], lat, lng);
@@ -160,9 +160,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             this.currentPos = { lat, lng, heading };
-            this.roverMarker.setLatLng([lat, lng]);
+            this.RobotMarker.setLatLng([lat, lng]);
             
-            const arrowEl = this.roverMarker.getElement()?.querySelector('.rover-arrow');
+            const arrowEl = this.RobotMarker.getElement()?.querySelector('.Robot-arrow');
             if (arrowEl) arrowEl.style.transform = `rotate(${heading}deg)`;
             
             this.pathCoords.push([lat, lng]);

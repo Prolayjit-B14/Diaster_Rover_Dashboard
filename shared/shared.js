@@ -1,5 +1,5 @@
 /**
- * ARES-1 Shared UI Logic
+ * RescueBOT Shared UI Logic
  * Handles global components like the clock, navbar, and icon system.
  */
 

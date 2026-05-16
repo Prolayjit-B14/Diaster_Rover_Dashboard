@@ -6,7 +6,7 @@
 
 /*
  * =================================================================================================
- * ARES-1 ROVER: MASTER MISSION CONTROL FIRMWARE
+ * RescueBOT Robot: MASTER MISSION CONTROL FIRMWARE
  * =================================================================================================
  * Version: 3.1.0-PRODUCTION-STABLE
  * Platform: ESP32-CAM (AI-Thinker)
@@ -58,12 +58,12 @@ const char* password     = "YOUR_WIFI_PASSWORD";
 const char* mqtt_broker  = "broker.emqx.io";
 
 // Topic Map
-const char* TOPIC_TELEMETRY = "ares1/rover/telemetry";
-const char* TOPIC_GPS       = "ares1/rover/gps";
-const char* TOPIC_CAMERA    = "ares1/rover/camera";
-const char* TOPIC_COMMAND   = "ares1/rover/command";
-const char* TOPIC_STATUS    = "ares1/rover/status";
-const char* TOPIC_ALERTS    = "ares1/rover/alerts";
+const char* TOPIC_TELEMETRY = "ares1/Robot/telemetry";
+const char* TOPIC_GPS       = "ares1/Robot/gps";
+const char* TOPIC_CAMERA    = "ares1/Robot/camera";
+const char* TOPIC_COMMAND   = "ares1/Robot/command";
+const char* TOPIC_STATUS    = "ares1/Robot/status";
+const char* TOPIC_ALERTS    = "ares1/Robot/alerts";
 
 // -------------------------------------------------------------------------------------------------
 // [SECTOR 3] MISSION OBJECTS & STATE
@@ -223,7 +223,7 @@ void reconnect() {
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("[ARES-1] BOOTING STABLE MISSION CONTROL...");
+  Serial.println("[RescueBOT] BOOTING STABLE MISSION CONTROL...");
 
   initCamera();
   
@@ -234,7 +234,7 @@ void setup() {
   
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
-  Serial.println("\n[ARES-1] NETWORK READY");
+  Serial.println("\n[RescueBOT] NETWORK READY");
 
   client.setServer(mqtt_broker, 1883);
   client.setCallback(callback);

@@ -1,5 +1,5 @@
 /**
- * ARES-1 Sensors Module Logic
+ * RescueBOT Sensors Module Logic
  * Standardized for live hardware data ingestion via event-driven MQTT.
  */
 

@@ -1,5 +1,5 @@
 /**
- * ARES-1 Production Mission Overview Logic
+ * RescueBOT Production Mission Overview Logic
  * Integrated with event-driven MQTT pipeline.
  */
 
@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- MINI MAP INITIALIZATION ---
     const mapContainer = document.getElementById('mini-map');
     let miniMap = null;
-    let roverMarker = null;
+    let RobotMarker = null;
 
     if (mapContainer && typeof L !== 'undefined') {
         miniMap = L.map('mini-map', {
@@ -21,14 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(miniMap);
 
-        const roverIcon = L.divIcon({
-            className: 'mini-rover-icon',
+        const RobotIcon = L.divIcon({
+            className: 'mini-Robot-icon',
             html: `<div style="background: #2563EB; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 8px rgba(37, 99, 235, 0.6);"></div>`,
             iconSize: [12, 12],
             iconAnchor: [6, 6]
         });
 
-        roverMarker = L.marker([0, 0], { icon: roverIcon });
+        RobotMarker = L.marker([0, 0], { icon: RobotIcon });
 
         // Zoom Listeners
         document.getElementById('mini-zoom-in')?.addEventListener('click', () => miniMap.zoomIn());
@@ -43,13 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const statusOverlay = document.getElementById('mini-map-status');
             if (statusOverlay) statusOverlay.style.display = 'none';
 
-            if (miniMap && roverMarker) {
-                if (!miniMap.hasLayer(roverMarker)) {
-                    roverMarker.addTo(miniMap);
+            if (miniMap && RobotMarker) {
+                if (!miniMap.hasLayer(RobotMarker)) {
+                    RobotMarker.addTo(miniMap);
                     miniMap.setZoom(15);
                 }
                 const { lat, lng } = data;
-                roverMarker.setLatLng([lat, lng]);
+                RobotMarker.setLatLng([lat, lng]);
                 miniMap.panTo([lat, lng]);
             }
         });
