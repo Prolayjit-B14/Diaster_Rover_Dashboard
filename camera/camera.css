@@ -59,7 +59,7 @@
     content: '';
     width: 6px;
     height: 6px;
-    background: #fff;
+    background: var(--text-main);
     border-radius: 50%;
     animation: pulse 1s infinite;
 }
@@ -77,7 +77,7 @@
     border-radius: 50%;
     background: rgba(15, 17, 26, 0.8);
     border: 1px solid var(--glass-border);
-    color: #fff;
+    color: var(--text-main);
     display: flex;
     align-items: center;
     justify-content: center;
