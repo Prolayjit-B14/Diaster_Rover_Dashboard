@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RescueBOT | Coordinator Dashboard</title>
+    <title>RescueBOT | Operational Command</title>
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./dashboard.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -41,11 +41,8 @@
             <div class="dashboard-grid">
                 <header class="dash-header">
                     <div class="header-content">
-                        <h1>Operational Overview</h1>
-                        <p>Real-time data synchronization with active rescue units.</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="btn-standard primary"><i data-lucide="plus"></i> New Incident</button>
+                        <h1>Operational Command</h1>
+                        <p>Aggregated telemetry from 12 active mission-critical modules.</p>
                     </div>
                 </header>
 
@@ -55,7 +52,7 @@
                     </section>
 
                     <section class="card-standard feed-card">
-                        <div class="feed-header">Primary Vision Node</div>
+                        <div class="feed-header">Tactical Vision Array</div>
                         <div class="feed-content-area">
                             <div class="status-overlay" id="mini-cam-status">
                                 <i data-lucide="video-off"></i>
@@ -66,47 +63,58 @@
                 </div>
 
                 <div class="stats-row">
+                    <!-- ROW 1 -->
                     <div class="card-standard stat-item">
-                        <div class="icon-box"><i data-lucide="thermometer"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-label">Environment Temp</span>
-                            <span class="stat-value" id="val-temp">--.-°C</span>
-                        </div>
+                        <div class="icon-box" style="color: #ef4444;"><i data-lucide="thermometer"></i></div>
+                        <div class="stat-info"><span class="stat-label">Temperature</span><span class="stat-value" id="val-temp">--°C</span></div>
                     </div>
                     <div class="card-standard stat-item">
-                        <div class="icon-box"><i data-lucide="wind"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-label">Gas Level</span>
-                            <span class="stat-value" id="val-gas">--- ppm</span>
-                        </div>
+                        <div class="icon-box" style="color: #f59e0b;"><i data-lucide="wind"></i></div>
+                        <div class="stat-info"><span class="stat-label">Gas Level</span><span class="stat-value" id="val-gas">-- ppm</span></div>
                     </div>
                     <div class="card-standard stat-item">
-                        <div class="icon-box"><i data-lucide="activity"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-label">Vibration</span>
-                            <span class="stat-value" id="val-vib">-.-- m/s²</span>
-                        </div>
+                        <div class="icon-box" style="color: #ef4444;"><i data-lucide="flame"></i></div>
+                        <div class="stat-info"><span class="stat-label">Fire Alert</span><span class="stat-value" id="val-fire">None</span></div>
                     </div>
                     <div class="card-standard stat-item">
-                        <div class="icon-box"><i data-lucide="ruler"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-label">Ultrasonic Range</span>
-                            <span class="stat-value" id="val-ultrasonic">--- cm</span>
-                        </div>
+                        <div class="icon-box" style="color: #6366f1;"><i data-lucide="ruler"></i></div>
+                        <div class="stat-info"><span class="stat-label">Proximity</span><span class="stat-value" id="val-ultrasonic">-- cm</span></div>
+                    </div>
+
+                    <!-- ROW 2 -->
+                    <div class="card-standard stat-item">
+                        <div class="icon-box" style="color: #06b6d4;"><i data-lucide="eye"></i></div>
+                        <div class="stat-info"><span class="stat-label">Motion</span><span class="stat-value" id="val-pir">Clear</span></div>
                     </div>
                     <div class="card-standard stat-item">
-                        <div class="icon-box"><i data-lucide="user-search"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-label">Motion Detection</span>
-                            <span class="stat-value" id="val-pir">None</span>
-                        </div>
+                        <div class="icon-box" style="color: #10b981;"><i data-lucide="activity"></i></div>
+                        <div class="stat-info"><span class="stat-label">Vibration</span><span class="stat-value" id="val-vib">-.-- g</span></div>
                     </div>
                     <div class="card-standard stat-item">
-                        <div class="icon-box"><i data-lucide="battery"></i></div>
-                        <div class="stat-info">
-                            <span class="stat-label">Node Power</span>
-                            <span class="stat-value" id="val-battery">--%</span>
-                        </div>
+                        <div class="icon-box" style="color: #f59e0b;"><i data-lucide="refresh-cw"></i></div>
+                        <div class="stat-info"><span class="stat-label">Tilt Angle</span><span class="stat-value" id="val-tilt">0°</span></div>
+                    </div>
+                    <div class="card-standard stat-item">
+                        <div class="icon-box" style="color: #8b5cf6;"><i data-lucide="navigation"></i></div>
+                        <div class="stat-info"><span class="stat-label">Gyroscope</span><span class="stat-value" id="val-gyro">0°/s</span></div>
+                    </div>
+
+                    <!-- ROW 3 -->
+                    <div class="card-standard stat-item">
+                        <div class="icon-box" style="color: #ec4899;"><i data-lucide="map-pin"></i></div>
+                        <div class="stat-info"><span class="stat-label">GPS Lock</span><span class="stat-value" id="val-gps">Active</span></div>
+                    </div>
+                    <div class="card-standard stat-item">
+                        <div class="icon-box" style="color: #10b981;"><i data-lucide="battery"></i></div>
+                        <div class="stat-info"><span class="stat-label">Power</span><span class="stat-value" id="val-battery">--%</span></div>
+                    </div>
+                    <div class="card-standard stat-item">
+                        <div class="icon-box" style="color: #3b82f6;"><i data-lucide="wifi"></i></div>
+                        <div class="stat-info"><span class="stat-label">WiFi Signal</span><span class="stat-value" id="val-wifi">-- dBm</span></div>
+                    </div>
+                    <div class="card-standard stat-item">
+                        <div class="icon-box" style="color: #10b981;"><i data-lucide="video"></i></div>
+                        <div class="stat-info"><span class="stat-label">Cam Stream</span><span class="stat-value" id="val-fps">-- FPS</span></div>
                     </div>
                 </div>
             </div>

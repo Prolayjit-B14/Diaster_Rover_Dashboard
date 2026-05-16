@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RescueBOT | Health Telemetry</title>
+    <title>RescueBOT | Safety Telemetry</title>
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./sensors.css">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -15,7 +15,7 @@
                 <div class="logo-box">R</div>
                 <div class="nav-title-group">
                     <span class="nav-title">RescueBOT Support</span>
-                    <span class="nav-subtitle">Environment Safety</span>
+                    <span class="nav-subtitle">Field Telemetry Array</span>
                 </div>
             </div>
 
@@ -36,144 +36,263 @@
         </nav>
 
         <main class="workspace">
-            <div class="sensors-view">
-                <header class="dash-header">
-                    <div class="header-content">
-                        <h1>Safety Diagnostics</h1>
-                        <p>High-precision telemetry monitoring for first responders.</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="btn-standard primary"><i data-lucide="download"></i> Export Data</button>
-                    </div>
-                </header>
+            <header class="dash-header">
+                <div class="header-content">
+                    <h1>Sensor Integration Array</h1>
+                    <p>Real-time telemetry from all field-deployed RescueBOT modules.</p>
+                </div>
+            </header>
 
-                <div class="sensor-monitor-grid">
-                    <!-- TEMPERATURE -->
-                    <div class="card-standard monitor-card-standard">
-                        <div class="monitor-header">
-                            <div class="monitor-label">
-                                <div class="monitor-icon-box"><i data-lucide="thermometer"></i></div>
-                                <div class="monitor-title-group">
-                                    <span class="monitor-sub">Node 01</span>
-                                    <span class="monitor-name">Ambient Temperature</span>
-                                </div>
-                            </div>
-                            <i data-lucide="check-circle" style="color: var(--success); width: 20px;"></i>
-                        </div>
-                        <div class="monitor-reading">
-                            <span class="reading-val" id="val-temp">--.-</span>
-                            <span class="reading-unit">Celsius</span>
-                        </div>
-                        <div class="monitor-footer">
-                            <span>LIMIT: 45.0°C</span>
-                            <span>STATUS: NOMINAL</span>
-                        </div>
-                    </div>
-
-                    <!-- GAS -->
-                    <div class="card-standard monitor-card-standard" style="border-top-color: var(--accent-amber);">
-                        <div class="monitor-header">
-                            <div class="monitor-label">
-                                <div class="monitor-icon-box"><i data-lucide="wind"></i></div>
-                                <div class="monitor-title-group">
-                                    <span class="monitor-sub">Node 02</span>
-                                    <span class="monitor-name">Atmospheric Gas</span>
-                                </div>
-                            </div>
-                            <i data-lucide="shield-check" style="color: var(--primary); width: 20px;"></i>
-                        </div>
-                        <div class="monitor-reading">
-                            <span class="reading-val" id="val-gas">---</span>
-                            <span class="reading-unit">ppm</span>
-                        </div>
-                        <div class="monitor-footer">
-                            <span>LIMIT: 400 PPM</span>
-                            <span>STATUS: SECURE</span>
-                        </div>
-                    </div>
-
-                    <!-- ULTRASONIC -->
-                    <div class="card-standard monitor-card-standard" style="border-top-color: var(--primary-soft);">
-                        <div class="monitor-header">
-                            <div class="monitor-label">
-                                <div class="monitor-icon-box"><i data-lucide="ruler"></i></div>
-                                <div class="monitor-title-group">
-                                    <span class="monitor-sub">Node 03</span>
-                                    <span class="monitor-name">Proximity / Distance</span>
-                                </div>
+            <div class="sensor-monitor-grid">
+                <!-- 1. TEMPERATURE -->
+                <div class="card-standard monitor-card-standard">
+                    <div class="monitor-header">
+                        <div class="monitor-label">
+                            <div class="monitor-icon-box" style="color: #ef4444;"><i data-lucide="thermometer"></i></div>
+                            <div class="monitor-title-group">
+                                <span class="monitor-name">Temperature Sensor</span>
                             </div>
                         </div>
-                        <div class="monitor-reading">
-                            <span class="reading-val" id="val-ultrasonic">---</span>
-                            <span class="reading-unit">Centimeters</span>
-                        </div>
-                        <div class="monitor-footer">
-                            <span>LIMIT: 400cm</span>
-                            <span>FREQ: 10Hz</span>
-                        </div>
+                        <span class="status-pill">OFFLINE</span>
                     </div>
+                    <div class="monitor-reading">
+                        <span class="reading-val" id="val-temp">---</span>
+                        <span class="reading-unit">°C</span>
+                    </div>
+                    <div class="monitor-footer">
+                        <span>Range:</span>
+                        <span>-10 / 50°C</span>
+                    </div>
+                </div>
 
-                    <!-- PIR -->
-                    <div class="card-standard monitor-card-standard" style="border-top-color: var(--success);">
-                        <div class="monitor-header">
-                            <div class="monitor-label">
-                                <div class="monitor-icon-box"><i data-lucide="user-search"></i></div>
-                                <div class="monitor-title-group">
-                                    <span class="monitor-sub">Node 04</span>
-                                    <span class="monitor-name">Life-Sign Detection</span>
-                                </div>
+                <!-- 2. GAS -->
+                <div class="card-standard monitor-card-standard">
+                    <div class="monitor-header">
+                        <div class="monitor-label">
+                            <div class="monitor-icon-box" style="color: #f59e0b;"><i data-lucide="wind"></i></div>
+                            <div class="monitor-title-group">
+                                <span class="monitor-name">Gas Sensor</span>
                             </div>
                         </div>
-                        <div class="monitor-reading">
-                            <span class="reading-val" id="val-pir" style="font-size: 2.5rem;">None</span>
-                            <span class="reading-unit">Motion Status</span>
-                        </div>
-                        <div class="monitor-footer">
-                            <span>RANGE: 7m</span>
-                            <span>STATUS: SCANNING</span>
-                        </div>
+                        <span class="status-pill">OFFLINE</span>
                     </div>
+                    <div class="monitor-reading">
+                        <span class="reading-val" id="val-gas">---</span>
+                        <span class="reading-unit">ppm</span>
+                    </div>
+                    <div class="monitor-footer">
+                        <span>Range:</span>
+                        <span>0 - 1000 ppm</span>
+                    </div>
+                </div>
 
-                    <!-- VIBRATION -->
-                    <div class="card-standard monitor-card-standard" style="border-top-color: var(--accent-rescue);">
-                        <div class="monitor-header">
-                            <div class="monitor-label">
-                                <div class="monitor-icon-box"><i data-lucide="activity"></i></div>
-                                <div class="monitor-title-group">
-                                    <span class="monitor-sub">Node 05</span>
-                                    <span class="monitor-name">Structural Vibration</span>
-                                </div>
+                <!-- 3. FIRE -->
+                <div class="card-standard monitor-card-standard">
+                    <div class="monitor-header">
+                        <div class="monitor-label">
+                            <div class="monitor-icon-box" style="color: #ef4444;"><i data-lucide="flame"></i></div>
+                            <div class="monitor-title-group">
+                                <span class="monitor-name">Fire Sensor</span>
                             </div>
                         </div>
-                        <div class="monitor-reading">
-                            <span class="reading-val" id="val-vib">-.--</span>
-                            <span class="reading-unit">m/s²</span>
-                        </div>
-                        <div class="monitor-footer">
-                            <span>AXIS: X-Y-Z</span>
-                            <span>SENSITIVITY: HIGH</span>
-                        </div>
+                        <span class="status-pill">OFFLINE</span>
                     </div>
+                    <div class="monitor-reading">
+                        <span class="reading-val" id="val-fire" style="font-size: 2.2rem;">---</span>
+                        <span class="reading-unit">DETECTED</span>
+                    </div>
+                    <div class="monitor-footer">
+                        <span>Range:</span>
+                        <span>Binary (IR)</span>
+                    </div>
+                </div>
 
-                    <!-- BATTERY -->
-                    <div class="card-standard monitor-card-standard" style="border-top-color: var(--danger);">
-                        <div class="monitor-header">
-                            <div class="monitor-label">
-                                <div class="monitor-icon-box"><i data-lucide="battery"></i></div>
-                                <div class="monitor-title-group">
-                                    <span class="monitor-sub">Node 06</span>
-                                    <span class="monitor-name">Battery Management</span>
-                                </div>
+                <!-- 4. ULTRASONIC -->
+                <div class="card-standard monitor-card-standard">
+                    <div class="monitor-header">
+                        <div class="monitor-label">
+                            <div class="monitor-icon-box" style="color: #6366f1;"><i data-lucide="ruler"></i></div>
+                            <div class="monitor-title-group">
+                                <span class="monitor-name">Ultrasonic Sensor</span>
                             </div>
                         </div>
-                        <div class="monitor-reading">
-                            <span class="reading-val" id="val-battery">--</span>
-                            <span class="reading-unit">Percent</span>
+                        <span class="status-pill">OFFLINE</span>
+                    </div>
+                    <div class="monitor-reading">
+                        <span class="reading-val" id="val-ultrasonic">---</span>
+                        <span class="reading-unit">cm</span>
+                    </div>
+                    <div class="monitor-footer">
+                        <span>Range:</span>
+                        <span>2 - 400 cm</span>
+                    </div>
+                </div>
+
+                <!-- 5. PIR MOTION -->
+                <div class="card-standard monitor-card-standard">
+                    <div class="monitor-header">
+                        <div class="monitor-label">
+                            <div class="monitor-icon-box" style="color: #06b6d4;"><i data-lucide="eye"></i></div>
+                            <div class="monitor-title-group">
+                                <span class="monitor-name">PIR Motion Sensor</span>
+                            </div>
                         </div>
-                        <div class="monitor-footer">
-                            <span>V-OUT: 3.7V</span>
-                            <span>HEALTH: GOOD</span>
+                        <span class="status-pill">OFFLINE</span>
+                    </div>
+                    <div class="monitor-reading">
+                        <span class="reading-val" id="val-pir" style="font-size: 2.2rem;">---</span>
+                        <span class="reading-unit">MOTION</span>
+                    </div>
+                    <div class="monitor-footer">
+                        <span>Range:</span>
+                        <span>5m / 120°</span>
+                    </div>
+                </div>
+
+                <!-- 6. VIBRATION -->
+                <div class="card-standard monitor-card-standard">
+                    <div class="monitor-header">
+                        <div class="monitor-label">
+                            <div class="monitor-icon-box" style="color: #10b981;"><i data-lucide="activity"></i></div>
+                            <div class="monitor-title-group">
+                                <span class="monitor-name">Vibration Sensor</span>
+                            </div>
                         </div>
+                        <span class="status-pill">OFFLINE</span>
+                    </div>
+                    <div class="monitor-reading">
+                        <span class="reading-val" id="val-vib">---</span>
+                        <span class="reading-unit">g</span>
+                    </div>
+                    <div class="monitor-footer">
+                        <span>Range:</span>
+                        <span>±16g / 3-Axis</span>
+                    </div>
+                </div>
+
+                <!-- 7. TILT -->
+                <div class="card-standard monitor-card-standard">
+                    <div class="monitor-header">
+                        <div class="monitor-label">
+                            <div class="monitor-icon-box" style="color: #f59e0b;"><i data-lucide="refresh-cw"></i></div>
+                            <div class="monitor-title-group">
+                                <span class="monitor-name">Tilt Sensor</span>
+                            </div>
+                        </div>
+                        <span class="status-pill">OFFLINE</span>
+                    </div>
+                    <div class="monitor-reading">
+                        <span class="reading-val" id="val-tilt">---</span>
+                        <span class="reading-unit">deg</span>
+                    </div>
+                    <div class="monitor-footer">
+                        <span>Range:</span>
+                        <span>0 - 180 deg</span>
+                    </div>
+                </div>
+
+                <!-- 8. GYROSCOPE -->
+                <div class="card-standard monitor-card-standard">
+                    <div class="monitor-header">
+                        <div class="monitor-label">
+                            <div class="monitor-icon-box" style="color: #8b5cf6;"><i data-lucide="navigation"></i></div>
+                            <div class="monitor-title-group">
+                                <span class="monitor-name">Gyroscope Module</span>
+                            </div>
+                        </div>
+                        <span class="status-pill">OFFLINE</span>
+                    </div>
+                    <div class="monitor-reading">
+                        <span class="reading-val" id="val-gyro">---</span>
+                        <span class="reading-unit">°/s</span>
+                    </div>
+                    <div class="monitor-footer">
+                        <span>Range:</span>
+                        <span>±250 °/s</span>
+                    </div>
+                </div>
+
+                <!-- 9. GPS -->
+                <div class="card-standard monitor-card-standard">
+                    <div class="monitor-header">
+                        <div class="monitor-label">
+                            <div class="monitor-icon-box" style="color: #ec4899;"><i data-lucide="map-pin"></i></div>
+                            <div class="monitor-title-group">
+                                <span class="monitor-name">GPS Module</span>
+                            </div>
+                        </div>
+                        <span class="status-pill">OFFLINE</span>
+                    </div>
+                    <div class="monitor-reading">
+                        <span class="reading-val" id="val-gps" style="font-size: 2.2rem;">---</span>
+                        <span class="reading-unit">3D</span>
+                    </div>
+                    <div class="monitor-footer">
+                        <span>Status:</span>
+                        <span>Synchronizing</span>
+                    </div>
+                </div>
+
+                <!-- 10. BATTERY -->
+                <div class="card-standard monitor-card-standard">
+                    <div class="monitor-header">
+                        <div class="monitor-label">
+                            <div class="monitor-icon-box" style="color: #10b981;"><i data-lucide="battery"></i></div>
+                            <div class="monitor-title-group">
+                                <span class="monitor-name">Battery Monitor</span>
+                            </div>
+                        </div>
+                        <span class="status-pill">OFFLINE</span>
+                    </div>
+                    <div class="monitor-reading">
+                        <span class="reading-val" id="val-battery">---</span>
+                        <span class="reading-unit">V</span>
+                    </div>
+                    <div class="monitor-footer">
+                        <span>Capacity:</span>
+                        <span>-- mAh</span>
+                    </div>
+                </div>
+
+                <!-- 11. WIFI -->
+                <div class="card-standard monitor-card-standard">
+                    <div class="monitor-header">
+                        <div class="monitor-label">
+                            <div class="monitor-icon-box" style="color: #3b82f6;"><i data-lucide="wifi"></i></div>
+                            <div class="monitor-title-group">
+                                <span class="monitor-name">WiFi Signal</span>
+                            </div>
+                        </div>
+                        <span class="status-pill">OFFLINE</span>
+                    </div>
+                    <div class="monitor-reading">
+                        <span class="reading-val" id="val-wifi">---</span>
+                        <span class="reading-unit">dBm</span>
+                    </div>
+                    <div class="monitor-footer">
+                        <span>Band:</span>
+                        <span>2.4 GHz</span>
+                    </div>
+                </div>
+
+                <!-- 12. CAMERA -->
+                <div class="card-standard monitor-card-standard">
+                    <div class="monitor-header">
+                        <div class="monitor-label">
+                            <div class="monitor-icon-box" style="color: #10b981;"><i data-lucide="video"></i></div>
+                            <div class="monitor-title-group">
+                                <span class="monitor-name">Camera Stream</span>
+                            </div>
+                        </div>
+                        <span class="status-pill">OFFLINE</span>
+                    </div>
+                    <div class="monitor-reading">
+                        <span class="reading-val" id="val-fps">---</span>
+                        <span class="reading-unit">30 FPS</span>
+                    </div>
+                    <div class="monitor-footer">
+                        <span>Resolution:</span>
+                        <span>720p HD</span>
                     </div>
                 </div>
             </div>
