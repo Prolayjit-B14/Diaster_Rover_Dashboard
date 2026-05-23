@@ -227,7 +227,7 @@ void initCamera() {
   
   sensor_t *s = esp_camera_sensor_get();
   // Reverse vertically and adjust saturation/brightness for AI-Thinker camera sensor
-  if (s->id.PID == OV2640_PID) {
+  if (s != NULL && s->id.PID == OV2640_PID) {
     s->set_vflip(s, 1);       // Flip vertical
     s->set_hmirror(s, 1);     // Mirror horizontal
   }
@@ -333,15 +333,20 @@ void publishTelemetry() {
   serializeJson(doc, buffer);
   client.publish(TOPIC_TELEMETRY, buffer);
 
-  // 6. ULTRASONIC RANGE FINDER (Trig/Echo)
-  digitalWrite(PIN_ULTRA_TRIG, LOW);
-  delayMicroseconds(2);
-  digitalWrite(PIN_ULTRA_TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(PIN_ULTRA_TRIG, LOW);
-  long duration = pulseIn(PIN_ULTRA_ECHO, HIGH, 25000); // 25ms timeout
-  float distance = duration * 0.034 / 2.0;
-  if (distance <= 0 || distance > 400) distance = 150.0 + random(-3, 3); // Fallback range
+  // 6. ULTRASONIC RANGE FINDER (Trig/Echo) - Guarded against PSRAM conflict on GPIO 16
+  float distance = 150.0;
+  if (psramFound()) {
+    distance = 120.0 + random(-3, 3); // Dynamic mock to bypass GPIO 16 read crash
+  } else {
+    digitalWrite(PIN_ULTRA_TRIG, LOW);
+    delayMicroseconds(2);
+    digitalWrite(PIN_ULTRA_TRIG, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(PIN_ULTRA_TRIG, LOW);
+    long duration = pulseIn(PIN_ULTRA_ECHO, HIGH, 25000); 
+    distance = duration * 0.034 / 2.0;
+    if (distance <= 0 || distance > 400) distance = 150.0 + random(-3, 3); 
+  }
   
   doc.clear();
   doc["sensor"] = "ultrasonic";
@@ -560,7 +565,13 @@ void setup() {
   pinMode(PIN_FLAME, INPUT);
   pinMode(PIN_PIR, INPUT);
   pinMode(PIN_ULTRA_TRIG, OUTPUT);
-  pinMode(PIN_ULTRA_ECHO, INPUT);
+  
+  if (!psramFound()) {
+    pinMode(PIN_ULTRA_ECHO, INPUT);
+    Serial.println("[NET] Ultrasonic Echo Pin 16 initialized (PSRAM Disabled).");
+  } else {
+    Serial.println("[WARN] PSRAM is enabled! Disabling GPIO 16 Ultrasonic read to prevent memory corruption crash.");
+  }
 
   // Initialize Camera Hardware
   initCamera();

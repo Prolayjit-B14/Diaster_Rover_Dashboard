@@ -157,8 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (latencyBadge)  latencyBadge.textContent  = `${latencyMs} ms`;
             if (statLatency)   statLatency.textContent   = `${latencyMs}`;
 
-            // Keep the stream mjpeg refreshing if it's a still URL
-            if (isStreaming && streamImg.src && !streamImg.src.includes('/mjpeg')) {
+            // Keep the stream mjpeg refreshing if it's a still URL (e.g., capture) and not a live push stream
+            if (isStreaming && streamImg.src && !streamImg.src.includes('/mjpeg') && !streamImg.src.includes('/stream') && streamImg.src.includes('/capture')) {
                 const sep = streamImg.src.includes('?') ? '&' : '?';
                 const baseUrl = streamImg.src.split('?')[0];
                 streamImg.src = `${baseUrl}${sep}_t=${Date.now()}`;
@@ -238,6 +238,62 @@ document.addEventListener('DOMContentLoaded', () => {
             mqtt.sendCommand(cmd, payload);
         }
     };
+
+    // ── Manual IP Mounting ────────────────────────────────────
+    const ctrlCameraIp = document.getElementById('ctrl-camera-ip');
+    const btnApplyIp   = document.getElementById('btn-apply-ip');
+
+    // Restore saved IP if present
+    if (ctrlCameraIp) {
+        const savedIp = localStorage.getItem('rescuebot-camera-ip');
+        if (savedIp) {
+            ctrlCameraIp.value = savedIp;
+        }
+    }
+
+    if (btnApplyIp && ctrlCameraIp) {
+        btnApplyIp.addEventListener('click', () => {
+            let val = ctrlCameraIp.value.trim();
+            if (!val) {
+                if (window.RESCUEBOT_UI) window.RESCUEBOT_UI.toast('Please enter a valid IP address.', 'warning');
+                return;
+            }
+
+            // Remove any prefix protocol or port if the user pasted it
+            val = val.replace(/^(https?:\/\/)?/, ''); // Remove http:// or https://
+            val = val.replace(/\/.*$/, '');           // Remove trailing slash and path
+            val = val.split(':')[0];                  // Remove port if present (e.g. :81)
+
+            // Save to localStorage
+            localStorage.setItem('rescuebot-camera-ip', val);
+
+            // Construct the final URL on port 81 (the stream server)
+            const streamUrl = `http://${val}:81/stream`;
+
+            // Mount the stream
+            if (streamImg) {
+                streamImg.src = streamUrl;
+                streamImg.style.display = 'block';
+            }
+            if (feedPlaceholder) feedPlaceholder.style.display = 'none';
+
+            isStreaming = true;
+            isRecording = true;
+
+            // Update status badges
+            if (camConnBadge) {
+                camConnBadge.className = 'badge badge-green';
+                camConnBadge.textContent = 'LIVE (MANUAL)';
+            }
+            if (camRecDot) {
+                camRecDot.className = 'live-dot recording';
+            }
+            if (camRecLabel) camRecLabel.textContent = 'LIVE';
+
+            if (window.RESCUEBOT_UI) window.RESCUEBOT_UI.toast(`Mounted manual camera feed: ${streamUrl}`, 'success');
+            console.log('[Camera] Mounted manual camera stream:', streamUrl);
+        });
+    }
 
     if (ctrlRes) {
         ctrlRes.addEventListener('change', (e) => {
