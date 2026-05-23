@@ -52,6 +52,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentTheme = getCurrentTheme();
     updateThemeIcons(currentTheme);
 
+    /* ── DYNAMIC MOBILE MENU BUTTON & BACKDROP INJECTION ──────── */
+    const navLeft = document.querySelector('.top-navbar .nav-left');
+    const sidebarEl = document.getElementById('sidebar');
+    if (navLeft && sidebarEl) {
+        // Create hamburger button if it doesn't exist
+        if (!document.getElementById('mobile-menu-btn')) {
+            const mobileBtn = document.createElement('button');
+            mobileBtn.className = 'mobile-menu-btn';
+            mobileBtn.id = 'mobile-menu-btn';
+            mobileBtn.title = 'Open Menu';
+            mobileBtn.setAttribute('aria-label', 'Open Menu');
+            mobileBtn.innerHTML = '<i data-lucide="menu"></i>';
+            navLeft.prepend(mobileBtn);
+        }
+
+        // Create backdrop if it doesn't exist
+        if (!document.getElementById('sidebar-backdrop')) {
+            const backdrop = document.createElement('div');
+            backdrop.className = 'sidebar-backdrop';
+            backdrop.id = 'sidebar-backdrop';
+            document.body.appendChild(backdrop);
+
+            // Bind click events
+            const mobileBtn = document.getElementById('mobile-menu-btn');
+            mobileBtn.addEventListener('click', () => {
+                sidebarEl.classList.add('mobile-open');
+                backdrop.classList.add('visible');
+            });
+
+            backdrop.addEventListener('click', () => {
+                sidebarEl.classList.remove('mobile-open');
+                backdrop.classList.remove('visible');
+            });
+
+            // Close sidebar if user navigates via nav-item on mobile
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    sidebarEl.classList.remove('mobile-open');
+                    backdrop.classList.remove('visible');
+                });
+            });
+        }
+    }
+
     /* ── THEME TOGGLE BUTTON ─────────────────────────────────── */
     document.querySelectorAll('#theme-toggle, .theme-toggle-btn').forEach(btn => {
         btn.addEventListener('click', () => {

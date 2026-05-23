@@ -286,148 +286,614 @@
   margin-top: 4px;
 }
 
-/* ── AI Detection Section Headers ────────────────────────── */
-.cam-sidebar-section h3 {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+/* ── Section Title Rows and Action Buttons ────────────────── */
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 14px;
 }
 
-/* ── Detection Grid ──────────────────────────────────────── */
-.detection-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+.section-title-row h3 {
+  margin-bottom: 0 !important;
 }
 
-.detection-tile {
-  background: var(--bg-card);
+.section-action-btn {
+  background: transparent;
   border: 1px solid var(--border-dim);
-  border-radius: var(--radius-md);
-  padding: 16px;
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+}
+
+.section-action-btn:hover {
+  color: var(--cyan);
+  border-color: var(--border-cyan);
+  background: rgba(0, 212, 255, 0.05);
+}
+
+/* ── HUD Scanline Overlay ────────────────────────────────── */
+.hud-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to bottom, 
+    rgba(0, 212, 255, 0) 0%, 
+    rgba(0, 212, 255, 0.15) 50%, 
+    rgba(0, 212, 255, 0) 100%
+  );
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.1);
+  pointer-events: none;
+  z-index: 2;
+  animation: hudScanSweep 6s linear infinite;
+}
+
+@keyframes hudScanSweep {
+  0% { top: 0%; }
+  100% { top: 100%; }
+}
+
+/* ── HUD Center Crosshair Reticle ─────────────────────────── */
+.hud-crosshairs {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.55;
+  transition: opacity 0.3s ease;
+}
+
+.main-feed-panel:hover .hud-crosshairs {
+  opacity: 0.85;
+}
+
+.cross-h, .cross-v {
+  position: absolute;
+  background: var(--cyan);
+  box-shadow: var(--glow-cyan);
+}
+
+.cross-h {
+  top: calc(50% - 0.5px);
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    var(--cyan) 0%, 
+    var(--cyan) 30%, 
+    transparent 30%, 
+    transparent 70%, 
+    var(--cyan) 70%, 
+    var(--cyan) 100%
+  );
+}
+
+.cross-v {
+  left: calc(50% - 0.5px);
+  top: 0;
+  height: 100%;
+  width: 1px;
+  background: linear-gradient(180deg, 
+    var(--cyan) 0%, 
+    var(--cyan) 30%, 
+    transparent 30%, 
+    transparent 70%, 
+    var(--cyan) 70%, 
+    var(--cyan) 100%
+  );
+}
+
+.cross-dot {
+  position: absolute;
+  top: calc(50% - 2px);
+  left: calc(50% - 2px);
+  width: 4px;
+  height: 4px;
+  background: var(--cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--cyan);
+}
+
+/* ── HUD Zoom & FOV Box (Left Sidebar over Feed) ──────────── */
+.hud-zoom-fov {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(2, 8, 23, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 4;
+  pointer-events: auto;
+}
+
+.hud-zf-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
-  cursor: default;
+  gap: 2px;
 }
 
-.detection-tile.triggered {
-  border-color: var(--amber);
-  background: var(--amber-glow);
-  box-shadow: 0 0 16px rgba(255, 184, 0, 0.15);
+.hud-zf-lbl {
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
-.detection-tile.danger-triggered {
-  border-color: var(--red);
-  background: var(--red-glow);
-  box-shadow: 0 0 16px rgba(255, 45, 85, 0.2);
+.hud-zf-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cyan);
 }
 
-.detection-tile-icon {
-  font-size: 24px;
-  margin-bottom: 8px;
-  display: block;
+.hud-zf-separator {
+  height: 1px;
+  background: var(--border-dim);
+  width: 100%;
+}
+
+.zoom-control {
+  gap: 6px;
+}
+
+.hud-zoom-action {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-dim);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hud-zoom-action:hover {
+  background: rgba(0, 212, 255, 0.15);
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.hud-zoom-action svg,
+.hud-zoom-action i {
+  width: 12px;
+  height: 12px;
+}
+
+/* ── HUD Compass Rose ────────────────────────────────────── */
+.hud-compass-wrap {
+  position: absolute;
+  right: 20px;
+  bottom: 84px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: rgba(2, 8, 23, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  padding: 10px;
+  z-index: 4;
+  pointer-events: auto;
+}
+
+.hud-compass-disc {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 1px dashed rgba(0, 212, 255, 0.25);
+  background: radial-gradient(circle, transparent 40%, rgba(0, 212, 255, 0.03) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  transition: transform 0.4s cubic-bezier(0.1, 0.8, 0.3, 1);
+}
+
+.hud-compass-disc span {
+  position: absolute;
   line-height: 1;
 }
 
-.detection-tile-name {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  display: block;
+.compass-n { top: 4px; color: var(--red); font-weight: 800; }
+.compass-e { right: 4px; }
+.compass-s { bottom: 4px; }
+.compass-w { left: 4px; }
+
+.compass-needle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 32px;
+  background: linear-gradient(to bottom, var(--red) 50%, var(--cyan) 50%);
+  transform: translate(-50%, -50%);
+  border-radius: 99px;
+  box-shadow: 0 0 6px var(--red-glow);
 }
 
-.detection-tile-status {
+.compass-needle::after {
+  content: '';
+  position: absolute;
+  top: calc(50% - 2px);
+  left: calc(50% - 2px);
+  width: 4px;
+  height: 4px;
+  background: var(--text-primary);
+  border-radius: 50%;
+}
+
+.compass-heading {
+  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 700;
-  margin-top: 4px;
-  display: block;
-  color: var(--text-secondary);
-  transition: color 0.3s;
+  color: var(--cyan);
 }
 
-.detection-tile.triggered .detection-tile-status {
-  color: var(--amber);
+/* ── HUD Bottom Telemetry Strip ───────────────────────────── */
+.hud-bottom-strip {
+  position: absolute;
+  bottom: 74px;
+  left: 16px;
+  right: 16px;
+  background: rgba(2, 8, 23, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 8px 12px;
+  gap: 12px;
+  z-index: 4;
 }
 
-.detection-tile.danger-triggered .detection-tile-status {
-  color: var(--red);
-}
-
-/* ── AI Event Log ────────────────────────────────────────── */
-.ai-log-list {
+.hud-tele-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-height: 200px;
-  overflow-y: auto;
-  padding: 4px;
+  align-items: center;
+  text-align: center;
+  border-right: 1px solid var(--border-dim);
+}
+
+.hud-tele-item:last-child {
+  border-right: none;
+}
+
+.hud-tele-lbl {
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hud-tele-val {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+/* ── HUD Bounding Boxes (Simulated target boxes) ─────────── */
+.hud-bbox {
+  position: absolute;
+  border: 1px solid transparent;
+  pointer-events: none;
+  z-index: 3;
+  animation: hudBBoxEnter 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
+  transition: all 0.3s ease;
+}
+
+@keyframes hudBBoxEnter {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.bbox-corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 2px solid transparent;
+}
+
+.bbox-corner.tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.bbox-corner.tr { top: -1px; right: -1px; border-left: none; border-bottom: none; }
+.bbox-corner.bl { bottom: -1px; left: -1px; border-right: none; border-top: none; }
+.bbox-corner.br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+.bbox-label {
+  position: absolute;
+  top: -18px;
+  left: -1px;
+  background: var(--bbox-color, #00D4FF);
+  color: #020817;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 2px 2px 0 0;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Specific Bounding Box Class Settings */
+.hud-bbox.motion {
+  --bbox-color: var(--cyan);
+  border-color: rgba(0, 212, 255, 0.4);
+  top: 30%;
+  left: 20%;
+  width: 25%;
+  height: 40%;
+}
+.hud-bbox.motion .bbox-corner { border-color: var(--cyan); }
+
+.hud-bbox.human {
+  --bbox-color: var(--green);
+  border-color: rgba(0, 255, 136, 0.4);
+  top: 15%;
+  left: 45%;
+  width: 20%;
+  height: 65%;
+  box-shadow: inset 0 0 20px rgba(0, 255, 136, 0.05);
+}
+.hud-bbox.human .bbox-corner { border-color: var(--green); }
+
+.hud-bbox.hazard {
+  --bbox-color: var(--amber);
+  border-color: rgba(255, 184, 0, 0.4);
+  top: 40%;
+  left: 65%;
+  width: 20%;
+  height: 35%;
+  box-shadow: inset 0 0 20px rgba(255, 184, 0, 0.05);
+}
+.hud-bbox.hazard .bbox-corner { border-color: var(--amber); }
+
+.hud-bbox.fire {
+  --bbox-color: var(--red);
+  border-color: rgba(255, 45, 85, 0.5);
+  top: 35%;
+  left: 30%;
+  width: 18%;
+  height: 38%;
+  box-shadow: inset 0 0 20px rgba(255, 45, 85, 0.08);
+  animation: fireBoxFlash 0.5s ease infinite alternate;
+}
+.hud-bbox.fire .bbox-corner { border-color: var(--red); }
+
+@keyframes fireBoxFlash {
+  from { border-color: rgba(255, 45, 85, 0.3); }
+  to { border-color: rgba(255, 45, 85, 0.7); }
+}
+
+/* ── Enriched Detection Tiles ────────────────────────────── */
+.detection-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 10px 8px 10px !important;
+}
+
+/* Count Badge top right corner */
+.tile-count-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-dim);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding: 1px 5px;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.detection-tile.triggered .tile-count-badge {
+  background: var(--amber);
+  color: #020817;
+  border-color: var(--amber);
+}
+
+.detection-tile.danger-triggered .tile-count-badge {
+  background: var(--red);
+  color: #ffffff;
+  border-color: var(--red);
+}
+
+.detection-tile-icon {
+  font-size: 20px !important;
+  margin-bottom: 4px !important;
+}
+
+/* Confidence Bar styles */
+.tile-conf-wrapper {
+  width: 100%;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tile-conf-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--bg-elevated);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.tile-conf-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--cyan);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.detection-tile.triggered .tile-conf-fill {
+  background: var(--amber);
+}
+
+.detection-tile.danger-triggered .tile-conf-fill {
+  background: var(--red);
+}
+
+.tile-conf-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  font-family: var(--font-mono);
+}
+
+/* Last trigger timestamp */
+.tile-last-trigger {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex;
+  gap: 4px;
+  letter-spacing: 0.02em;
+}
+
+.tile-last-trigger span:last-child {
+  color: var(--text-secondary);
+}
+
+/* ── Rich Event Log Entries ──────────────────────────────── */
+.ai-log-list {
+  max-height: 250px !important; /* Increase max height */
+  overflow-y: scroll !important; /* Forces scrollbar */
+}
+
+/* Hide scrollbar arrow widgets but allow custom scrollbar */
+.ai-log-list::-webkit-scrollbar {
+  width: 4px;
+}
+.ai-log-list::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.02);
+  border-radius: 4px;
+}
+.ai-log-list::-webkit-scrollbar-thumb {
+  background: var(--border-bright);
+  border-radius: 4px;
+}
+.ai-log-list::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan);
 }
 
 .ai-log-entry {
-  background: var(--bg-card);
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-secondary);
-  border-left: 2px solid var(--border-dim);
-  animation: slideInLog 0.3s ease;
-  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px !important;
+  border-left-width: 3px !important;
 }
 
-.ai-log-entry.log-motion  { border-left-color: var(--cyan); }
-.ai-log-entry.log-human   { border-left-color: var(--green); }
-.ai-log-entry.log-hazard  { border-left-color: var(--amber); }
-.ai-log-entry.log-fire    { border-left-color: var(--red); }
-.ai-log-entry.log-default { border-left-color: var(--text-muted); }
-
-.ai-log-time {
-  color: var(--text-muted);
-  font-size: 10px;
-  margin-right: 8px;
+.ai-log-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.ai-log-label {
-  color: var(--text-primary);
-  font-weight: 600;
+.ai-log-meta-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.ai-log-conf {
-  color: var(--text-muted);
-  font-size: 10px;
-  margin-left: 6px;
-}
-
-.ai-log-empty {
-  color: var(--text-muted);
-  font-size: 12px;
-  text-align: center;
-  padding: 24px 0;
-  font-family: var(--font-body);
+.ai-log-pill {
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 3px;
   letter-spacing: 0.05em;
 }
 
-/* ── Keyframes ───────────────────────────────────────────── */
-@keyframes slideInLog {
-  from {
-    transform: translateX(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+.ai-log-entry.log-motion  { border-left-color: var(--cyan); }
+.ai-log-entry.log-motion .ai-log-pill { background: rgba(0, 212, 255, 0.12); color: var(--cyan); }
+
+.ai-log-entry.log-human   { border-left-color: var(--green); }
+.ai-log-entry.log-human .ai-log-pill  { background: rgba(0, 255, 136, 0.12); color: var(--green); }
+
+.ai-log-entry.log-hazard  { border-left-color: var(--amber); }
+.ai-log-entry.log-hazard .ai-log-pill { background: rgba(255, 184, 0, 0.12); color: var(--amber); }
+
+.ai-log-entry.log-fire    { border-left-color: var(--red); }
+.ai-log-entry.log-fire .ai-log-pill   { background: rgba(255, 45, 85, 0.12); color: var(--red); }
+
+.ai-log-entry.log-default { border-left-color: var(--text-muted); }
+.ai-log-entry.log-default .ai-log-pill { background: var(--bg-elevated); color: var(--text-secondary); }
+
+.ai-log-desc {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
 }
 
-/* blink is defined globally in shared.css, but re-declared for safety */
-@keyframes blinkRec {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
+/* Empty state radar sweep animation */
+.ai-log-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 30px 0 !important;
+}
+
+.ai-log-radar-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--text-muted);
+  opacity: 0.5;
+  animation: radarSweepAnim 4s linear infinite;
+}
+
+@keyframes radarSweepAnim {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* ── Live Rec Dot States ─────────────────────────────────── */
@@ -458,6 +924,21 @@
   }
 }
 
+@media (max-width: 900px) {
+  .hud-bottom-strip {
+    grid-template-columns: repeat(3, 1fr);
+    bottom: 84px;
+    gap: 8px;
+  }
+  .hud-tele-item:nth-child(4),
+  .hud-tele-item:nth-child(5) {
+    display: none; /* Hide Lat/Lng on smaller screens in the bottom strip */
+  }
+  .hud-compass-wrap {
+    bottom: 154px;
+  }
+}
+
 @media (max-width: 860px) {
   .camera-shell {
     grid-template-columns: 1fr;
@@ -467,7 +948,7 @@
   }
 
   .main-feed-panel {
-    min-height: 55vw;
+    min-height: 60vw;
   }
 
   .cam-sidebar {
