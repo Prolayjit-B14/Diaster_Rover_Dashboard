@@ -82,6 +82,40 @@ graph TD;
 
 ---
 
+## 🤖 AI/ML Multi-Model Inference Server & Logic Fusion
+
+RescueBOT features a state-of-the-art Python AI inference engine (`ai_server/inference_server.py`) that runs in parallel with the ESP32-CAM optical stream and real-time physical rover telemetries. It combines deep-learning computer vision, precise pose estimation, lightweight scene classifiers, and mathematical logic fusion to identify active threats and calculate survivor statuses.
+
+### 1. Multi-Model Pipeline Setup
+| Detection Task | Target Model | Edge Fallback Protocol (If weights/dependencies are missing) |
+|---|---|---|
+| **Human & Rescuer Detection** | YOLOv8n / YOLO11n Nano | HSV High-Visibility Neon Vest Filter & raw YOLO person bounding |
+| **Injury / Fallen Person** | MediaPipe Pose | YOLOv8-Pose (`yolov8n-pose.pt`) skeletal joint orientation tracker |
+| **Disaster Classification** | PyTorch MobileNetV3 | Multi-Sensory Heuristic Matrix (Gas + Vibration + Visual counts) |
+| **Proximity Motion** | OpenCV Background MOG2 | Lightweight Frame Differencing and Contour Analysis |
+| **Fire Detection** | YOLOv8n Custom | HSV Orange/Yellow Combustion Core Thermal Tracker |
+| **Smoke Plume Detection** | YOLOv8n Custom | HSV Grey Plume Filter & Opacity Contrast Variance Analyzer |
+| **Concrete Rubble & Hazards** | YOLOv8n Custom | Grey Concrete color mask + high-frequency Canny Edge Texture filter |
+
+### 2. Logic Fusion: Survivor Probability Engine
+The backend integrates a mathematical fusion equation to determine the overall probability ($P_{\text{survivor}}$) of locating a trapped, waving, or unconscious survivor under debris:
+
+$$P_{\text{survivor}} = 0.4(H) + 0.25(M) + 0.2(P) + 0.15(T)$$
+
+* **$H$ (Human Confidence)**: YOLOv8 person detection confidence (0–100%).
+* **$M$ (Motion Score)**: OpenCV proximity motion contour activity (85% when movement is confirmed near a person, else 0%).
+* **$P$ (Posture Score)**: Skeletal keypoint analysis (95% for SOS waving distress, 85% for fallen unconscious, 75% for fallen, 60% for standing).
+* **$T$ (Sensor Score)**: Physical sensor fusion ($\min(100, 30 + (\text{vibration} \times 15) + (\text{gas}/4095 \times 35))$, raised to 90% if the physical PIR sensor triggers).
+
+### 3. Launching the AI Inference Server
+Ensure you have the dependencies installed (`opencv-python`, `numpy`, `ultralytics`, `paho-mqtt`, and optionally `mediapipe`, `torch`, `torchvision`). Then run:
+
+```bash
+python ai_server/inference_server.py
+```
+
+---
+
 ## 📂 Project Architecture
 
 ```text
