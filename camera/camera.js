@@ -58,11 +58,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctrlRes          = document.getElementById('ctrl-resolution');
     const ctrlBrightness   = document.getElementById('ctrl-brightness');
     const ctrlContrast     = document.getElementById('ctrl-contrast');
+    const ctrlSaturation   = document.getElementById('ctrl-saturation');
+    const ctrlEffect       = document.getElementById('ctrl-effect');
+    const ctrlLed          = document.getElementById('ctrl-led');
     const ctrlMirror       = document.getElementById('ctrl-mirror');
     const ctrlFlip         = document.getElementById('ctrl-flip');
     const ctrlNight        = document.getElementById('ctrl-night');
     const valBrightness    = document.getElementById('val-brightness');
     const valContrast      = document.getElementById('val-contrast');
+    const valSaturation    = document.getElementById('val-saturation');
+    const valLed           = document.getElementById('val-led');
 
     // ── State ─────────────────────────────────────────────────
     let isStreaming  = false;
@@ -258,6 +263,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (ctrlSaturation) {
+        ctrlSaturation.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            if (valSaturation) valSaturation.textContent = val > 0 ? `+${val}` : val;
+            sendCamCommand('SET_SATURATION', 'val', val);
+        });
+    }
+
+    if (ctrlEffect) {
+        ctrlEffect.addEventListener('change', (e) => {
+            const val = parseInt(e.target.value);
+            sendCamCommand('SET_SPECIAL_EFFECT', 'val', val);
+            console.log('[Camera] Dispatched SET_SPECIAL_EFFECT:', val);
+        });
+    }
+
+    if (ctrlLed) {
+        ctrlLed.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            const pct = Math.round((val / 255) * 100);
+            if (valLed) valLed.textContent = `${pct}%`;
+            sendCamCommand('SET_LED_INTENSITY', 'val', val);
+            if (ctrlNight) {
+                ctrlNight.checked = val > 0;
+            }
+        });
+    }
+
     if (ctrlMirror) {
         ctrlMirror.addEventListener('change', (e) => {
             const enabled = e.target.checked;
@@ -277,7 +310,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ctrlNight) {
         ctrlNight.addEventListener('change', (e) => {
             const enabled = e.target.checked;
+            const val = enabled ? 255 : 0;
+            if (ctrlLed) ctrlLed.value = val;
+            if (valLed) valLed.textContent = enabled ? '100%' : '0%';
             sendCamCommand('SET_NIGHT_MODE', 'enabled', enabled);
+            console.log('[Camera] Dispatched SET_NIGHT_MODE:', enabled);
+        });
+    }
             console.log('[Camera] Dispatched SET_NIGHT_MODE:', enabled);
         });
     }

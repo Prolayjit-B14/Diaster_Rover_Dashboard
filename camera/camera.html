@@ -299,6 +299,20 @@
                             </select>
                         </div>
                         
+                        <!-- Special Effects Dropdown -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                            <span style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Visual Effects</span>
+                            <select id="ctrl-effect" style="background: var(--bg-elevated); border: 1px solid var(--border-dim); border-radius: 4px; color: var(--text-primary); font-size: 11px; padding: 4px 10px; cursor: pointer; outline: none; transition: border-color 0.2s;">
+                                <option value="0" selected>Normal</option>
+                                <option value="1">Negative</option>
+                                <option value="2">Grayscale</option>
+                                <option value="3">Red Tint</option>
+                                <option value="4">Green Tint</option>
+                                <option value="5">Blue Tint</option>
+                                <option value="6">Sepia</option>
+                            </select>
+                        </div>
+
                         <!-- Brightness Slider -->
                         <div>
                             <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;">
@@ -315,6 +329,24 @@
                                 <span id="val-contrast" style="font-family: var(--font-mono); color: var(--cyan); font-weight: 700;">0</span>
                             </div>
                             <input type="range" id="ctrl-contrast" min="-2" max="2" value="0" step="1" style="width: 100%; accent-color: var(--cyan); height: 4px; background: var(--bg-elevated); border-radius: 2px; cursor: pointer; outline: none;">
+                        </div>
+
+                        <!-- Saturation Slider -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;">
+                                <span>Saturation</span>
+                                <span id="val-saturation" style="font-family: var(--font-mono); color: var(--cyan); font-weight: 700;">0</span>
+                            </div>
+                            <input type="range" id="ctrl-saturation" min="-2" max="2" value="0" step="1" style="width: 100%; accent-color: var(--cyan); height: 4px; background: var(--bg-elevated); border-radius: 2px; cursor: pointer; outline: none;">
+                        </div>
+
+                        <!-- Flash LED Intensity Slider -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;">
+                                <span>Flash LED Duty</span>
+                                <span id="val-led" style="font-family: var(--font-mono); color: var(--cyan); font-weight: 700;">0%</span>
+                            </div>
+                            <input type="range" id="ctrl-led" min="0" max="255" value="0" step="5" style="width: 100%; accent-color: var(--cyan); height: 4px; background: var(--bg-elevated); border-radius: 2px; cursor: pointer; outline: none;">
                         </div>
 
                         <!-- Switch Options -->
