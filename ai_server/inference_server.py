@@ -1248,19 +1248,31 @@ def main():
             else:
                 stream_url = ip_override
 
-    # Establish MQTT Client with resilience guards
+    # Establish MQTT Client with double-layer TCP + WebSockets resilience
     mqtt_client = None
     if HAS_MQTT:
+        # 1. Attempt standard TCP on port 1883
         try:
             mqtt_client = mqtt.Client()
             mqtt_client.on_connect = on_mqtt_connect
             mqtt_client.on_message = on_mqtt_message
-            mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
+            print("[MQTT] Connecting to EMQX Broker via standard TCP on port 1883...")
+            mqtt_client.connect(MQTT_BROKER, 1883, 60)
             mqtt_client.loop_start()
-            print("[MQTT] Resilient Client initialized and background loop started.")
+            print("[MQTT] Connected successfully via standard TCP port 1883.")
         except Exception as e:
-            print(f"[MQTT] Connection bypassed/failed: {e}. Running in Local Logging mode.")
-            mqtt_client = None
+            print(f"[MQTT] TCP port 1883 blocked or failed: {e}. Trying WebSockets fallback on port 8083...")
+            try:
+                # 2. Fallback to WebSockets (bypasses standard port 1883 firewalls)
+                mqtt_client = mqtt.Client(transport="websockets")
+                mqtt_client.on_connect = on_mqtt_connect
+                mqtt_client.on_message = on_mqtt_message
+                mqtt_client.connect(MQTT_BROKER, 8083, 60)
+                mqtt_client.loop_start()
+                print("[MQTT] Connected successfully via WebSockets fallback port 8083!")
+            except Exception as wse:
+                print(f"[MQTT] WebSockets fallback failed: {wse}. Running in Local Logging mode.")
+                mqtt_client = None
     else:
         print("[MQTT] Bypassed. paho-mqtt module is missing.")
 

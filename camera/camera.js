@@ -74,6 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let isRecording  = false;
     let zoomLevel    = 1.0;
 
+    // Distributed AI Hybrid State (Pauses browser model if Python YOLO server is active)
+    let hasExternalAIServer = false;
+    let lastExternalAITime = 0;
+
     // Detection tile counts
     const tileCounts = {
         motion: 0,
@@ -517,6 +521,10 @@ document.addEventListener('DOMContentLoaded', () => {
         mqtt.on('alerts', (d) => {
             if (!d || !d.label) return;
 
+            // Flag that an external AI server is active (pauses local browser model to prevent override)
+            hasExternalAIServer = true;
+            lastExternalAITime = Date.now();
+
             const label = String(d.label).toUpperCase();
             const conf = d.conf !== undefined ? d.conf : Math.floor(Math.random() * 15) + 80;
 
@@ -772,6 +780,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startDetectionLoop() {
+        if (hasExternalAIServer && (Date.now() - lastExternalAITime < 10000)) {
+            // An external Python AI server is actively publishing detections.
+            // Pause local browser-side COCO-SSD processing to save CPU
+            // and prevent local bounding boxes from fighting with server coordinates.
+            detectionTimeout = setTimeout(startDetectionLoop, 1000);
+            return;
+        }
+
         if (!isStreaming || !cocoModel || !streamImg || streamImg.style.display === 'none') {
             // Check once per second when offline or model is compiling
             detectionTimeout = setTimeout(startDetectionLoop, 1000);
