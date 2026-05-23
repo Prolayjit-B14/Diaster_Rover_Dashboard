@@ -279,6 +279,56 @@
                     </div>
                 </div>
 
+                <!-- Vision Tuning Section -->
+                <div class="cam-sidebar-section" style="border-bottom: 1px solid var(--border-dim);">
+                    <div class="section-title-row" style="margin-bottom: 12px;">
+                        <h3>Vision Tuning</h3>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <!-- Resolution Dropdown -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                            <span style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Resolution</span>
+                            <select id="ctrl-resolution" style="background: var(--bg-elevated); border: 1px solid var(--border-dim); border-radius: 4px; color: var(--text-primary); font-size: 11px; padding: 4px 10px; cursor: pointer; outline: none; transition: border-color 0.2s;">
+                                <option value="7">QVGA (320x240)</option>
+                                <option value="9" selected>VGA (640x480)</option>
+                                <option value="11">SVGA (800x600)</option>
+                                <option value="13">UXGA (1600x1200)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Brightness Slider -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;">
+                                <span>Brightness</span>
+                                <span id="val-brightness" style="font-family: var(--font-mono); color: var(--cyan); font-weight: 700;">0</span>
+                            </div>
+                            <input type="range" id="ctrl-brightness" min="-2" max="2" value="0" step="1" style="width: 100%; accent-color: var(--cyan); height: 4px; background: var(--bg-elevated); border-radius: 2px; cursor: pointer; outline: none;">
+                        </div>
+
+                        <!-- Contrast Slider -->
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;">
+                                <span>Contrast</span>
+                                <span id="val-contrast" style="font-family: var(--font-mono); color: var(--cyan); font-weight: 700;">0</span>
+                            </div>
+                            <input type="range" id="ctrl-contrast" min="-2" max="2" value="0" step="1" style="width: 100%; accent-color: var(--cyan); height: 4px; background: var(--bg-elevated); border-radius: 2px; cursor: pointer; outline: none;">
+                        </div>
+
+                        <!-- Switch Options -->
+                        <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">
+                                <input type="checkbox" id="ctrl-mirror" checked style="accent-color: var(--cyan); cursor: pointer; width: 13px; height: 13px;"> Mirror
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">
+                                <input type="checkbox" id="ctrl-flip" checked style="accent-color: var(--cyan); cursor: pointer; width: 13px; height: 13px;"> Flip
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">
+                                <input type="checkbox" id="ctrl-night" style="accent-color: var(--cyan); cursor: pointer; width: 13px; height: 13px;"> Flash
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- AI Detection Section -->
                 <div class="cam-sidebar-section">
                     <div class="section-title-row">

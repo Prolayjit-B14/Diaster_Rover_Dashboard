@@ -54,6 +54,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // AI log
     const aiLogList        = document.getElementById('ai-log-list');
 
+    // Vision Array Controls
+    const ctrlRes          = document.getElementById('ctrl-resolution');
+    const ctrlBrightness   = document.getElementById('ctrl-brightness');
+    const ctrlContrast     = document.getElementById('ctrl-contrast');
+    const ctrlMirror       = document.getElementById('ctrl-mirror');
+    const ctrlFlip         = document.getElementById('ctrl-flip');
+    const ctrlNight        = document.getElementById('ctrl-night');
+    const valBrightness    = document.getElementById('val-brightness');
+    const valContrast      = document.getElementById('val-contrast');
+
     // ── State ─────────────────────────────────────────────────
     let isStreaming  = false;
     let isRecording  = false;
@@ -211,6 +221,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Re-init lucide icons for new button
             if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+    }
+
+    // ── Vision Array Controls Event Listeners ─────────────────
+    const sendCamCommand = (cmd, valKey, val) => {
+        const mqtt = window.mqttController;
+        if (mqtt) {
+            const payload = {};
+            payload[valKey] = val;
+            mqtt.sendCommand(cmd, payload);
+        }
+    };
+
+    if (ctrlRes) {
+        ctrlRes.addEventListener('change', (e) => {
+            const val = parseInt(e.target.value);
+            sendCamCommand('SET_RESOLUTION', 'val', val);
+            console.log('[Camera] Dispatched SET_RESOLUTION:', val);
+        });
+    }
+
+    if (ctrlBrightness) {
+        ctrlBrightness.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            if (valBrightness) valBrightness.textContent = val > 0 ? `+${val}` : val;
+            sendCamCommand('SET_BRIGHTNESS', 'val', val);
+        });
+    }
+
+    if (ctrlContrast) {
+        ctrlContrast.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            if (valContrast) valContrast.textContent = val > 0 ? `+${val}` : val;
+            sendCamCommand('SET_CONTRAST', 'val', val);
+        });
+    }
+
+    if (ctrlMirror) {
+        ctrlMirror.addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            sendCamCommand('SET_HMIRROR', 'enabled', enabled);
+            console.log('[Camera] Dispatched SET_HMIRROR:', enabled);
+        });
+    }
+
+    if (ctrlFlip) {
+        ctrlFlip.addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            sendCamCommand('SET_VFLIP', 'enabled', enabled);
+            console.log('[Camera] Dispatched SET_VFLIP:', enabled);
+        });
+    }
+
+    if (ctrlNight) {
+        ctrlNight.addEventListener('change', (e) => {
+            const enabled = e.target.checked;
+            sendCamCommand('SET_NIGHT_MODE', 'enabled', enabled);
+            console.log('[Camera] Dispatched SET_NIGHT_MODE:', enabled);
         });
     }
 
