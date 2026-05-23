@@ -170,17 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (this.isFollowing) this.map.panTo([lat, lng]);
             
-            this.currentPos = { lat, lng, heading };
-            this.RobotMarker.setLatLng([lat, lng]);
-            
-            const arrowEl = this.RobotMarker.getElement()?.querySelector('.Robot-arrow');
-            if (arrowEl) arrowEl.style.transform = `rotate(${heading}deg)`;
-            
-            this.pathCoords.push([lat, lng]);
-            this.pathLine.setLatLngs(this.pathCoords);
-            
-            if (this.isFollowing) this.map.panTo([lat, lng]);
-            
             const latEl = document.getElementById('lat-display');
             const lngEl = document.getElementById('lng-display');
             const satEl = document.getElementById('sat-count');
