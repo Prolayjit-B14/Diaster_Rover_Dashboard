@@ -621,6 +621,142 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // ── EDGE AI OBJECT DETECTION (TensorFlow.js + COCO-SSD) ──
+    let cocoModel = null;
+    let detectionTimeout = null;
+    let lastAlertTime = 0;
+    const alertThrottleMs = 5000; // Throttle MQTT alerts to 5 seconds to avoid network flooding
+
+    console.log('[Edge AI] Loading COCO-SSD object detection neural network...');
+    if (typeof cocoSsd !== 'undefined') {
+        cocoSsd.load().then(model => {
+            cocoModel = model;
+            console.log('[Edge AI] Neural network successfully mounted!');
+            if (window.RESCUEBOT_UI) window.RESCUEBOT_UI.toast('🤖 Edge AI Engine Online!', 'success');
+            
+            // Set indicator
+            const fpsBadge = document.getElementById('fps-badge');
+            if (fpsBadge) fpsBadge.textContent = 'AI DETECTING';
+            
+            // Initiate Edge AI loop
+            startDetectionLoop();
+        }).catch(err => {
+            console.error('[Edge AI] Failed to load model:', err);
+        });
+    } else {
+        console.warn('[Edge AI] cocoSsd global namespace not found. TensorFlow.js script may have failed to load.');
+    }
+
+    function startDetectionLoop() {
+        if (!isStreaming || !cocoModel || !streamImg || streamImg.style.display === 'none') {
+            // Check once per second when offline or model is compiling
+            detectionTimeout = setTimeout(startDetectionLoop, 1000);
+            return;
+        }
+
+        // Detect objects in raw image pixel matrix
+        cocoModel.detect(streamImg).then(predictions => {
+            handleAIPredictions(predictions);
+            // Schedule next frame in 100ms (10 FPS limit to keep browser fluid)
+            detectionTimeout = setTimeout(startDetectionLoop, 100);
+        }).catch(err => {
+            console.error('[Edge AI] Execution error:', err);
+            detectionTimeout = setTimeout(startDetectionLoop, 1000);
+        });
+    }
+
+    function handleAIPredictions(predictions) {
+        const humanBBox = document.getElementById('bbox-human');
+        const hazardBBox = document.getElementById('bbox-hazard');
+
+        let humanDetected = false;
+        let hazardDetected = false;
+
+        predictions.forEach(p => {
+            const scorePercent = Math.round(p.score * 100);
+            if (scorePercent < 55) return; // Threshold cutoff for noise filtering
+
+            // Map tensor coordinates to browser rendered canvas dimensions!
+            const imgWidth = streamImg.clientWidth || streamImg.width || 640;
+            const imgHeight = streamImg.clientHeight || streamImg.height || 480;
+            const natWidth = streamImg.naturalWidth || imgWidth;
+            const natHeight = streamImg.naturalHeight || imgHeight;
+
+            const scaleX = imgWidth / natWidth;
+            const scaleY = imgHeight / natHeight;
+
+            const [x, y, w, h] = p.bbox;
+            const displayX = x * scaleX;
+            const displayY = y * scaleY;
+            const displayW = w * scaleX;
+            const displayH = h * scaleY;
+
+            if (p.class === 'person') {
+                humanDetected = true;
+                
+                // Position HUD bracket
+                if (humanBBox) {
+                    humanBBox.style.display = 'block';
+                    humanBBox.style.left = `${displayX}px`;
+                    humanBBox.style.top = `${displayY}px`;
+                    humanBBox.style.width = `${displayW}px`;
+                    humanBBox.style.height = `${displayH}px`;
+                    
+                    const labelConf = document.getElementById('bbox-human-conf');
+                    if (labelConf) labelConf.textContent = `${scorePercent}%`;
+                }
+
+                // Push visual highlight & counts
+                triggerTile('human', 'DETECTED', 'triggered', scorePercent, 3000);
+                
+                // Dispatch MQTT alarm
+                publishAlert('HUMAN', scorePercent, 'Edge AI confirms active human biometric outline in stream matrix.');
+            }
+            else if (['backpack', 'handbag', 'cat', 'dog', 'chair', 'cell phone', 'laptop', 'bottle', 'cup', 'scissors'].includes(p.class)) {
+                hazardDetected = true;
+
+                // Position hazard bracket
+                if (hazardBBox) {
+                    hazardBBox.style.display = 'block';
+                    hazardBBox.style.left = `${displayX}px`;
+                    hazardBBox.style.top = `${displayY}px`;
+                    hazardBBox.style.width = `${displayW}px`;
+                    hazardBBox.style.height = `${displayH}px`;
+                    
+                    const labelConf = document.getElementById('bbox-hazard-conf');
+                    if (labelConf) labelConf.textContent = `${scorePercent}% (${p.class.toUpperCase()})`;
+                }
+
+                // Push visual highlight & counts
+                triggerTile('hazard', 'WARNING', 'triggered', scorePercent, 4000);
+                
+                // Dispatch MQTT alarm
+                publishAlert('HAZARD', scorePercent, `Vision analysis tags risk structural obstacle: ${p.class.toUpperCase()}`);
+            }
+        });
+
+        // Hide bounding boxes if targets are lost
+        if (!humanDetected && humanBBox) humanBBox.style.display = 'none';
+        if (!hazardDetected && hazardBBox) hazardBBox.style.display = 'none';
+    }
+
+    function publishAlert(label, conf, desc) {
+        const now = Date.now();
+        if (now - lastAlertTime < alertThrottleMs) return;
+        
+        const mqtt = window.mqttController;
+        if (mqtt) {
+            mqtt.sendCommand('ALERT_TRIGGERED', {
+                type: 'DETECTION',
+                label: label,
+                conf: conf,
+                desc: desc
+            });
+            lastAlertTime = now;
+            console.log('[Edge AI] Broadcasted MQTT Alert:', label, conf);
+        }
+    }
+
     // ── Lucide icon init ──────────────────────────────────────
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
