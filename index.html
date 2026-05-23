@@ -6,8 +6,11 @@
     <title>RescueBOT | Disaster Rescue Monitoring System</title>
     <meta name="description" content="Real-time disaster rescue monitoring, rover control, hazard detection and emergency response system powered by IoT, ESP32, and MQTT.">
     <link rel="icon" type="image/png" href="./assets/favicon.png">
+    <!-- Apply theme before CSS parses to prevent flash -->
+    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('rescuebot-theme') || 'dark');</script>
     <link rel="stylesheet" href="./shared/shared.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+
     <style>
         /* ── LANDING OVERRIDES ──────────────────────────────── */
         html, body { overflow-x: hidden; overflow-y: auto; height: auto; }

@@ -85,7 +85,375 @@
   --t-fast:   0.15s ease;
   --t-med:    0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --t-slow:   0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Navbar hardcoded bg (for light mode override) */
+  --navbar-bg: rgba(6, 14, 31, 0.95);
 }
+
+/* ============================================================
+   LIGHT MODE THEME
+   Complete variable overrides — all pages sync via data-theme
+   ============================================================ */
+[data-theme="light"] {
+  /* Backgrounds */
+  --bg-void:         #F0F4F9;
+  --bg-deep:         #E4EBF5;
+  --bg-surface:      #FFFFFF;
+  --bg-card:         #FFFFFF;
+  --bg-card-hover:   #F5F9FF;
+  --bg-elevated:     #EBF1FA;
+
+  /* Accent — keep brand colors, slightly richer for light bg */
+  --cyan:            #0099BB;
+  --cyan-dim:        #007A99;
+  --cyan-glow:       rgba(0, 153, 187, 0.12);
+  --cyan-border:     rgba(0, 153, 187, 0.35);
+
+  --orange:          #E05A25;
+  --orange-dim:      #B84820;
+  --orange-glow:     rgba(224, 90, 37, 0.1);
+
+  --red:             #E0193D;
+  --red-dim:         #B8142F;
+  --red-glow:        rgba(224, 25, 61, 0.1);
+
+  --green:           #00A85A;
+  --green-dim:       #007A40;
+  --green-glow:      rgba(0, 168, 90, 0.12);
+
+  --amber:           #CC8800;
+  --amber-dim:       #A36B00;
+  --amber-glow:      rgba(204, 136, 0, 0.12);
+
+  --purple:          #7C3AED;
+  --purple-glow:     rgba(124, 58, 237, 0.1);
+
+  /* Text */
+  --text-primary:    #0F1B2D;
+  --text-secondary:  #2E4A6B;
+  --text-muted:      #6B8CAE;
+  --text-accent:     #0099BB;
+
+  /* Borders */
+  --border-dim:      rgba(0, 0, 0, 0.07);
+  --border-default:  rgba(0, 0, 0, 0.13);
+  --border-bright:   rgba(0, 0, 0, 0.22);
+  --border-cyan:     rgba(0, 153, 187, 0.3);
+  --border-red:      rgba(224, 25, 61, 0.35);
+
+  /* Shadows */
+  --shadow-card:     0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-elevated: 0 8px 40px rgba(0, 0, 0, 0.14);
+  --glow-cyan:       0 0 16px rgba(0, 153, 187, 0.25), 0 0 40px rgba(0, 153, 187, 0.08);
+  --glow-red:        0 0 16px rgba(224, 25, 61, 0.25),  0 0 40px rgba(224, 25, 61, 0.08);
+  --glow-green:      0 0 16px rgba(0, 168, 90, 0.25),   0 0 40px rgba(0, 168, 90, 0.08);
+  --glow-orange:     0 0 16px rgba(224, 90, 37, 0.25),  0 0 40px rgba(224, 90, 37, 0.08);
+
+  /* Navbar */
+  --navbar-bg: rgba(255, 255, 255, 0.96);
+}
+
+/* ── Light mode component fixes (hardcoded values) ────────── */
+[data-theme="light"] body {
+  background-color: var(--bg-void);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .top-navbar {
+  background: var(--navbar-bg);
+  border-bottom: 1px solid var(--border-default);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .sidebar {
+  background: var(--bg-deep);
+  border-right: 1px solid var(--border-default);
+}
+
+[data-theme="light"] .sidebar-footer {
+  border-top: 1px solid var(--border-default);
+}
+
+[data-theme="light"] .nav-item {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .nav-item:hover {
+  background: rgba(0, 153, 187, 0.06);
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .nav-item.active {
+  background: rgba(0, 153, 187, 0.1);
+  color: var(--cyan);
+}
+
+[data-theme="light"] .nav-section-label {
+  color: rgba(107, 140, 174, 0.8);
+}
+
+[data-theme="light"] .glass-card {
+  background: var(--bg-card);
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-card);
+}
+
+[data-theme="light"] .glass-card::before {
+  background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, transparent 60%);
+}
+
+[data-theme="light"] .glass-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-cyan);
+  box-shadow: var(--shadow-card), 0 0 0 1px var(--border-cyan), var(--glow-cyan);
+}
+
+[data-theme="light"] .status-pill {
+  background: var(--bg-elevated);
+  border-color: var(--border-default);
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .icon-btn {
+  background: var(--bg-elevated);
+  border-color: var(--border-default);
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .icon-btn:hover {
+  background: var(--bg-card);
+  border-color: var(--border-bright);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .nav-badge {
+  background: var(--red);
+}
+
+[data-theme="light"] .section-title {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .card-value,
+[data-theme="light"] .tele-val,
+[data-theme="light"] .sensor-big-val,
+[data-theme="light"] .battery-pct,
+[data-theme="light"] .coord-val,
+[data-theme="light"] .hud-card-val,
+[data-theme="light"] .alert-stat-num {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .card-label,
+[data-theme="light"] .tele-label,
+[data-theme="light"] .sensor-name,
+[data-theme="light"] .sensor-model,
+[data-theme="light"] .coord-label-sm,
+[data-theme="light"] .hud-card-lbl,
+[data-theme="light"] .alert-stat-lbl {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .coord-box,
+[data-theme="light"] .gps-mini-stat,
+[data-theme="light"] .batt-info-item,
+[data-theme="light"] .env-bar,
+[data-theme="light"] .sensor-bar-wrap,
+[data-theme="light"] .cam-stat-box,
+[data-theme="light"] .alert-stat-box,
+[data-theme="light"] .coord-display-panel,
+[data-theme="light"] .alert-mini-item,
+[data-theme="light"] .action-btn,
+[data-theme="light"] .gps-mini-stat {
+  background: var(--bg-elevated);
+  border-color: var(--border-default);
+}
+
+[data-theme="light"] .action-btn {
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .action-btn:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-bright);
+}
+
+[data-theme="light"] .filter-tab {
+  background: var(--bg-elevated);
+  border-color: var(--border-default);
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .filter-tab:hover {
+  color: var(--text-primary);
+  border-color: var(--border-bright);
+}
+
+[data-theme="light"] .filter-tab.active {
+  background: rgba(0, 153, 187, 0.1);
+  border-color: var(--border-cyan);
+  color: var(--cyan);
+}
+
+[data-theme="light"] .alert-item {
+  background: var(--bg-card);
+  border-color: var(--border-default);
+}
+
+[data-theme="light"] .alert-item:hover {
+  background: var(--bg-card-hover);
+}
+
+[data-theme="light"] .alert-title { color: var(--text-primary); }
+[data-theme="light"] .alert-desc  { color: var(--text-muted); }
+
+[data-theme="light"] .ai-log-entry {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .map-tools-panel {
+  background: var(--bg-deep);
+  border-right-color: var(--border-default);
+}
+
+[data-theme="light"] .map-tool-btn {
+  background: var(--bg-card);
+  border-color: var(--border-default);
+  color: var(--text-secondary);
+}
+
+[data-theme="light"] .map-tool-btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-cyan);
+  color: var(--cyan);
+}
+
+[data-theme="light"] .map-hud-card {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: var(--border-default);
+}
+
+[data-theme="light"] .map-hud-top {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: var(--border-cyan);
+  color: var(--cyan);
+}
+
+[data-theme="light"] .landmark-item {
+  background: var(--bg-card);
+}
+
+[data-theme="light"] .cam-sidebar {
+  background: var(--bg-deep);
+  border-left-color: var(--border-default);
+}
+
+[data-theme="light"] .cam-sidebar-section {
+  border-bottom-color: var(--border-default);
+}
+
+[data-theme="light"] .detection-tile {
+  background: var(--bg-card);
+  border-color: var(--border-default);
+}
+
+[data-theme="light"] .detection-tile-name { color: var(--text-muted); }
+
+[data-theme="light"] ::-webkit-scrollbar-track { background: var(--bg-deep); }
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: var(--border-bright); }
+
+[data-theme="light"] .btn-ghost {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border-color: var(--border-default);
+}
+
+[data-theme="light"] .btn-ghost:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-bright);
+}
+
+/* ── Landing page light mode ──────────────────────────────── */
+[data-theme="light"] .landing-nav {
+  background: rgba(240, 244, 249, 0.92);
+  border-bottom-color: var(--border-default);
+}
+
+[data-theme="light"] .nav-brand-name { color: var(--text-primary); }
+[data-theme="light"] .nav-link-item  { color: var(--text-muted); }
+[data-theme="light"] .nav-link-item:hover { color: var(--cyan); background: rgba(0,153,187,0.06); }
+
+[data-theme="light"] .hero-title   { color: var(--text-primary); }
+[data-theme="light"] .hero-tagline { color: var(--text-muted); }
+
+[data-theme="light"] .stats-bar {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--border-default);
+}
+
+[data-theme="light"] .feature-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--border-default);
+}
+
+[data-theme="light"] .feature-card:hover {
+  border-color: var(--border-bright);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+}
+
+[data-theme="light"] .feature-card-desc { color: var(--text-muted); }
+
+[data-theme="light"] .tech-chip {
+  background: rgba(255,255,255,0.9);
+  border-color: var(--border-default);
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .tech-chip:hover {
+  border-color: var(--border-cyan);
+  color: var(--cyan);
+  background: rgba(0,153,187,0.06);
+}
+
+[data-theme="light"] .landing-footer { color: var(--text-muted); }
+[data-theme="light"] .grid-bg {
+  background-image:
+    linear-gradient(rgba(0,153,187,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,153,187,0.04) 1px, transparent 1px);
+}
+
+/* ── Smooth global transition on theme switch ─────────────── */
+html {
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease;
+}
+
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, box-shadow, opacity;
+  transition-duration: 0.25s;
+  transition-timing-function: ease;
+}
+
+/* Exempt animations/transforms from the global transition */
+.status-beacon::after,
+.live-dot,
+.chip-dot,
+.skeleton,
+.battery-ring-fill,
+.sensor-bar,
+.env-bar-fill,
+.circular-ring-fill,
+.pulse-ring,
+.sos-btn,
+[class*="anim"],
+canvas {
+  transition: none !important;
+}
+
 
 /* ============================================================
    GLOBAL RESET
@@ -333,7 +701,7 @@ html, body {
    ============================================================ */
 .top-navbar {
   height: var(--nav-height);
-  background: rgba(6, 14, 31, 0.95);
+  background: var(--navbar-bg);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-dim);
   display: flex;
@@ -345,6 +713,7 @@ html, body {
   z-index: 99;
   flex-shrink: 0;
 }
+
 
 .nav-left, .nav-right {
   display: flex;
