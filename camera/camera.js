@@ -542,7 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (label === 'HAZARD') {
                 triggerTile('hazard', 'WARNING', 'triggered', conf, 8000, coords);
             } else if (label === 'FIRE') {
-                triggerTile('fire', 'DANGER', 'danger-triggered', conf, 0, coords);
+                triggerTile('fire', 'DANGER', 'danger-triggered', conf, 5000, coords);
             }
         });
 
@@ -555,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 d.sensor === 'fire' &&
                 String(d.value).toUpperCase().includes('FIRE DETECTED')
             ) {
-                triggerTile('fire', 'FIRE!', 'danger-triggered', 99, 0);
+                triggerTile('fire', 'FIRE!', 'danger-triggered', 99, 5000);
                 addAILog({ label: 'FIRE', conf: 99, desc: 'Flame sensor active at rover node.' });
             }
 

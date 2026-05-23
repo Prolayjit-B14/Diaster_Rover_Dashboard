@@ -298,6 +298,8 @@ class DisasterAIEngine:
         # Alert cooldown counters to prevent MQTT cluster congestion
         self.last_alert_time = {}
         self.alert_cooldown = 3.0 # seconds
+        self.last_fire_state = False
+        self.last_fire_time = 0.0
         print("[AI Setup] All pipelines online and ready!")
 
     def _track_person_motion(self, bbox, current_time):
@@ -540,6 +542,14 @@ class DisasterAIEngine:
             
             # Timeline Scenario 1 (0-10s): Waving Survivor trapped in concrete debris
             if 0 <= cycle < 10:
+                if self.last_fire_state:
+                    self.last_fire_state = False
+                    if mqtt_client is not None:
+                        try:
+                            mqtt_client.publish(TOPIC_TELE, json.dumps({"sensor": "fire", "value": "CLEAR"}))
+                        except Exception:
+                            pass
+
                 bx, by, bw, bh = 180, 110, 160, 240
                 survivor_prob = 89
                 cv2.rectangle(annotated_frame, (bx, by), (bx+bw, by+bh), (0, 212, 255), 2)
@@ -565,6 +575,14 @@ class DisasterAIEngine:
 
             # Timeline Scenario 2 (10-20s): Collapsed unconscious victim under rubble
             elif 10 <= cycle < 20:
+                if self.last_fire_state:
+                    self.last_fire_state = False
+                    if mqtt_client is not None:
+                        try:
+                            mqtt_client.publish(TOPIC_TELE, json.dumps({"sensor": "fire", "value": "CLEAR"}))
+                        except Exception:
+                            pass
+
                 bx, by, bw, bh = 120, 230, 310, 130
                 survivor_prob = 53
                 cv2.rectangle(annotated_frame, (bx, by), (bx+bw, by+bh), (0, 0, 255), 2)
@@ -582,6 +600,14 @@ class DisasterAIEngine:
 
             # Timeline Scenario 3 (20-30s): Severe Active Fire & Smoke outbreak
             elif 20 <= cycle < 30:
+                if not self.last_fire_state:
+                    self.last_fire_state = True
+                    if mqtt_client is not None:
+                        try:
+                            mqtt_client.publish(TOPIC_TELE, json.dumps({"sensor": "fire", "value": "FIRE DETECTED"}))
+                        except Exception:
+                            pass
+
                 fx, fy, fw, fh = 220, 160, 150, 190
                 cv2.rectangle(annotated_frame, (fx, fy), (fx+fw, fy+fh), (0, 0, 255), 2)
                 cv2.putText(annotated_frame, "FIRE DETECTED (97%)", (fx, fy - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
@@ -597,6 +623,14 @@ class DisasterAIEngine:
 
             # Timeline Scenario 4 (30-40s): Flood logging & Neon Rescuer active
             elif 30 <= cycle < 40:
+                if self.last_fire_state:
+                    self.last_fire_state = False
+                    if mqtt_client is not None:
+                        try:
+                            mqtt_client.publish(TOPIC_TELE, json.dumps({"sensor": "fire", "value": "CLEAR"}))
+                        except Exception:
+                            pass
+
                 flx, fly, flw, flh = 0, 310, 640, 170
                 cv2.rectangle(annotated_frame, (flx, fly), (flx+flw, fly+flh), (255, 100, 0), 1)
                 cv2.putText(annotated_frame, "FLOOD RISK (62%)", (flx, fly - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 100, 0), 1)
@@ -655,6 +689,18 @@ class DisasterAIEngine:
             fire_detected, fire_bbox, fire_conf = self._detect_fire_hsv(frame)
 
         if fire_detected:
+            self.last_fire_time = now_ts
+            if not self.last_fire_state:
+                self.last_fire_state = True
+                if mqtt_client is not None:
+                    try:
+                        mqtt_client.publish(TOPIC_TELE, json.dumps({
+                            "sensor": "fire",
+                            "value": "FIRE DETECTED"
+                        }))
+                    except Exception:
+                        pass
+
             fx, fy, fw, fh = fire_bbox
             cv2.rectangle(annotated_frame, (fx, fy), (fx+fw, fy+fh), (0, 0, 255), 2)
             cv2.putText(annotated_frame, f"FIRE DETECTED ({fire_conf}%)", (fx, fy - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
@@ -666,6 +712,18 @@ class DisasterAIEngine:
                 "critical", 
                 f"Fire Detected ({fire_conf}%) - High combustion flame thermal zone isolated."
             )
+        else:
+            # If fire was active but hasn't been seen for 3.0s, clear telemetry state
+            if self.last_fire_state and (now_ts - self.last_fire_time > 3.0):
+                self.last_fire_state = False
+                if mqtt_client is not None:
+                    try:
+                        mqtt_client.publish(TOPIC_TELE, json.dumps({
+                            "sensor": "fire",
+                            "value": "CLEAR"
+                        }))
+                    except Exception:
+                        pass
 
         smoke_detected = False
         smoke_bbox = None
@@ -1077,18 +1135,31 @@ class DisasterAIEngine:
         """Color-masking thresholds in HSV space to extract flame thermal cores."""
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         
-        # Broad fire orange/yellow HSV limits
-        lower_fire = np.array([10, 120, 180], dtype="uint8")
-        upper_fire = np.array([30, 255, 255], dtype="uint8")
+        # Broad fire orange/yellow/red HSV limits to capture all types of flames
+        # Range 1: Hue 0 to 35 (covers red, orange, yellow)
+        lower_fire1 = np.array([0, 50, 100], dtype="uint8")
+        upper_fire1 = np.array([35, 255, 255], dtype="uint8")
         
-        mask = cv2.inRange(hsv, lower_fire, upper_fire)
+        # Range 2: Hue 165 to 180 (covers dark red flames)
+        lower_fire2 = np.array([165, 50, 100], dtype="uint8")
+        upper_fire2 = np.array([180, 255, 255], dtype="uint8")
+        
+        mask1 = cv2.inRange(hsv, lower_fire1, upper_fire1)
+        mask2 = cv2.inRange(hsv, lower_fire2, upper_fire2)
+        mask = cv2.bitwise_or(mask1, mask2)
+        
+        # Morphological open/close to clear noise and group flame clusters
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
         largest_contour = None
         max_area = 0
         for c in contours:
             area = cv2.contourArea(c)
-            if area > 300: # Pixel grid cutoff limit to avoid noise
+            if area > 100: # Slightly lower threshold to capture smaller flames (e.g. a lighter)
                 if area > max_area:
                     max_area = area
                     largest_contour = c

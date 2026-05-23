@@ -240,10 +240,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         mqtt.on('alerts', d => {
             if (d.label === 'HUMAN') {
-                addAlert('detection', 'medium', '👤 Human Detected', 'PIR sensor detected human presence in field of view', '👤');
+                addAlert('detection', 'medium', '👤 Human Detected', d.desc || 'PIR sensor detected human presence in field of view', '👤');
             }
             if (d.label === 'MOTION') {
-                addAlert('motion', 'low', '👁️ Motion Detected', 'Movement detected in rover proximity zone', '👁️');
+                addAlert('motion', 'low', '👁️ Motion Detected', d.desc || 'Movement detected in rover proximity zone', '👁️');
+            }
+            if (d.label === 'FIRE') {
+                addAlert('fire', 'critical', '🔥 Fire Detected!', d.desc || 'AI Vision confirms active fire signature in camera stream.', '🔥');
+            }
+            if (d.label === 'HAZARD') {
+                addAlert('hazard', 'high', '⚠️ Hazard Warning', d.desc || 'AI Vision isolates environmental structural hazard.', '⚠️');
             }
         });
     }
