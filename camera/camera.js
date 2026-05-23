@@ -522,14 +522,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
             addAILog({ label: label, conf: conf, desc: d.desc });
 
+            // Extract coordinates if present in the payload (dynamic fire/human brackets!)
+            const coords = (d.x !== undefined && d.y !== undefined && d.w !== undefined && d.h !== undefined) 
+                ? { x: d.x, y: d.y, w: d.w, h: d.h, name: d.label } 
+                : null;
+
             if (label === 'HUMAN') {
-                triggerTile('human', 'DETECTED', 'triggered', conf, 5000);
+                triggerTile('human', 'DETECTED', 'triggered', conf, 5000, coords);
             } else if (label === 'MOTION') {
-                triggerTile('motion', 'DETECTED', 'triggered', conf, 5000);
+                triggerTile('motion', 'DETECTED', 'triggered', conf, 5000, coords);
             } else if (label === 'HAZARD') {
-                triggerTile('hazard', 'WARNING', 'triggered', conf, 8000);
+                triggerTile('hazard', 'WARNING', 'triggered', conf, 8000, coords);
             } else if (label === 'FIRE') {
-                triggerTile('fire', 'DANGER', 'danger-triggered', conf, 0);
+                triggerTile('fire', 'DANGER', 'danger-triggered', conf, 0, coords);
             }
         });
 
@@ -577,7 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Highlights a detection tile, increments count, shows confidence and triggers bounding box.
      */
-    function triggerTile(key, statusText, cssClass, conf, clearMs) {
+    function triggerTile(key, statusText, cssClass, conf, clearMs, coords = null) {
         const tile = document.getElementById(`tile-${key}`);
         const statusEl = document.getElementById(`status-${key}`);
         const countBadge = document.getElementById(`count-${key}`);
@@ -614,10 +619,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
         if (lastEl) lastEl.textContent = timeStr;
 
-        // Show HUD bounding box overlay
+        // Show HUD bounding box overlay and position it if coordinates are provided
         if (bbox) {
             bbox.style.display = 'block';
-            if (bboxConf) bboxConf.textContent = `${conf}%`;
+            if (bboxConf) {
+                let suffix = '';
+                if (coords && coords.name) {
+                    suffix = ` (${coords.name.toUpperCase()})`;
+                }
+                bboxConf.textContent = `${conf}%${suffix}`;
+            }
+
+            if (coords && streamImg) {
+                const imgWidth = streamImg.clientWidth || streamImg.width || 640;
+                const imgHeight = streamImg.clientHeight || streamImg.height || 480;
+                const natWidth = streamImg.naturalWidth || 640;
+                const natHeight = streamImg.naturalHeight || 480;
+
+                const scaleX = imgWidth / natWidth;
+                const scaleY = imgHeight / natHeight;
+
+                bbox.style.left = `${coords.x * scaleX}px`;
+                bbox.style.top = `${coords.y * scaleY}px`;
+                bbox.style.width = `${coords.w * scaleX}px`;
+                bbox.style.height = `${coords.h * scaleY}px`;
+            } else if (!coords) {
+                // Default fallback centered positioning to keep it visible if no coords
+                bbox.style.left = '10%';
+                bbox.style.top = '10%';
+                bbox.style.width = '80%';
+                bbox.style.height = '80%';
+            }
         }
 
         // Auto-clear timer if specified
