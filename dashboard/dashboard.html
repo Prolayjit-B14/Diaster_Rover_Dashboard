@@ -1,130 +1,372 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RescueBOT | Operational Command</title>
+    <title>RescueBOT | Operations Command</title>
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./dashboard.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <div class="app-frame">
-        <nav class="top-navbar">
-            <div class="nav-left">
-                <div class="logo-box">R</div>
-                <div class="nav-title-group">
-                    <span class="nav-title">RescueBOT Support</span>
-                    <span class="nav-subtitle">Field Coordination</span>
-                </div>
-            </div>
+<div class="app-shell">
 
-            <div class="nav-center">
-                <div class="status-pill">
-                    <div class="status-dot active" id="mqtt-dot"></div>
-                    <span id="mqtt-status-text">NETWORK SECURE</span>
-                </div>
+    <!-- ══ SIDEBAR ══════════════════════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-mark">R</div>
+            <div class="logo-text">
+                <span class="logo-name">RescueBOT</span>
+                <span class="logo-ver">v3.1 · MISSION</span>
             </div>
+        </div>
 
-            <div class="nav-right">
-                <button id="theme-toggle" class="btn-standard" title="Toggle Theme"><i data-lucide="sun"></i></button>
-                <a href="../dashboard/dashboard.html" class="nav-link active" title="Dashboard"><i data-lucide="layout-grid"></i></a>
-                <a href="../map/map.html" class="nav-link" title="Map"><i data-lucide="map"></i></a>
-                <a href="../camera/camera.html" class="nav-link" title="Vision"><i data-lucide="video"></i></a>
-                <a href="../sensors/sensors.html" class="nav-link" title="Telemetry"><i data-lucide="activity"></i></a>
-            </div>
+        <button class="sidebar-collapse-btn" id="sidebar-collapse-btn">
+            <i data-lucide="chevrons-left" style="width:14px;height:14px;"></i>
+        </button>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Mission Control</div>
+            <a href="./dashboard.html" class="nav-item active">
+                <i data-lucide="layout-dashboard"></i>
+                <span class="nav-label">Dashboard</span>
+            </a>
+            <a href="../camera/camera.html" class="nav-item">
+                <i data-lucide="video"></i>
+                <span class="nav-label">Camera Feed</span>
+            </a>
+            <a href="../map/map.html" class="nav-item">
+                <i data-lucide="map"></i>
+                <span class="nav-label">Tactical Map</span>
+            </a>
+            <a href="../sensors/sensors.html" class="nav-item">
+                <i data-lucide="activity"></i>
+                <span class="nav-label">Sensor Array</span>
+            </a>
+            <a href="../alerts/alerts.html" class="nav-item">
+                <i data-lucide="bell-ring"></i>
+                <span class="nav-label">Alerts</span>
+                <span class="nav-badge" id="sidebar-alert-count">0</span>
+            </a>
+
+            <div class="nav-section-label" style="margin-top:16px;">System</div>
+            <a href="../" class="nav-item">
+                <i data-lucide="home"></i>
+                <span class="nav-label">Home</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i data-lucide="settings"></i>
+                <span class="nav-label">Settings</span>
+            </a>
         </nav>
 
-        <main class="workspace">
-            <div class="dashboard-grid">
-                <header class="dash-header">
-                    <div class="header-content">
-                        <h1>Operational Command</h1>
-                        <p>Aggregated telemetry from 12 active mission-critical modules.</p>
-                    </div>
-                </header>
+        <div class="sidebar-footer">
+            <div class="status-pill" style="width:100%; justify-content:center;">
+                <div class="status-dot" id="mqtt-dot"></div>
+                <span id="mqtt-status-text" style="font-family:var(--font-mono);font-size:10px;">CONNECTING...</span>
+            </div>
+        </div>
+    </aside>
 
-                <div class="top-row-grid">
-                    <section class="card-standard map-card">
-                        <div id="mini-map" style="width: 100%; height: 100%;"></div>
-                    </section>
+    <!-- ══ MAIN COLUMN ══════════════════════════════════════════ -->
+    <div class="main-column">
 
-                    <section class="card-standard feed-card">
-                        <div class="feed-header">Tactical Vision Array</div>
-                        <div class="feed-content-area">
-                            <div class="status-overlay" id="mini-cam-status">
-                                <i data-lucide="video-off"></i>
-                                <span>Establishing Neural Link...</span>
-                            </div>
+        <!-- TOP NAVBAR -->
+        <header class="top-navbar">
+            <div class="nav-left">
+                <span class="nav-page-title">Operational Command</span>
+                <span class="nav-breadcrumb">/ Dashboard</span>
+            </div>
+            <div class="nav-right">
+                <div class="status-pill">
+                    <div class="status-dot"></div>
+                    <span>ROVER ONLINE</span>
+                </div>
+                <div class="status-pill">
+                    <i data-lucide="clock" style="width:12px;height:12px;"></i>
+                    <span id="mission-clock" style="font-family:var(--font-mono);">--:--:--</span>
+                </div>
+                <button class="icon-btn" title="Notifications">
+                    <i data-lucide="bell"></i>
+                </button>
+                <button class="icon-btn" id="theme-toggle" title="Toggle Theme">
+                    <i data-lucide="sun"></i>
+                </button>
+                <div class="icon-btn" style="background:var(--cyan);color:var(--bg-void);font-weight:700;font-size:12px;cursor:default;">PB</div>
+            </div>
+        </header>
+
+        <!-- PAGE CONTENT -->
+        <main class="page-content">
+
+            <!-- ROW 1: 4 STATUS CARDS -->
+            <div class="widget-grid-top">
+
+                <!-- Rover Status -->
+                <div class="glass-card status-card">
+                    <div class="status-icon-row">
+                        <div class="status-icon" style="background:rgba(0,255,136,0.1);">
+                            <i data-lucide="cpu" style="width:22px;height:22px;color:var(--green);"></i>
                         </div>
-                    </section>
+                        <div class="status-beacon" id="rover-beacon"></div>
+                    </div>
+                    <div>
+                        <div class="status-title" id="rover-status-text">Rover Online</div>
+                        <div class="status-sub">ESP32-CAM · ARES1</div>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <span class="badge badge-green" id="rover-badge">● ONLINE</span>
+                        <span class="badge badge-cyan">MQTT LINKED</span>
+                    </div>
+                    <div class="tele-sub">Mission Timer: <span class="mono-val" id="mission-timer" style="color:var(--cyan);">00:00:00</span></div>
                 </div>
 
-                <div class="stats-row">
-                    <!-- ROW 1 -->
-                    <div class="card-standard stat-item">
-                        <div class="icon-box" style="color: #ef4444;"><i data-lucide="thermometer"></i></div>
-                        <div class="stat-info"><span class="stat-label">Temperature</span><span class="stat-value" id="val-temp">--°C</span></div>
+                <!-- GPS Card -->
+                <div class="glass-card gps-card">
+                    <div class="card-header">
+                        <span class="card-label">GPS Position</span>
+                        <span class="badge badge-green">3D FIX</span>
                     </div>
-                    <div class="card-standard stat-item">
-                        <div class="icon-box" style="color: #f59e0b;"><i data-lucide="wind"></i></div>
-                        <div class="stat-info"><span class="stat-label">Gas Level</span><span class="stat-value" id="val-gas">-- ppm</span></div>
+                    <div class="gps-coord-row">
+                        <div class="coord-box">
+                            <div class="coord-label-sm">Latitude</div>
+                            <div class="coord-val" id="val-lat">0.000000°</div>
+                        </div>
+                        <div class="coord-box">
+                            <div class="coord-label-sm">Longitude</div>
+                            <div class="coord-val" id="val-lng">0.000000°</div>
+                        </div>
                     </div>
-                    <div class="card-standard stat-item">
-                        <div class="icon-box" style="color: #ef4444;"><i data-lucide="flame"></i></div>
-                        <div class="stat-info"><span class="stat-label">Fire Alert</span><span class="stat-value" id="val-fire">None</span></div>
+                    <div class="gps-bottom">
+                        <div class="gps-mini-stat">
+                            <div class="coord-label-sm">Speed</div>
+                            <div class="coord-val" id="val-speed">0.0 <span style="font-size:10px;color:var(--text-muted);">km/h</span></div>
+                        </div>
+                        <div class="gps-mini-stat">
+                            <div class="coord-label-sm">Satellites</div>
+                            <div class="coord-val" id="val-sats">0</div>
+                        </div>
+                        <div class="gps-mini-stat">
+                            <div class="coord-label-sm">Accuracy</div>
+                            <div class="coord-val" id="val-accuracy">--m</div>
+                        </div>
                     </div>
-                    <div class="card-standard stat-item">
-                        <div class="icon-box" style="color: #6366f1;"><i data-lucide="ruler"></i></div>
-                        <div class="stat-info"><span class="stat-label">Proximity</span><span class="stat-value" id="val-ultrasonic">-- cm</span></div>
-                    </div>
+                </div>
 
-                    <!-- ROW 2 -->
-                    <div class="card-standard stat-item">
-                        <div class="icon-box" style="color: #06b6d4;"><i data-lucide="eye"></i></div>
-                        <div class="stat-info"><span class="stat-label">Motion</span><span class="stat-value" id="val-pir">Clear</span></div>
+                <!-- Battery Card -->
+                <div class="glass-card battery-card">
+                    <div class="card-header" style="width:100%">
+                        <span class="card-label">Power System</span>
+                        <span class="badge badge-green" id="batt-status">CHARGING</span>
                     </div>
-                    <div class="card-standard stat-item">
-                        <div class="icon-box" style="color: #10b981;"><i data-lucide="activity"></i></div>
-                        <div class="stat-info"><span class="stat-label">Vibration</span><span class="stat-value" id="val-vib">-.-- g</span></div>
+                    <div class="battery-ring-wrap">
+                        <svg width="100" height="100" viewBox="0 0 100 100">
+                            <circle class="battery-ring-bg" cx="50" cy="50" r="40" fill="none" stroke-width="8"/>
+                            <circle class="battery-ring-fill" cx="50" cy="50" r="40" fill="none" stroke-width="8"
+                                stroke-dasharray="251.2" stroke-dashoffset="62.8" id="batt-ring"/>
+                        </svg>
+                        <div class="battery-center-text">
+                            <span class="battery-pct" id="val-battery">75%</span>
+                            <span class="battery-label-sm">POWER</span>
+                        </div>
                     </div>
-                    <div class="card-standard stat-item">
-                        <div class="icon-box" style="color: #f59e0b;"><i data-lucide="refresh-cw"></i></div>
-                        <div class="stat-info"><span class="stat-label">Tilt Angle</span><span class="stat-value" id="val-tilt">0°</span></div>
+                    <div class="battery-info-row">
+                        <div class="batt-info-item">
+                            <div class="batt-info-val" id="val-voltage">--V</div>
+                            <div class="batt-info-lbl">Voltage</div>
+                        </div>
+                        <div class="batt-info-item">
+                            <div class="batt-info-val" id="val-rssi">-- dBm</div>
+                            <div class="batt-info-lbl">WiFi RSSI</div>
+                        </div>
                     </div>
-                    <div class="card-standard stat-item">
-                        <div class="icon-box" style="color: #8b5cf6;"><i data-lucide="navigation"></i></div>
-                        <div class="stat-info"><span class="stat-label">Gyroscope</span><span class="stat-value" id="val-gyro">0°/s</span></div>
-                    </div>
+                </div>
 
-                    <!-- ROW 3 -->
-                    <div class="card-standard stat-item">
-                        <div class="icon-box" style="color: #ec4899;"><i data-lucide="map-pin"></i></div>
-                        <div class="stat-info"><span class="stat-label">GPS Lock</span><span class="stat-value" id="val-gps">Active</span></div>
+                <!-- Alerts Mini -->
+                <div class="glass-card alert-mini-card">
+                    <div class="card-header">
+                        <span class="card-label">Active Alerts</span>
+                        <a href="../alerts/alerts.html" style="color:var(--cyan);font-size:11px;text-decoration:none;font-weight:600;">VIEW ALL →</a>
                     </div>
-                    <div class="card-standard stat-item">
-                        <div class="icon-box" style="color: #10b981;"><i data-lucide="battery"></i></div>
-                        <div class="stat-info"><span class="stat-label">Power</span><span class="stat-value" id="val-battery">--%</span></div>
-                    </div>
-                    <div class="card-standard stat-item">
-                        <div class="icon-box" style="color: #3b82f6;"><i data-lucide="wifi"></i></div>
-                        <div class="stat-info"><span class="stat-label">WiFi Signal</span><span class="stat-value" id="val-wifi">-- dBm</span></div>
-                    </div>
-                    <div class="card-standard stat-item">
-                        <div class="icon-box" style="color: #10b981;"><i data-lucide="video"></i></div>
-                        <div class="stat-info"><span class="stat-label">Cam Stream</span><span class="stat-value" id="val-fps">-- FPS</span></div>
+                    <div class="alert-mini-list">
+                        <div class="alert-mini-item ok">
+                            <span class="alert-mini-icon">🌡️</span>
+                            <span class="alert-mini-text">Temperature Normal</span>
+                            <span class="alert-mini-badge badge badge-green">OK</span>
+                        </div>
+                        <div class="alert-mini-item ok">
+                            <span class="alert-mini-icon">💨</span>
+                            <span class="alert-mini-text" id="alert-gas-text">Gas Level Normal</span>
+                            <span class="alert-mini-badge badge badge-green" id="alert-gas-badge">OK</span>
+                        </div>
+                        <div class="alert-mini-item ok">
+                            <span class="alert-mini-icon">🔥</span>
+                            <span class="alert-mini-text" id="alert-fire-text">No Fire Detected</span>
+                            <span class="alert-mini-badge badge badge-green" id="alert-fire-badge">CLEAR</span>
+                        </div>
+                        <div class="alert-mini-item ok">
+                            <span class="alert-mini-icon">👁️</span>
+                            <span class="alert-mini-text" id="alert-pir-text">Motion: Clear</span>
+                            <span class="alert-mini-badge badge badge-green" id="alert-pir-badge">CLEAR</span>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- ROW 2: MINI MAP + MINI CAM -->
+            <div class="widget-grid-mid">
+                <div class="glass-card mini-map-card">
+                    <div class="mini-map-header">
+                        <span class="mini-map-header-title">
+                            <i data-lucide="map-pin" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px;color:var(--cyan);"></i>
+                            Live GPS Position
+                        </span>
+                        <a href="../map/map.html" class="btn btn-ghost" style="padding:5px 12px;font-size:11px;">Open Map →</a>
+                    </div>
+                    <div id="mini-map-container"></div>
+                </div>
+
+                <div class="glass-card mini-cam-card">
+                    <div class="mini-cam-header">
+                        <div class="live-indicator">
+                            <div class="live-dot" id="cam-live-dot" style="background:var(--text-muted);box-shadow:none;"></div>
+                            <span id="cam-live-label">OFFLINE</span>
+                        </div>
+                        <a href="../camera/camera.html" class="btn btn-ghost" style="padding:5px 12px;font-size:11px;">Open Feed →</a>
+                    </div>
+                    <div class="cam-body">
+                        <img id="cam-stream-thumb" src="" alt="Stream" style="display:none;width:100%;height:100%;object-fit:cover;">
+                        <div class="cam-placeholder" id="cam-placeholder">
+                            <i data-lucide="video-off"></i>
+                            <span style="font-size:12px;">Establishing Neural Link...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ROW 3: ENVIRONMENT + QUICK ACTIONS + 2 MORE TELE -->
+            <div class="widget-grid-bottom">
+
+                <!-- Environment -->
+                <div class="glass-card env-card">
+                    <div class="card-header">
+                        <span class="card-label">Environment</span>
+                        <span class="badge badge-cyan">LIVE</span>
+                    </div>
+                    <div class="env-items">
+                        <div class="env-item">
+                            <div class="env-icon" style="background:rgba(239,68,68,0.1);">🌡️</div>
+                            <div class="env-info">
+                                <div class="env-name">Temperature</div>
+                                <div class="env-val-row">
+                                    <span class="env-value" id="val-temp">--</span>
+                                    <span class="env-unit">°C</span>
+                                </div>
+                            </div>
+                            <div class="env-bar"><div class="env-bar-fill" id="bar-temp" style="width:40%;background:var(--red);"></div></div>
+                        </div>
+                        <div class="env-item">
+                            <div class="env-icon" style="background:rgba(59,130,246,0.1);">💧</div>
+                            <div class="env-info">
+                                <div class="env-name">Humidity</div>
+                                <div class="env-val-row">
+                                    <span class="env-value" id="val-humidity">--</span>
+                                    <span class="env-unit">%</span>
+                                </div>
+                            </div>
+                            <div class="env-bar"><div class="env-bar-fill" id="bar-hum" style="width:60%;background:var(--cyan);"></div></div>
+                        </div>
+                        <div class="env-item">
+                            <div class="env-icon" style="background:rgba(255,184,0,0.1);">💨</div>
+                            <div class="env-info">
+                                <div class="env-name">Gas Level</div>
+                                <div class="env-val-row">
+                                    <span class="env-value" id="val-gas">--</span>
+                                    <span class="env-unit">ppm</span>
+                                </div>
+                            </div>
+                            <div class="env-bar"><div class="env-bar-fill" id="bar-gas" style="width:15%;background:var(--amber);"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="glass-card quick-actions-card">
+                    <div class="card-header">
+                        <span class="card-label">Quick Actions</span>
+                    </div>
+                    <div class="actions-grid">
+                        <button class="action-btn danger" id="btn-estop">
+                            <i data-lucide="octagon" style="width:22px;height:22px;"></i>
+                            E-STOP
+                        </button>
+                        <button class="action-btn primary" id="btn-auto">
+                            <i data-lucide="cpu" style="width:22px;height:22px;"></i>
+                            AUTO MODE
+                        </button>
+                        <button class="action-btn" id="btn-cam">
+                            <i data-lucide="video" style="width:22px;height:22px;"></i>
+                            CAMERA
+                        </button>
+                        <button class="action-btn" id="btn-home">
+                            <i data-lucide="home" style="width:22px;height:22px;"></i>
+                            RETURN BASE
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Motion + Proximity -->
+                <div class="glass-card tele-card">
+                    <div class="tele-icon-label">
+                        <div class="tele-icon" style="background:rgba(6,182,212,0.1);color:var(--cyan);">
+                            <i data-lucide="eye" style="width:16px;height:16px;"></i>
+                        </div>
+                        <span class="tele-label">Motion / PIR</span>
+                    </div>
+                    <div class="tele-val" id="val-pir" style="color:var(--green);">CLEAR</div>
+                    <div class="tele-sub" style="margin-top:12px;">Proximity</div>
+                    <div class="tele-val" style="font-size:1.3rem;">
+                        <span id="val-ultrasonic">--</span>
+                        <span class="tele-unit">cm</span>
+                    </div>
+                </div>
+
+                <!-- Vibration + Tilt -->
+                <div class="glass-card tele-card">
+                    <div class="tele-icon-label">
+                        <div class="tele-icon" style="background:rgba(168,85,247,0.1);color:var(--purple);">
+                            <i data-lucide="activity" style="width:16px;height:16px;"></i>
+                        </div>
+                        <span class="tele-label">MPU6050</span>
+                    </div>
+                    <div class="tele-val">
+                        <span id="val-vib">-.--</span>
+                        <span class="tele-unit">g</span>
+                    </div>
+                    <div class="tele-sub" style="margin-top:12px;">Tilt / Gyro</div>
+                    <div style="display:flex;gap:12px;margin-top:4px;">
+                        <div>
+                            <div class="tele-val" style="font-size:1.1rem;"><span id="val-tilt">0</span><span class="tele-unit">°</span></div>
+                            <div class="tele-sub">Tilt</div>
+                        </div>
+                        <div>
+                            <div class="tele-val" style="font-size:1.1rem;"><span id="val-gyro">0</span><span class="tele-unit">°/s</span></div>
+                            <div class="tele-sub">Gyro</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
+</div>
 
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <script type="module" src="../shared/mqtt-client.js"></script>
-    <script type="module" src="../shared/shared.js"></script>
-    <script type="module" src="./dashboard.js"></script>
-    <script>lucide.createIcons();</script>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<script type="module" src="../shared/mqtt-client.js"></script>
+<script type="module" src="../shared/shared.js"></script>
+<script type="module" src="./dashboard.js"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>

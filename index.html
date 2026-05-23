@@ -1,155 +1,596 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RescueBOT | Emergency Response Support</title>
+    <title>RescueBOT | Disaster Rescue Monitoring System</title>
+    <meta name="description" content="Real-time disaster rescue monitoring, rover control, hazard detection and emergency response system powered by IoT, ESP32, and MQTT.">
     <link rel="stylesheet" href="./shared/shared.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body {
-            background-color: #F8FAFC;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            color: #334155;
+        /* ── LANDING OVERRIDES ──────────────────────────────── */
+        html, body { overflow-x: hidden; overflow-y: auto; height: auto; }
+
+        /* ── PARTICLE BACKGROUND ────────────────────────────── */
+        #particle-canvas {
+            position: fixed; inset: 0; z-index: 0;
+            pointer-events: none;
         }
 
-        .init-container {
+        /* ── NAV ─────────────────────────────────────────────── */
+        .landing-nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            height: 68px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 48px;
+            background: rgba(2, 8, 23, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,212,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .nav-brand {
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .nav-logo {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, #00D4FF, #0080AA);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 800; font-size: 18px; color: #020817;
+            box-shadow: 0 0 20px rgba(0,212,255,0.5);
+        }
+
+        .nav-brand-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700; font-size: 17px;
+            color: #E8F4FD;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-links {
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .nav-link-item {
+            padding: 8px 16px;
+            color: rgba(232,244,253,0.6);
+            font-size: 13px; font-weight: 500;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-link-item:hover { color: #00D4FF; background: rgba(0,212,255,0.08); }
+        .nav-link-item.active { color: #00D4FF; }
+
+        .nav-cta {
+            padding: 9px 20px;
+            background: rgba(0,212,255,0.1);
+            border: 1px solid rgba(0,212,255,0.3);
+            color: #00D4FF;
+            border-radius: 8px;
+            font-size: 13px; font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-cta:hover {
+            background: rgba(0,212,255,0.2);
+            box-shadow: 0 0 20px rgba(0,212,255,0.3);
+        }
+
+        /* ── HERO ─────────────────────────────────────────────── */
+        .hero {
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
             text-align: center;
-            max-width: 500px;
-            padding: 48px;
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 20px 50px rgba(30, 58, 95, 0.1);
-            border: 1px solid #E5E7EB;
-            animation: slideUp 0.8s ease-out;
+            padding: 120px 24px 80px;
+            position: relative; z-index: 1;
         }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .logo-box-large {
-            width: 72px;
-            height: 72px;
-            background: #E67E22;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 32px;
-            color: white;
-            font-size: 2rem;
-            font-weight: 800;
-            box-shadow: 0 10px 25px rgba(230, 126, 34, 0.2);
-        }
-
-        .system-title {
-            font-size: 1.75rem;
-            font-weight: 800;
-            color: #1E3A5F;
-            margin-bottom: 8px;
-        }
-
-        .system-subtitle {
-            font-size: 0.95rem;
-            color: #64748B;
-            margin-bottom: 40px;
-        }
-
-        .progress-wrapper {
-            width: 100%;
-            height: 8px;
-            background: #F1F5F9;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 16px;
-        }
-
-        .progress-bar {
-            width: 0%;
-            height: 100%;
-            background: #3B82B6;
-            transition: width 0.4s ease;
-        }
-
-        .status-text {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #64748B;
-            text-transform: uppercase;
+        .hero-status-chip {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 20px;
+            background: rgba(0, 255, 136, 0.08);
+            border: 1px solid rgba(0, 255, 136, 0.25);
+            border-radius: 99px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; font-weight: 600;
+            color: #00FF88;
             letter-spacing: 0.1em;
+            margin-bottom: 36px;
+            animation: fadeInDown 0.6s ease;
         }
 
-        .enter-btn {
-            display: none;
-            margin-top: 32px;
-            padding: 14px 40px;
-            background: #1E3A5F;
-            color: white;
-            border-radius: 12px;
+        .chip-dot {
+            width: 7px; height: 7px;
+            background: #00FF88;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00FF88;
+            animation: pulse-dot 1.5s ease-in-out infinite;
+        }
+
+        .hero-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.8rem, 6vw, 5.5rem);
             font-weight: 700;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+            color: #E8F4FD;
+            animation: fadeInUp 0.7s 0.1s both ease;
+        }
+
+        .hero-title .accent {
+            background: linear-gradient(135deg, #00D4FF, #00FF88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-tagline {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: rgba(232,244,253,0.55);
+            max-width: 620px;
+            line-height: 1.7;
+            margin-bottom: 48px;
+            animation: fadeInUp 0.7s 0.2s both ease;
+        }
+
+        .hero-actions {
+            display: flex; align-items: center; gap: 16px;
+            flex-wrap: wrap; justify-content: center;
+            animation: fadeInUp 0.7s 0.3s both ease;
+            margin-bottom: 80px;
+        }
+
+        .cta-primary {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 16px 36px;
+            background: linear-gradient(135deg, #00D4FF, #0099BB);
+            color: #020817;
+            border-radius: 10px;
+            font-size: 15px; font-weight: 700;
+            text-decoration: none;
+            letter-spacing: 0.03em;
+            box-shadow: 0 8px 30px rgba(0,212,255,0.35);
+            transition: all 0.3s ease;
+        }
+
+        .cta-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0,212,255,0.55);
+        }
+
+        .cta-secondary {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 16px 36px;
+            background: transparent;
+            color: #00D4FF;
+            border: 1px solid rgba(0,212,255,0.4);
+            border-radius: 10px;
+            font-size: 15px; font-weight: 600;
             text-decoration: none;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(30, 58, 95, 0.2);
         }
 
-        .enter-btn:hover {
-            background: #3B82B6;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(59, 130, 182, 0.3);
+        .cta-secondary:hover {
+            background: rgba(0,212,255,0.08);
+            border-color: #00D4FF;
+            box-shadow: 0 0 30px rgba(0,212,255,0.2);
+            transform: translateY(-3px);
+        }
+
+        /* ── STATS BAR ─────────────────────────────────────────── */
+        .stats-bar {
+            display: flex; gap: 48px; justify-content: center;
+            padding: 28px 48px;
+            background: rgba(10, 22, 40, 0.9);
+            border-top: 1px solid rgba(0,212,255,0.08);
+            border-bottom: 1px solid rgba(0,212,255,0.08);
+            backdrop-filter: blur(20px);
+            position: relative; z-index: 1;
+            animation: fadeIn 0.8s 0.5s both;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem; font-weight: 700;
+            color: #00D4FF;
+        }
+
+        .stat-lbl {
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            color: rgba(232,244,253,0.4);
+            margin-top: 4px;
+        }
+
+        /* ── FEATURES SECTION ──────────────────────────────────── */
+        .features-section {
+            padding: 100px 48px;
+            position: relative; z-index: 1;
+            background: linear-gradient(180deg, transparent, rgba(6,14,31,0.5) 50%, transparent);
+        }
+
+        .features-label {
+            text-align: center;
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            color: #00D4FF;
+            margin-bottom: 20px;
+        }
+
+        .features-title {
+            text-align: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+            font-weight: 700;
+            color: #E8F4FD;
+            margin-bottom: 64px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(13, 27, 53, 0.8);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 32px 28px;
+            transition: all 0.3s ease;
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: var(--card-accent, #00D4FF);
+            border-radius: 16px 16px 0 0;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(255,255,255,0.12);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        }
+
+        .feature-card:hover::before { opacity: 1; }
+
+        .feature-icon-wrap {
+            width: 52px; height: 52px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .feature-card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px; font-weight: 700;
+            color: #E8F4FD;
+            margin-bottom: 10px;
+        }
+
+        .feature-card-desc {
+            font-size: 13px; line-height: 1.7;
+            color: rgba(232,244,253,0.5);
+        }
+
+        /* ── TECH STACK ──────────────────────────────────────────── */
+        .tech-section {
+            padding: 80px 48px;
+            text-align: center;
+            position: relative; z-index: 1;
+        }
+
+        .tech-chips {
+            display: flex; flex-wrap: wrap; gap: 12px;
+            justify-content: center; max-width: 700px; margin: 32px auto 0;
+        }
+
+        .tech-chip {
+            padding: 8px 18px;
+            background: rgba(10,22,40,0.9);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 99px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; font-weight: 500;
+            color: rgba(232,244,253,0.6);
+            transition: all 0.2s;
+        }
+
+        .tech-chip:hover {
+            border-color: rgba(0,212,255,0.4);
+            color: #00D4FF;
+            background: rgba(0,212,255,0.05);
+        }
+
+        /* ── FOOTER ──────────────────────────────────────────────── */
+        .landing-footer {
+            text-align: center;
+            padding: 40px 48px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 12px; color: rgba(232,244,253,0.3);
+            position: relative; z-index: 1;
+        }
+
+        /* ── ANIMATIONS ──────────────────────────────────────────── */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        /* ── GRID BACKGROUND ─────────────────────────────────────── */
+        .grid-bg {
+            position: fixed; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+
+        @media (max-width: 900px) {
+            .landing-nav { padding: 0 24px; }
+            .nav-links { display: none; }
+            .hero { padding: 100px 24px 60px; }
+            .features-section { padding: 60px 24px; }
+            .features-grid { grid-template-columns: 1fr; }
+            .stats-bar { gap: 32px; padding: 24px; flex-wrap: wrap; }
         }
     </style>
 </head>
 <body>
-    <div class="init-container">
-        <div class="logo-box-large">R</div>
-        <h1 class="system-title">RescueBOT Support</h1>
-        <p class="system-subtitle">Humanitarian Coordination & Emergency Response</p>
-        
-        <div class="progress-wrapper">
-            <div class="progress-bar" id="progress"></div>
-        </div>
-        <p class="status-text" id="status-text">Connecting to field sensors...</p>
+    <div class="grid-bg"></div>
+    <canvas id="particle-canvas"></canvas>
 
-        <a href="./dashboard/dashboard.html" class="enter-btn" id="enter-btn">LAUNCH COORDINATION CENTER</a>
+    <!-- NAVBAR -->
+    <nav class="landing-nav">
+        <div class="nav-brand">
+            <div class="nav-logo">R</div>
+            <span class="nav-brand-name">RescueBOT</span>
+        </div>
+        <div class="nav-links">
+            <a href="#" class="nav-link-item active">Home</a>
+            <a href="./dashboard/dashboard.html" class="nav-link-item">Dashboard</a>
+            <a href="./camera/camera.html" class="nav-link-item">Camera</a>
+            <a href="./map/map.html" class="nav-link-item">Map</a>
+            <a href="./sensors/sensors.html" class="nav-link-item">Sensors</a>
+            <a href="./alerts/alerts.html" class="nav-link-item">Alerts</a>
+        </div>
+        <a href="./dashboard/dashboard.html" class="nav-cta">Launch Dashboard →</a>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-status-chip">
+            <div class="chip-dot"></div>
+            <span>SYSTEM ONLINE — MQTT ACTIVE — ALL SENSORS OPERATIONAL</span>
+        </div>
+
+        <h1 class="hero-title">
+            Disaster Rescue<br>
+            <span class="accent">Monitoring System</span>
+        </h1>
+
+        <p class="hero-tagline">
+            Real-time monitoring, rover control, hazard detection & emergency response.
+            Powered by ESP32, MQTT, GPS &amp; AI Vision.
+        </p>
+
+        <div class="hero-actions">
+            <a href="./dashboard/dashboard.html" class="cta-primary">
+                <i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i>
+                Launch Dashboard
+            </a>
+            <a href="./camera/camera.html" class="cta-secondary">
+                <i data-lucide="video" style="width:18px;height:18px;"></i>
+                Live Monitoring
+            </a>
+        </div>
+    </section>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-num" id="stat-uptime">00:00:00</div>
+            <div class="stat-lbl">Mission Uptime</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">12</div>
+            <div class="stat-lbl">Active Sensors</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">&lt;100ms</div>
+            <div class="stat-lbl">MQTT Latency</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">30 FPS</div>
+            <div class="stat-lbl">Camera Stream</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-num">24/7</div>
+            <div class="stat-lbl">Monitoring</div>
+        </div>
     </div>
 
+    <!-- FEATURES SECTION -->
+    <section class="features-section">
+        <div class="features-label">What We Monitor</div>
+        <h2 class="features-title">Full-Spectrum Disaster Intelligence</h2>
+
+        <div class="features-grid">
+            <div class="feature-card" style="--card-accent:#00D4FF">
+                <div class="feature-icon-wrap" style="background:rgba(0,212,255,0.1); color:#00D4FF;">📡</div>
+                <div class="feature-card-title">Live Telemetry</div>
+                <div class="feature-card-desc">Real-time sensor data streamed via MQTT from ESP32. Temperature, gas, vibration, humidity updated every 100ms.</div>
+            </div>
+            <div class="feature-card" style="--card-accent:#00FF88">
+                <div class="feature-icon-wrap" style="background:rgba(0,255,136,0.1); color:#00FF88;">🛰️</div>
+                <div class="feature-card-title">GPS Tracking</div>
+                <div class="feature-card-desc">Live rover location with NEO-6M GPS module. Interactive Leaflet map with path trail, waypoints and hazard zones.</div>
+            </div>
+            <div class="feature-card" style="--card-accent:#FF6B35">
+                <div class="feature-icon-wrap" style="background:rgba(255,107,53,0.1); color:#FF6B35;">🔥</div>
+                <div class="feature-card-title">Hazard Detection</div>
+                <div class="feature-card-desc">MQ-2 gas sensor, flame detector and PIR motion sensor detect fire, toxic gases and human presence in real-time.</div>
+            </div>
+            <div class="feature-card" style="--card-accent:#A855F7">
+                <div class="feature-icon-wrap" style="background:rgba(168,85,247,0.1); color:#A855F7;">🎥</div>
+                <div class="feature-card-title">AI Vision Array</div>
+                <div class="feature-card-desc">ESP32-CAM live streaming with human detection, motion analytics, and snapshot capture. Low-latency MJPEG feed.</div>
+            </div>
+            <div class="feature-card" style="--card-accent:#FF2D55">
+                <div class="feature-icon-wrap" style="background:rgba(255,45,85,0.1); color:#FF2D55;">🚨</div>
+                <div class="feature-card-title">Emergency Alerts</div>
+                <div class="feature-card-desc">Priority-classified alert system with critical/high/medium/low tiers. SOS trigger, sound alerts and timeline logging.</div>
+            </div>
+            <div class="feature-card" style="--card-accent:#FFB800">
+                <div class="feature-icon-wrap" style="background:rgba(255,184,0,0.1); color:#FFB800;">🤖</div>
+                <div class="feature-card-title">Rover Control</div>
+                <div class="feature-card-desc">Emergency stop, autonomous mode toggle, camera control and return-to-base commands dispatched via MQTT.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TECH STACK -->
+    <section class="tech-section">
+        <div class="features-label">Technology Stack</div>
+        <h2 class="features-title" style="font-size:1.8rem;">Built on Industry Hardware & Protocols</h2>
+        <div class="tech-chips">
+            <span class="tech-chip">ESP32-CAM</span>
+            <span class="tech-chip">MQTT / EMQX</span>
+            <span class="tech-chip">NEO-6M GPS</span>
+            <span class="tech-chip">MQ-2 Gas</span>
+            <span class="tech-chip">MPU6050</span>
+            <span class="tech-chip">DHT11</span>
+            <span class="tech-chip">HC-SR04</span>
+            <span class="tech-chip">Leaflet.js</span>
+            <span class="tech-chip">L298N Motor</span>
+            <span class="tech-chip">Vite + Vanilla JS</span>
+            <span class="tech-chip">WebSocket</span>
+            <span class="tech-chip">Vercel</span>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="landing-footer">
+        <strong style="color:rgba(232,244,253,0.5);">RescueBOT Mission Control</strong> — Empowering Rescue Missions through IoT &amp; AI<br>
+        © 2026 TEAM BOT THINGS — Prolayjit Biswas · Arghya Roy · Shubhajit Haldar · Papan Chowdhury
+    </footer>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-        const progress = document.getElementById('progress');
-        const statusText = document.getElementById('status-text');
-        const enterBtn = document.getElementById('enter-btn');
-        
-        const steps = [
-            "Syncing mission data...",
-            "Establishing satellite link...",
-            "Authenticating responders...",
-            "Initializing tactical map...",
-            "Connecting to medical nodes...",
-            "SYSTEM READY"
-        ];
-
-        let currentStep = 0;
-        const interval = setInterval(() => {
-            if (currentStep < steps.length) {
-                statusText.innerText = steps[currentStep];
-                progress.style.width = ((currentStep + 1) / steps.length * 100) + '%';
-                currentStep++;
-            } else {
-                clearInterval(interval);
-                statusText.style.color = '#4CAF50';
-                enterBtn.style.display = 'inline-block';
-                
-                setTimeout(() => {
-                    window.location.href = './dashboard/dashboard.html';
-                }, 1200);
-            }
-        }, 500);
-
         lucide.createIcons();
+
+        // ── PARTICLE CANVAS ────────────────────────────────────────
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.5 + 0.3;
+                this.speedX = (Math.random() - 0.5) * 0.4;
+                this.speedY = (Math.random() - 0.5) * 0.4;
+                this.alpha = Math.random() * 0.4 + 0.1;
+                this.color = Math.random() > 0.7 ? '#00D4FF' : '#ffffff';
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+            }
+            draw() {
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 120; i++) particles.push(new Particle());
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            // Draw connections
+            ctx.globalAlpha = 0.03;
+            ctx.strokeStyle = '#00D4FF';
+            ctx.lineWidth = 0.5;
+            particles.forEach((a, i) => {
+                particles.slice(i + 1).forEach(b => {
+                    const dist = Math.hypot(a.x - b.x, a.y - b.y);
+                    if (dist < 100) { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+                });
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // ── UPTIME COUNTER ──────────────────────────────────────────
+        let secs = 0;
+        setInterval(() => {
+            secs++;
+            const h = String(Math.floor(secs / 3600)).padStart(2, '0');
+            const m = String(Math.floor((secs % 3600) / 60)).padStart(2, '0');
+            const s = String(secs % 60).padStart(2, '0');
+            document.getElementById('stat-uptime').textContent = `${h}:${m}:${s}`;
+        }, 1000);
+
+        // ── SCROLL FADE-IN ───────────────────────────────────────────
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.feature-card').forEach((el, i) => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = `opacity 0.5s ${i * 0.08}s ease, transform 0.5s ${i * 0.08}s ease`;
+            observer.observe(el);
+        });
     </script>
 </body>
 </html>

@@ -1,100 +1,256 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RescueBOT | Tactical Mapping</title>
+    <title>RescueBOT | Tactical Map</title>
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./map.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <div class="app-frame">
-        <!-- TOP NAVBAR -->
-        <nav class="top-navbar">
-            <div class="nav-left">
-                <div class="logo-box">R</div>
-                <div class="nav-title-group">
-                    <span class="nav-title">RescueBOT Support</span>
-                    <span class="nav-subtitle">Tactical Field Positioning</span>
-                </div>
-            </div>
+<div class="app-shell">
 
-            <div class="nav-center">
-                <div class="status-pill">
-                    <div class="status-dot active" id="mqtt-dot"></div>
-                    <span id="mqtt-status-text">NETWORK SECURE</span>
-                </div>
-                <div class="status-pill">
-                    <i data-lucide="clock" style="width: 14px;"></i>
-                    <span id="current-time">00:00:00</span>
-                </div>
+    <!-- ══ SIDEBAR ══════════════════════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-mark">R</div>
+            <div class="logo-text">
+                <span class="logo-name">RescueBOT</span>
+                <span class="logo-ver">v3.1 · MISSION</span>
             </div>
+        </div>
 
-            <div class="nav-right">
-                <button id="theme-toggle" class="theme-toggle" title="Toggle Theme"><i data-lucide="sun"></i></button>
-                <a href="../dashboard/dashboard.html" class="nav-link" title="Dashboard">
-                    <i data-lucide="layout-grid"></i>
-                </a>
-                <a href="../map/map.html" class="nav-link active" title="Map">
-                    <i data-lucide="map"></i>
-                </a>
-                <a href="../camera/camera.html" class="nav-link" title="Vision">
-                    <i data-lucide="video"></i>
-                </a>
-                <a href="../sensors/sensors.html" class="nav-link" title="Telemetry">
-                    <i data-lucide="activity"></i>
-                </a>
-            </div>
+        <button class="sidebar-collapse-btn" id="sidebar-collapse-btn">
+            <i data-lucide="chevrons-left" style="width:14px;height:14px;"></i>
+        </button>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Mission Control</div>
+            <a href="../dashboard/dashboard.html" class="nav-item">
+                <i data-lucide="layout-dashboard"></i>
+                <span class="nav-label">Dashboard</span>
+            </a>
+            <a href="../camera/camera.html" class="nav-item">
+                <i data-lucide="video"></i>
+                <span class="nav-label">Camera Feed</span>
+            </a>
+            <a href="./map.html" class="nav-item active">
+                <i data-lucide="map"></i>
+                <span class="nav-label">Tactical Map</span>
+            </a>
+            <a href="../sensors/sensors.html" class="nav-item">
+                <i data-lucide="activity"></i>
+                <span class="nav-label">Sensor Array</span>
+            </a>
+            <a href="../alerts/alerts.html" class="nav-item">
+                <i data-lucide="bell-ring"></i>
+                <span class="nav-label">Alerts</span>
+                <span class="nav-badge" id="sidebar-alert-count">0</span>
+            </a>
+
+            <div class="nav-section-label" style="margin-top:16px;">System</div>
+            <a href="../" class="nav-item">
+                <i data-lucide="home"></i>
+                <span class="nav-label">Home</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i data-lucide="settings"></i>
+                <span class="nav-label">Settings</span>
+            </a>
         </nav>
 
-        <!-- MAIN VIEWPORT -->
-        <main class="workspace">
-            <div class="map-workspace">
-                <div class="map-main-area">
-                    <div id="map-container"></div>
-                    
-                    <div class="map-hud-top">LIVE MISSION COORDINATES</div>
+        <div class="sidebar-footer">
+            <div class="status-pill" style="width:100%; justify-content:center;">
+                <div class="status-dot mqtt-status-dot" id="mqtt-dot"></div>
+                <span class="mqtt-status-text" id="mqtt-status-text" style="font-family:var(--font-mono);font-size:10px;">CONNECTING...</span>
+            </div>
+        </div>
+    </aside>
 
-                    <div class="map-tools-right">
-                        <button class="tool-btn-soft" id="btn-zoom-in"><i data-lucide="plus"></i></button>
-                        <button class="tool-btn-soft" id="btn-zoom-out"><i data-lucide="minus"></i></button>
-                        <button class="tool-btn-soft" id="btn-recenter"><i data-lucide="crosshair"></i></button>
-                        <button class="tool-btn-soft"><i data-lucide="layers"></i></button>
+    <!-- ══ MAIN COLUMN ══════════════════════════════════════════ -->
+    <div class="main-column">
+
+        <!-- TOP NAVBAR -->
+        <header class="top-navbar">
+            <div class="nav-left">
+                <span class="nav-page-title">Tactical Map</span>
+                <span class="nav-breadcrumb">/ Map</span>
+            </div>
+            <div class="nav-right">
+                <div class="status-pill">
+                    <div class="status-dot" id="gps-dot"></div>
+                    <span id="gps-status" style="font-family:var(--font-mono);font-size:11px;">3D GPS FIX</span>
+                </div>
+                <div class="status-pill">
+                    <i data-lucide="clock" style="width:12px;height:12px;"></i>
+                    <span id="mission-clock" style="font-family:var(--font-mono);">--:--:--</span>
+                </div>
+                <button class="icon-btn" title="Notifications">
+                    <i data-lucide="bell"></i>
+                </button>
+                <button class="icon-btn" id="theme-toggle" title="Toggle Theme">
+                    <i data-lucide="sun"></i>
+                </button>
+                <div class="icon-btn" style="background:var(--cyan);color:var(--bg-void);font-weight:700;font-size:12px;cursor:default;">PB</div>
+            </div>
+        </header>
+
+        <!-- MAP SHELL (no page-content wrapper) -->
+        <div class="map-shell">
+
+            <!-- ── LEFT: TOOLS PANEL ──────────────────────────── -->
+            <div class="map-tools-panel">
+
+                <!-- Mission Tools -->
+                <div class="tool-panel-section">
+                    <div class="map-tools-title">Mission Tools</div>
+                    <div class="map-tools-group">
+                        <button class="map-tool-btn active" id="btn-follow">
+                            <i data-lucide="crosshair"></i>
+                            FOLLOW ROVER
+                        </button>
+                        <button class="map-tool-btn" id="btn-waypoint">
+                            <i data-lucide="map-pin"></i>
+                            ADD WAYPOINT
+                        </button>
+                        <button class="map-tool-btn" id="btn-hazard">
+                            <i data-lucide="alert-triangle"></i>
+                            MARK HAZARD
+                        </button>
+                        <button class="map-tool-btn" id="btn-clear-zone">
+                            <i data-lucide="shield"></i>
+                            SAFE ZONE
+                        </button>
+                        <button class="map-tool-btn danger" id="btn-emergency-route">
+                            <i data-lucide="alert-octagon"></i>
+                            EMERGENCY ROUTE
+                        </button>
                     </div>
+                </div>
 
-                    <div class="map-footer-hud">
-                        <div class="coord-group">
-                            <div class="coord-data">
-                                <span class="coord-label">Latitude</span>
-                                <span class="coord-val" id="lat-display">0.000000°</span>
-                            </div>
-                            <div class="coord-data">
-                                <span class="coord-label">Longitude</span>
-                                <span class="coord-val" id="lng-display">0.000000°</span>
-                            </div>
-                            <div class="coord-data">
-                                <span class="coord-label">Altitude</span>
-                                <span class="coord-val" id="alt-display">-- m</span>
-                            </div>
+                <div class="tools-divider"></div>
+
+                <!-- Layer Toggle -->
+                <div class="tool-panel-section">
+                    <div class="map-tools-title">Map Layer</div>
+                    <div class="layer-toggle-row">
+                        <button class="layer-btn active" id="btn-street">STREET</button>
+                        <button class="layer-btn" id="btn-satellite">SATELLITE</button>
+                    </div>
+                </div>
+
+                <div class="tools-divider"></div>
+
+                <!-- Coordinate Display -->
+                <div class="tool-panel-section">
+                    <div class="map-tools-title">Live Telemetry</div>
+                    <div class="coord-display-panel">
+                        <div class="coord-row">
+                            <span class="coord-key">LAT</span>
+                            <span class="coord-value" id="lat-display">0.000000°</span>
                         </div>
-                        <div class="sat-badge">
-                            <i data-lucide="satellite"></i>
-                            <span>LINKED SATELLITES: <span id="sat-count">0</span></span>
+                        <div class="coord-sep"></div>
+                        <div class="coord-row">
+                            <span class="coord-key">LNG</span>
+                            <span class="coord-value" id="lng-display">0.000000°</span>
+                        </div>
+                        <div class="coord-sep"></div>
+                        <div class="coord-row">
+                            <span class="coord-key">SPEED</span>
+                            <span class="coord-value" id="speed-display">0.0 km/h</span>
+                        </div>
+                        <div class="coord-sep"></div>
+                        <div class="coord-row">
+                            <span class="coord-key">DIST</span>
+                            <span class="coord-value" id="dist-display">0 m</span>
+                        </div>
+                        <div class="coord-sep"></div>
+                        <div class="coord-row">
+                            <span class="coord-key">SATS</span>
+                            <span class="coord-value" id="sats-display">0</span>
                         </div>
                     </div>
                 </div>
-            </div>
-        </main>
-    </div>
 
-    <!-- SCRIPTS -->
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <script type="module" src="../shared/mqtt-client.js"></script>
-    <script type="module" src="../shared/shared.js"></script>
-    <script type="module" src="./map.js"></script>
-    <script>lucide.createIcons();</script>
+                <div class="tools-divider"></div>
+
+                <!-- Landmarks -->
+                <div class="tool-panel-section" style="flex:1;">
+                    <div class="map-tools-title">Landmarks</div>
+                    <div class="landmark-list" id="landmark-list">
+                        <div class="landmark-placeholder">Click map to add</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ── RIGHT: MAP AREA ────────────────────────────── -->
+            <div class="map-main-area">
+
+                <!-- Leaflet Map -->
+                <div id="map-canvas"></div>
+
+                <!-- HUD Top: Coordinates Label -->
+                <div class="map-hud-overlay map-hud-top">
+                    LIVE MISSION COORDINATES
+                </div>
+
+                <!-- HUD Bottom: Stats Cards -->
+                <div class="map-hud-overlay map-hud-bottom">
+                    <div class="map-hud-card">
+                        <div class="hud-card-val" id="lat-hud">--</div>
+                        <div class="hud-card-lbl">Latitude</div>
+                    </div>
+                    <div class="map-hud-card">
+                        <div class="hud-card-val" id="lng-hud">--</div>
+                        <div class="hud-card-lbl">Longitude</div>
+                    </div>
+                    <div class="map-hud-card">
+                        <div class="hud-card-val" id="alt-hud">-- m</div>
+                        <div class="hud-card-lbl">Altitude</div>
+                    </div>
+                    <div class="map-hud-card">
+                        <div class="hud-card-val" id="mission-timer-hud">00:00:00</div>
+                        <div class="hud-card-lbl">Mission Time</div>
+                    </div>
+                </div>
+
+                <!-- Right Controls: Zoom / Recenter / Layers -->
+                <div class="map-tools-right">
+                    <button class="map-zoom-btn" id="btn-zoom-in" title="Zoom In">
+                        <i data-lucide="plus"></i>
+                    </button>
+                    <button class="map-zoom-btn" id="btn-zoom-out" title="Zoom Out">
+                        <i data-lucide="minus"></i>
+                    </button>
+                    <div class="map-zoom-divider"></div>
+                    <button class="map-zoom-btn" id="btn-recenter" title="Recenter on Rover">
+                        <i data-lucide="crosshair"></i>
+                    </button>
+                    <button class="map-zoom-btn" id="btn-layers" title="Toggle Layer">
+                        <i data-lucide="layers"></i>
+                    </button>
+                </div>
+
+            </div>
+            <!-- end .map-main-area -->
+
+        </div>
+        <!-- end .map-shell -->
+
+    </div>
+    <!-- end .main-column -->
+
+</div>
+<!-- end .app-shell -->
+
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<script type="module" src="../shared/mqtt-client.js"></script>
+<script type="module" src="../shared/shared.js"></script>
+<script type="module" src="./map.js"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>

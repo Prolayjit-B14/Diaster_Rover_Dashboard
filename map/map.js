@@ -1,215 +1,565 @@
 /**
- * RescueBOT Industrial GPS Mapping Logic
- * Rewritten for live hardware data ingestion via MQTT.
+ * RescueBOT — Tactical Map Module
+ * Full Leaflet integration with MQTT live GPS, tools, landmarks, HUD
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-    const mqtt = window.mqttController;
+// ── TILE LAYER URLS ─────────────────────────────────────────────────────────
+const TILE_STREET = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const TILE_SATELLITE = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
-    class MapDashboard {
-        constructor() {
-            this.map = null;
-            this.RobotMarker = null;
-            this.pathLine = null;
-            this.pathCoords = [];
-            this.isFollowing = true;
-            this.activeTool = null;
-            this.landmarks = [];
-            this.totalDistance = 0;
-            this.currentPos = { lat: 0, lng: 0, heading: 0 };
-            
-            this.init();
-        }
+// ── TOOL TYPES ───────────────────────────────────────────────────────────────
+const TOOLS = {
+    FOLLOW:    'follow',
+    WAYPOINT:  'waypoint',
+    HAZARD:    'hazard',
+    SAFE:      'safe',
+    EMERGENCY: 'emergency',
+};
 
-        init() {
-            const mapContainer = document.getElementById('map-canvas');
-            if (!mapContainer || typeof L === 'undefined') return;
+// ── LANDMARK CONFIG ──────────────────────────────────────────────────────────
+const LANDMARK_CONFIG = {
+    [TOOLS.WAYPOINT]:  { color: '#00D4FF', label: 'Waypoint',  emoji: '📍' },
+    [TOOLS.HAZARD]:    { color: '#FF2D55', label: 'Hazard',    emoji: '⚠️' },
+    [TOOLS.SAFE]:      { color: '#00FF88', label: 'Safe Zone', emoji: '🛡️' },
+    [TOOLS.EMERGENCY]: { color: '#FFB800', label: 'Emerg.',    emoji: '🚨' },
+};
 
-            this.map = L.map('map-canvas', {
-                zoomControl: false,
-                attributionControl: false,
-                scrollWheelZoom: true
-            }).setView([0, 0], 2);
+// ─────────────────────────────────────────────────────────────────────────────
+class MapDashboard {
+    constructor() {
+        this.map          = null;
+        this.roverMarker  = null;
+        this.pathLine     = null;
+        this.pathCoords   = [];
+        this.isFollowing  = true;
+        this.activeTool   = null;
+        this.landmarks    = [];
+        this.totalDistance = 0;
+        this.currentPos   = null;
+        this.streetLayer  = null;
+        this.satLayer     = null;
+        this.activeLayer  = 'street';
 
-            this.streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.map);
-            this.satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+        this._missionSecs = 0;
+        this._missionInterval = null;
+        this._roverHeading = 0;
 
-            const RobotIcon = L.divIcon({
-                className: 'Robot-marker-icon',
-                html: `<div class="Robot-arrow" style="transform: rotate(0deg);">
-                        <svg width="44" height="44" viewBox="0 0 24 24" fill="#2563EB" stroke="white" stroke-width="2">
-                            <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
-                        </svg>
-                       </div>`,
-                iconSize: [44, 44],
-                iconAnchor: [22, 22]
+        this.init();
+    }
+
+    // ── INIT ─────────────────────────────────────────────────────────────────
+    init() {
+        // Create map
+        this.map = L.map('map-canvas', {
+            zoomControl: false,
+            attributionControl: false,
+            preferCanvas: true
+        }).setView([20.5937, 78.9629], 5);  // Default: India center
+
+        // Tile layers
+        this.streetLayer = L.tileLayer(TILE_STREET, {
+            subdomains: 'abcd',
+            maxZoom: 20,
+            opacity: 1
+        });
+        this.satLayer = L.tileLayer(TILE_SATELLITE, {
+            maxZoom: 20,
+            opacity: 1
+        });
+
+        // Add default layer
+        this.streetLayer.addTo(this.map);
+
+        // Rover custom icon
+        const roverIconHtml = `
+            <div style="
+                position:relative;
+                width:20px; height:20px;
+                display:flex; align-items:center; justify-content:center;
+            ">
+                <div class="rover-icon-inner" style="
+                    width:16px; height:16px;
+                    background:#00D4FF;
+                    border-radius:50%;
+                    border:2px solid rgba(255,255,255,0.8);
+                    box-shadow: 0 0 0 0 rgba(0,212,255,0.5),
+                                0 0 12px rgba(0,212,255,0.8);
+                    display:flex; align-items:center; justify-content:center;
+                ">
+                    <div style="
+                        width:6px; height:6px;
+                        background:#fff;
+                        border-radius:50%;
+                    "></div>
+                </div>
+                <div id="rover-heading-needle" style="
+                    position:absolute;
+                    top:-6px; left:50%;
+                    transform:translateX(-50%);
+                    width:0; height:0;
+                    border-left:4px solid transparent;
+                    border-right:4px solid transparent;
+                    border-bottom:8px solid #00D4FF;
+                "></div>
+            </div>
+        `;
+
+        const RoverIcon = L.divIcon({
+            html: roverIconHtml,
+            className: '',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10],
+        });
+
+        this.roverMarker = L.marker([20.5937, 78.9629], { icon: RoverIcon, zIndexOffset: 1000 })
+            .addTo(this.map);
+
+        // Path polyline
+        this.pathLine = L.polyline([], {
+            color: '#00D4FF',
+            weight: 3,
+            opacity: 0.8,
+            dashArray: null,
+            lineCap: 'round',
+            lineJoin: 'round'
+        }).addTo(this.map);
+
+        this.setupListeners();
+        this.setupMqtt();
+        this.startMissionTimer();
+    }
+
+    // ── MQTT ─────────────────────────────────────────────────────────────────
+    setupMqtt() {
+        // Use the singleton MqttController from mqtt-client.js
+        if (window.mqttController) {
+            window.mqttController.on('gps', (d) => {
+                const lat  = parseFloat(d.lat)  || 0;
+                const lng  = parseFloat(d.lng)  || 0;
+                const hdg  = parseFloat(d.heading)   || 0;
+                const spd  = parseFloat(d.speed)     || 0;
+                const sats = parseInt(d.satellites)  || 0;
+                const alt  = parseFloat(d.altitude)  || null;
+                this.updateRobot(lat, lng, hdg, spd, sats, alt);
             });
 
-            this.RobotMarker = L.marker([0, 0], { icon: RobotIcon }).addTo(this.map);
-            
-            this.pathLine = L.polyline([], { 
-                color: '#2563EB', 
-                weight: 4, 
-                opacity: 0.8,
-                lineJoin: 'round'
-            }).addTo(this.map);
-
-            this.setupListeners();
-            this.setupMqtt();
-        }
-
-        setupMqtt() {
-            if (!mqtt) return;
-
-            mqtt.on('gps', (data) => {
-                // data format: { lat: 22.57, lng: 88.36, heading: 120, speed: 5.2 }
-                this.updateRobot(data.lat, data.lng, data.heading || 0, data.speed || 0);
-            });
-        }
-
-        setupListeners() {
-            this.map.on('click', (e) => {
-                if (this.activeTool) {
-                    this.addLandmark(e.latlng.lat, e.latlng.lng, this.activeTool);
-                    this.activeTool = null;
-                    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+            // Update GPS status dot on connection changes
+            window.mqttController.on('statusChanged', (status) => {
+                const dot = document.getElementById('gps-dot');
+                const txt = document.getElementById('gps-status');
+                if (dot && txt) {
+                    if (status === 'CONNECTED') {
+                        dot.className = 'status-dot';
+                        txt.textContent = '3D GPS FIX';
+                    } else if (status === 'CONNECTING') {
+                        dot.className = 'status-dot warning';
+                        txt.textContent = 'ACQUIRING...';
+                    } else {
+                        dot.className = 'status-dot offline';
+                        txt.textContent = 'GPS OFFLINE';
+                    }
                 }
             });
-
-            document.querySelectorAll('.tool-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const type = btn.getAttribute('data-type');
-                    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-                    if (this.activeTool !== type) {
-                        this.activeTool = type;
-                        btn.classList.add('active');
-                    } else {
-                        this.activeTool = null;
-                    }
-                });
-            });
-
-            document.getElementById('btn-street')?.addEventListener('click', (e) => {
-                this.map.addLayer(this.streetLayer);
-                this.map.removeLayer(this.satelliteLayer);
-                e.currentTarget.classList.add('active');
-                document.getElementById('btn-satellite')?.classList.remove('active');
-            });
-
-            document.getElementById('btn-satellite')?.addEventListener('click', (e) => {
-                this.map.addLayer(this.satelliteLayer);
-                this.map.removeLayer(this.streetLayer);
-                e.currentTarget.classList.add('active');
-                document.getElementById('btn-street')?.classList.remove('active');
-            });
-
-            document.getElementById('btn-follow')?.addEventListener('click', (e) => {
-                this.isFollowing = !this.isFollowing;
-                e.currentTarget.classList.toggle('active', this.isFollowing);
-                if (this.isFollowing) this.map.panTo([this.currentPos.lat, this.currentPos.lng]);
-            });
-
-            document.getElementById('btn-zoom-in')?.addEventListener('click', () => this.map.zoomIn());
-            document.getElementById('btn-zoom-out')?.addEventListener('click', () => this.map.zoomOut());
         }
 
-        addLandmark(lat, lng, type) {
-            const configs = {
-                target: { color: '#EF4444', label: 'TARGET' },
-                hazard: { color: '#F59E0B', label: 'HAZARD' },
-                clear: { color: '#10B981', label: 'SECURE' }
-            };
-            const config = configs[type];
+        // Also listen via window events (fallback)
+        window.addEventListener('ares:gps', (e) => {
+            const d = e.detail;
+            this.updateRobot(
+                parseFloat(d.lat)  || 0,
+                parseFloat(d.lng)  || 0,
+                parseFloat(d.heading)  || 0,
+                parseFloat(d.speed)    || 0,
+                parseInt(d.satellites) || 0,
+                d.altitude ? parseFloat(d.altitude) : null
+            );
+        });
+    }
 
-            const markerIcon = L.divIcon({
-                className: 'landmark-icon',
-                html: `<div style="background: ${config.color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px ${config.color}66;"></div>`,
-                iconSize: [14, 14],
-                iconAnchor: [7, 7]
+    // ── MAP & TOOL LISTENERS ─────────────────────────────────────────────────
+    setupListeners() {
+        // Map click → add landmark based on active tool
+        this.map.on('click', (e) => {
+            if (!this.activeTool || this.activeTool === TOOLS.FOLLOW) return;
+            this.addLandmark(e.latlng.lat, e.latlng.lng, this.activeTool);
+        });
+
+        // Tool buttons
+        const toolBtns = [
+            { id: 'btn-follow',          tool: null,            followToggle: true },
+            { id: 'btn-waypoint',        tool: TOOLS.WAYPOINT                      },
+            { id: 'btn-hazard',          tool: TOOLS.HAZARD                        },
+            { id: 'btn-clear-zone',      tool: TOOLS.SAFE                          },
+            { id: 'btn-emergency-route', tool: TOOLS.EMERGENCY                     },
+        ];
+
+        toolBtns.forEach(({ id, tool, followToggle }) => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            btn.addEventListener('click', () => {
+                if (followToggle) {
+                    // Toggle follow mode
+                    this.isFollowing = !this.isFollowing;
+                    btn.classList.toggle('active', this.isFollowing);
+                    if (this.isFollowing && this.currentPos) {
+                        this.map.panTo(this.currentPos);
+                    }
+                    RESCUEBOT_UI.toast(
+                        this.isFollowing ? 'Follow mode: ON' : 'Follow mode: OFF',
+                        this.isFollowing ? 'success' : 'info'
+                    );
+                    return;
+                }
+
+                // Select / deselect tool
+                if (this.activeTool === tool) {
+                    this.activeTool = null;
+                    btn.classList.remove('active');
+                    this.map.getContainer().style.cursor = '';
+                } else {
+                    // Deactivate all other tool btns
+                    toolBtns.forEach(b => {
+                        const el = document.getElementById(b.id);
+                        if (el && !b.followToggle) el.classList.remove('active');
+                    });
+                    this.activeTool = tool;
+                    btn.classList.add('active');
+                    this.map.getContainer().style.cursor = 'crosshair';
+                    RESCUEBOT_UI.toast(
+                        `Click map to place: ${LANDMARK_CONFIG[tool]?.label || tool}`,
+                        'info'
+                    );
+                }
+            });
+        });
+
+        // Layer toggle buttons
+        const btnStreet = document.getElementById('btn-street');
+        const btnSat    = document.getElementById('btn-satellite');
+
+        const setLayer = (layer) => {
+            if (layer === 'street') {
+                if (this.map.hasLayer(this.satLayer)) this.map.removeLayer(this.satLayer);
+                if (!this.map.hasLayer(this.streetLayer)) this.streetLayer.addTo(this.map);
+                btnStreet?.classList.add('active');
+                btnSat?.classList.remove('active');
+                this.activeLayer = 'street';
+            } else {
+                if (this.map.hasLayer(this.streetLayer)) this.map.removeLayer(this.streetLayer);
+                if (!this.map.hasLayer(this.satLayer)) this.satLayer.addTo(this.map);
+                btnSat?.classList.add('active');
+                btnStreet?.classList.remove('active');
+                this.activeLayer = 'satellite';
+            }
+        };
+
+        btnStreet?.addEventListener('click', () => setLayer('street'));
+        btnSat?.addEventListener('click',    () => setLayer('satellite'));
+
+        // Right panel: zoom in / out
+        document.getElementById('btn-zoom-in')?.addEventListener('click', () => {
+            this.map.zoomIn();
+        });
+        document.getElementById('btn-zoom-out')?.addEventListener('click', () => {
+            this.map.zoomOut();
+        });
+
+        // Right panel: recenter
+        document.getElementById('btn-recenter')?.addEventListener('click', () => {
+            if (this.currentPos) {
+                this.map.setView(this.currentPos, Math.max(this.map.getZoom(), 15), { animate: true });
+            } else {
+                RESCUEBOT_UI.toast('No GPS fix yet', 'warning');
+            }
+        });
+
+        // Right panel: layers quick toggle
+        document.getElementById('btn-layers')?.addEventListener('click', () => {
+            setLayer(this.activeLayer === 'street' ? 'satellite' : 'street');
+        });
+    }
+
+    // ── ROBOT UPDATE ─────────────────────────────────────────────────────────
+    updateRobot(lat, lng, heading, speed, sats, altitude = null) {
+        const latlng = L.latLng(lat, lng);
+
+        // Calculate distance increment
+        if (this.currentPos) {
+            const delta = this.getDistMeters(
+                this.currentPos.lat, this.currentPos.lng, lat, lng
+            );
+            // Ignore tiny GPS jitter (< 0.5m)
+            if (delta > 0.5) {
+                this.totalDistance += delta;
+            }
+        }
+
+        this.currentPos = latlng;
+        this._roverHeading = heading;
+
+        // Move rover marker
+        this.roverMarker.setLatLng(latlng);
+
+        // Rotate heading needle
+        this._updateRoverHeading(heading);
+
+        // Append path
+        this.pathCoords.push(latlng);
+        this.pathLine.setLatLngs(this.pathCoords);
+
+        // Pan if following
+        if (this.isFollowing) {
+            this.map.panTo(latlng, { animate: true, duration: 0.5 });
+        }
+
+        // ── Update sidebar telemetry panel
+        this._setText('lat-display', lat.toFixed(6) + '°');
+        this._setText('lng-display', lng.toFixed(6) + '°');
+        this._setText('speed-display', speed.toFixed(1) + ' km/h');
+        this._setText('dist-display', this.totalDistance >= 1000
+            ? (this.totalDistance / 1000).toFixed(2) + ' km'
+            : Math.round(this.totalDistance) + ' m'
+        );
+        this._setText('sats-display', sats + ' sats');
+
+        // ── Update HUD cards
+        this._setText('lat-hud', lat.toFixed(5));
+        this._setText('lng-hud', lng.toFixed(5));
+        if (altitude !== null) {
+            this._setText('alt-hud', altitude.toFixed(1) + ' m');
+        }
+
+        // Update GPS pill status
+        const gpsStatus = document.getElementById('gps-status');
+        if (gpsStatus) {
+            gpsStatus.textContent = sats >= 4 ? '3D GPS FIX' : sats > 0 ? 'WEAK FIX' : 'NO FIX';
+        }
+        const gpsDot = document.getElementById('gps-dot');
+        if (gpsDot) {
+            gpsDot.className = 'status-dot' + (sats < 4 ? ' warning' : '');
+        }
+    }
+
+    // ── HEADING ARROW ─────────────────────────────────────────────────────────
+    _updateRoverHeading(degrees) {
+        // Re-render marker icon with rotation
+        const roverIconHtml = `
+            <div style="
+                position:relative;
+                width:20px; height:20px;
+                display:flex; align-items:center; justify-content:center;
+                transform: rotate(${degrees}deg);
+            ">
+                <div class="rover-icon-inner" style="
+                    width:16px; height:16px;
+                    background:#00D4FF;
+                    border-radius:50%;
+                    border:2px solid rgba(255,255,255,0.8);
+                    box-shadow: 0 0 0 0 rgba(0,212,255,0.5),
+                                0 0 12px rgba(0,212,255,0.8);
+                    display:flex; align-items:center; justify-content:center;
+                ">
+                    <div style="
+                        width:6px; height:6px;
+                        background:#fff;
+                        border-radius:50%;
+                    "></div>
+                </div>
+                <div style="
+                    position:absolute;
+                    top:-6px; left:50%;
+                    transform:translateX(-50%);
+                    width:0; height:0;
+                    border-left:4px solid transparent;
+                    border-right:4px solid transparent;
+                    border-bottom:8px solid #00D4FF;
+                "></div>
+            </div>
+        `;
+        const icon = L.divIcon({
+            html: roverIconHtml,
+            className: '',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10],
+        });
+        this.roverMarker.setIcon(icon);
+    }
+
+    // ── ADD LANDMARK ─────────────────────────────────────────────────────────
+    addLandmark(lat, lng, type) {
+        const cfg = LANDMARK_CONFIG[type];
+        if (!cfg) return;
+
+        const markerHtml = `
+            <div style="
+                width:24px; height:24px;
+                background:${cfg.color};
+                border-radius:50% 50% 50% 0;
+                transform:rotate(-45deg);
+                border:2px solid rgba(255,255,255,0.7);
+                box-shadow:0 0 10px ${cfg.color}80;
+                display:flex; align-items:center; justify-content:center;
+            ">
+                <span style="
+                    transform:rotate(45deg);
+                    font-size:10px;
+                    line-height:1;
+                ">${cfg.emoji}</span>
+            </div>
+        `;
+
+        const icon = L.divIcon({
+            html: markerHtml,
+            className: '',
+            iconSize: [24, 24],
+            iconAnchor: [12, 24],
+        });
+
+        const idx = this.landmarks.length + 1;
+        const name = `${cfg.label} #${idx}`;
+        const marker = L.marker([lat, lng], { icon })
+            .addTo(this.map)
+            .bindPopup(`
+                <div style="
+                    font-family:'Inter',sans-serif;
+                    color:#E8F4FD;
+                    background:#0D1B35;
+                    padding:4px 0;
+                ">
+                    <strong style="color:${cfg.color};">${cfg.emoji} ${name}</strong><br>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8BA4C0;">
+                        ${lat.toFixed(6)}°, ${lng.toFixed(6)}°
+                    </span>
+                </div>
+            `, {
+                className: 'rescuebot-popup'
             });
 
-            L.marker([lat, lng], { icon: markerIcon }).addTo(this.map);
-            this.landmarks.push({ lat, lng, config });
+        this.landmarks.push({ lat, lng, type, name, marker, color: cfg.color });
+        this.updateLandmarkUI();
+
+        // Deactivate tool after placing
+        const toolBtnIds = {
+            [TOOLS.WAYPOINT]:  'btn-waypoint',
+            [TOOLS.HAZARD]:    'btn-hazard',
+            [TOOLS.SAFE]:      'btn-clear-zone',
+            [TOOLS.EMERGENCY]: 'btn-emergency-route',
+        };
+        const activeBtnId = toolBtnIds[this.activeTool];
+        if (activeBtnId) {
+            document.getElementById(activeBtnId)?.classList.remove('active');
+        }
+        this.activeTool = null;
+        this.map.getContainer().style.cursor = '';
+
+        RESCUEBOT_UI.toast(`${name} placed`, 'success');
+    }
+
+    // ── UPDATE LANDMARK UI ───────────────────────────────────────────────────
+    updateLandmarkUI() {
+        const list = document.getElementById('landmark-list');
+        if (!list) return;
+
+        if (this.landmarks.length === 0) {
+            list.innerHTML = '<div class="landmark-placeholder">Click map to add</div>';
+            return;
+        }
+
+        list.innerHTML = this.landmarks.map((lm, i) => `
+            <div class="landmark-item" style="border-left-color:${lm.color};">
+                <div class="landmark-dot" style="background:${lm.color};box-shadow:0 0 6px ${lm.color}80;"></div>
+                <div class="landmark-info">
+                    <div class="landmark-name">${lm.name}</div>
+                    <div class="landmark-coords">${lm.lat.toFixed(5)}°, ${lm.lng.toFixed(5)}°</div>
+                </div>
+                <button
+                    onclick="window.mapDash.removeLandmark(${i})"
+                    style="
+                        background:none; border:none; cursor:pointer;
+                        color:var(--text-muted); padding:2px; border-radius:4px;
+                        display:flex; align-items:center; transition:color 0.2s;
+                    "
+                    onmouseenter="this.style.color='#FF2D55'"
+                    onmouseleave="this.style.color='var(--text-muted)'"
+                    title="Remove"
+                >✕</button>
+            </div>
+        `).join('');
+    }
+
+    // ── REMOVE LANDMARK ──────────────────────────────────────────────────────
+    removeLandmark(index) {
+        if (this.landmarks[index]) {
+            this.map.removeLayer(this.landmarks[index].marker);
+            this.landmarks.splice(index, 1);
+            // Re-number
+            this.landmarks.forEach((lm, i) => {
+                const cfg = LANDMARK_CONFIG[lm.type];
+                lm.name = `${cfg.label} #${i + 1}`;
+            });
             this.updateLandmarkUI();
         }
-
-        updateLandmarkUI() {
-            const list = document.getElementById('landmark-list');
-            if (!list) return;
-            if (this.landmarks.length === 0) {
-                list.innerHTML = '<div class="empty-list">No landmarks recorded.</div>';
-                return;
-            }
-            list.innerHTML = this.landmarks.slice(-4).reverse().map(l => `
-                <div class="landmark-item">
-                    <div style="width: 12px; height: 12px; border-radius: 50%; background: ${l.config.color}"></div>
-                    <div class="landmark-info">
-                        <span class="landmark-name">${l.config.label}</span>
-                        <span class="landmark-coords">${l.lat.toFixed(5)}, ${l.lng.toFixed(5)}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        updateRobot(lat, lng, heading, speed = 0) {
-            if (this.pathCoords.length > 0) {
-                const prev = this.pathCoords[this.pathCoords.length - 1];
-                const d = this.getDistMeters(prev[0], prev[1], lat, lng);
-                this.totalDistance += d;
-                this.updateDistHUD(this.totalDistance);
-            }
-
-            this.currentPos = { lat, lng, heading };
-            this.RobotMarker.setLatLng([lat, lng]);
-            
-            const arrowEl = this.RobotMarker.getElement()?.querySelector('.Robot-arrow');
-            if (arrowEl) arrowEl.style.transform = `rotate(${heading}deg)`;
-            
-            this.pathCoords.push([lat, lng]);
-            this.pathLine.setLatLngs(this.pathCoords);
-            
-            if (this.isFollowing) this.map.panTo([lat, lng]);
-            
-            const latEl = document.getElementById('lat-display');
-            const lngEl = document.getElementById('lng-display');
-            const satEl = document.getElementById('sat-count');
-
-            if (latEl) latEl.textContent = lat.toFixed(6) + '°';
-            if (lngEl) lngEl.textContent = lng.toFixed(6) + '°';
-            if (satEl) satEl.textContent = Math.floor(Math.random() * 5) + 8; // Simulated satellite count
-        }
-
-        getDistMeters(lat1, lon1, lat2, lon2) {
-            const R = 6371e3;
-            const φ1 = lat1 * Math.PI/180;
-            const φ2 = lat2 * Math.PI/180;
-            const Δφ = (lat2-lat1) * Math.PI/180;
-            const Δλ = (lon2-lon1) * Math.PI/180;
-            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
-
-        updateDistHUD(val) {
-            const el = document.getElementById('map-dist');
-            if (el) el.textContent = Math.floor(val);
-        }
     }
 
-    // Singleton Instance
-    window.mapDash = new MapDashboard();
-    
-    // Mission Timer
-    let seconds = 0;
-    const missionTimeEl = document.getElementById('mission-time');
-    if (missionTimeEl) {
-        setInterval(() => {
-            seconds++;
-            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
-            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-            const s = (seconds % 60).toString().padStart(2, '0');
-            missionTimeEl.textContent = `${h}:${m}:${s}`;
+    // ── HAVERSINE DISTANCE ───────────────────────────────────────────────────
+    getDistMeters(lat1, lon1, lat2, lon2) {
+        const R    = 6371000; // Earth radius in metres
+        const toR  = (d) => d * Math.PI / 180;
+        const dLat = toR(lat2 - lat1);
+        const dLon = toR(lon2 - lon1);
+        const a    = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                   + Math.cos(toR(lat1)) * Math.cos(toR(lat2))
+                   * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c    = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    // ── MISSION TIMER ────────────────────────────────────────────────────────
+    startMissionTimer() {
+        this._missionSecs = 0;
+        this._missionInterval = setInterval(() => {
+            this._missionSecs++;
+            const h = String(Math.floor(this._missionSecs / 3600)).padStart(2, '0');
+            const m = String(Math.floor((this._missionSecs % 3600) / 60)).padStart(2, '0');
+            const s = String(this._missionSecs % 60).padStart(2, '0');
+            this._setText('mission-timer-hud', `${h}:${m}:${s}`);
         }, 1000);
     }
-});
 
+    // ── HELPER ───────────────────────────────────────────────────────────────
+    _setText(id, value) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    }
+}
+
+// ── BOOTSTRAP ────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    // Ensure Leaflet popup styles match our dark theme
+    const popupStyle = document.createElement('style');
+    popupStyle.textContent = `
+        .leaflet-popup-content-wrapper {
+            background: #0D1B35 !important;
+            color: #E8F4FD !important;
+            border: 1px solid rgba(0,212,255,0.25) !important;
+            border-radius: 10px !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+        }
+        .leaflet-popup-tip {
+            background: #0D1B35 !important;
+        }
+        .leaflet-popup-close-button {
+            color: #8BA4C0 !important;
+        }
+        .leaflet-popup-close-button:hover {
+            color: #00D4FF !important;
+        }
+    `;
+    document.head.appendChild(popupStyle);
+
+    // Instantiate map dashboard
+    window.mapDash = new MapDashboard();
+
+    // Re-initialize lucide icons after DOM is ready
+    if (window.lucide) window.lucide.createIcons();
+});

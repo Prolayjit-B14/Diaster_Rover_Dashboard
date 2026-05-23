@@ -1,76 +1,247 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RescueBOT | Vision Node</title>
+    <title>RescueBOT | Vision Array</title>
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./camera.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <div class="app-frame">
-        <nav class="top-navbar">
-            <div class="nav-left">
-                <div class="logo-box">R</div>
-                <div class="nav-title-group">
-                    <span class="nav-title">RescueBOT Support</span>
-                    <span class="nav-subtitle">Vision Array</span>
-                </div>
-            </div>
+<div class="app-shell">
 
-            <div class="nav-center">
-                <div class="status-pill">
-                    <div class="status-dot active" id="mqtt-dot"></div>
-                    <span id="mqtt-status-text">NETWORK SECURE</span>
-                </div>
+    <!-- ══ SIDEBAR ══════════════════════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-mark">R</div>
+            <div class="logo-text">
+                <span class="logo-name">RescueBOT</span>
+                <span class="logo-ver">v3.1 · MISSION</span>
             </div>
+        </div>
 
-            <div class="nav-right">
-                <button id="theme-toggle" class="btn-standard" title="Toggle Theme"><i data-lucide="sun"></i></button>
-                <a href="../dashboard/dashboard.html" class="nav-link" title="Dashboard"><i data-lucide="layout-grid"></i></a>
-                <a href="../map/map.html" class="nav-link" title="Map"><i data-lucide="map"></i></a>
-                <a href="../camera/camera.html" class="nav-link active" title="Vision"><i data-lucide="video"></i></a>
-                <a href="../sensors/sensors.html" class="nav-link" title="Telemetry"><i data-lucide="activity"></i></a>
-            </div>
+        <button class="sidebar-collapse-btn" id="sidebar-collapse-btn">
+            <i data-lucide="chevrons-left" style="width:14px;height:14px;"></i>
+        </button>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Mission Control</div>
+            <a href="../dashboard/dashboard.html" class="nav-item">
+                <i data-lucide="layout-dashboard"></i>
+                <span class="nav-label">Dashboard</span>
+            </a>
+            <a href="./camera.html" class="nav-item active">
+                <i data-lucide="video"></i>
+                <span class="nav-label">Camera Feed</span>
+            </a>
+            <a href="../map/map.html" class="nav-item">
+                <i data-lucide="map"></i>
+                <span class="nav-label">Tactical Map</span>
+            </a>
+            <a href="../sensors/sensors.html" class="nav-item">
+                <i data-lucide="activity"></i>
+                <span class="nav-label">Sensor Array</span>
+            </a>
+            <a href="../alerts/alerts.html" class="nav-item">
+                <i data-lucide="bell-ring"></i>
+                <span class="nav-label">Alerts</span>
+                <span class="nav-badge" id="sidebar-alert-count">0</span>
+            </a>
+
+            <div class="nav-section-label" style="margin-top:16px;">System</div>
+            <a href="../" class="nav-item">
+                <i data-lucide="home"></i>
+                <span class="nav-label">Home</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i data-lucide="settings"></i>
+                <span class="nav-label">Settings</span>
+            </a>
         </nav>
 
-        <main class="workspace">
-            <div class="camera-grid">
-                <section class="card-standard main-view-card">
-                    <div class="view-header">
-                        <h2>PRIMARY FIELD FEED</h2>
-                        <span class="status-pill">LIVE</span>
-                    </div>
-                    <div class="video-view-area">
-                        <img id="esp32-stream" src="" alt="Stream" style="display: none; width: 100%; height: 100%; object-fit: contain;">
-                        <div class="status-overlay" id="stream-placeholder">
-                            <i data-lucide="video-off"></i>
-                            <span>WAITING FOR FIELD SIGNAL...</span>
-                        </div>
-                    </div>
-                    <div class="control-bar">
-                        <button class="btn-standard" id="btn-stream-toggle"><i data-lucide="play"></i> Start Stream</button>
-                        <button class="btn-standard"><i data-lucide="camera"></i> Capture</button>
-                    </div>
-                </section>
-
-                <aside class="sidebar-content">
-                    <div class="card-standard log-panel">
-                        <div class="log-title">Detection History</div>
-                        <div class="log-entries" id="cam-event-logs">
-                            <!-- Logs here -->
-                        </div>
-                    </div>
-                </aside>
+        <div class="sidebar-footer">
+            <div class="status-pill" style="width:100%; justify-content:center;">
+                <div class="status-dot" id="mqtt-dot"></div>
+                <span id="mqtt-status-text" style="font-family:var(--font-mono);font-size:10px;">CONNECTING...</span>
             </div>
-        </main>
-    </div>
+        </div>
+    </aside>
 
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <script type="module" src="../shared/mqtt-client.js"></script>
-    <script type="module" src="../shared/shared.js"></script>
-    <script type="module" src="./camera.js"></script>
-    <script>lucide.createIcons();</script>
+    <!-- ══ MAIN COLUMN ══════════════════════════════════════════ -->
+    <div class="main-column">
+
+        <!-- TOP NAVBAR -->
+        <header class="top-navbar">
+            <div class="nav-left">
+                <span class="nav-page-title">Vision Array</span>
+                <span class="nav-breadcrumb">/ Camera Feed</span>
+            </div>
+            <div class="nav-right">
+                <!-- Live Recording Indicator -->
+                <div class="live-indicator">
+                    <div class="live-dot standby" id="cam-rec-dot"></div>
+                    <span id="cam-rec-label">STANDBY</span>
+                </div>
+                <!-- Mission Clock -->
+                <div class="status-pill">
+                    <i data-lucide="clock" style="width:12px;height:12px;"></i>
+                    <span id="mission-clock" style="font-family:var(--font-mono);">--:--:--</span>
+                </div>
+                <!-- Notifications -->
+                <button class="icon-btn" title="Notifications">
+                    <i data-lucide="bell"></i>
+                </button>
+                <!-- Theme Toggle -->
+                <button class="icon-btn" id="theme-toggle" title="Toggle Theme">
+                    <i data-lucide="sun"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- CAMERA SHELL (no page-content padding) -->
+        <div class="camera-shell">
+
+            <!-- ── MAIN FEED PANEL ─────────────────────────────── -->
+            <div class="main-feed-panel" id="main-feed-panel">
+
+                <!-- Video Wrap -->
+                <div class="feed-video-wrap">
+                    <img id="esp32-stream" class="feed-img" src="" alt="ESP32 Camera Stream" style="display:none;">
+
+                    <!-- Placeholder -->
+                    <div class="feed-placeholder" id="feed-placeholder">
+                        <i data-lucide="video-off"></i>
+                        <span>WAITING FOR FIELD SIGNAL</span>
+                    </div>
+                </div>
+
+                <!-- HUD Overlay -->
+                <div class="feed-overlay">
+                    <!-- Corner Brackets -->
+                    <div class="corner-bracket tl"></div>
+                    <div class="corner-bracket tr"></div>
+                    <div class="corner-bracket bl"></div>
+                    <div class="corner-bracket br"></div>
+
+                    <!-- HUD Timestamp (top-left) -->
+                    <div class="hud-timestamp" id="hud-timestamp">--</div>
+
+                    <!-- HUD Top Centre Badges -->
+                    <div class="hud-top">
+                        <span class="hud-badge rec" id="rec-badge">⏺ REC</span>
+                        <span class="hud-badge live">● LIVE</span>
+                        <span class="hud-badge" id="fps-badge">-- FPS</span>
+                        <span class="hud-badge" id="latency-badge">-- ms</span>
+                    </div>
+
+                    <!-- Feed Controls -->
+                    <div class="feed-controls">
+                        <button class="feed-btn" id="btn-stream-toggle">
+                            <i data-lucide="play"></i>
+                            START STREAM
+                        </button>
+                        <button class="feed-btn" id="btn-snapshot">
+                            <i data-lucide="camera"></i>
+                            SNAPSHOT
+                        </button>
+                        <button class="feed-btn danger" id="btn-fullscreen">
+                            <i data-lucide="maximize"></i>
+                            FULLSCREEN
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── CAMERA SIDEBAR ──────────────────────────────── -->
+            <div class="cam-sidebar">
+
+                <!-- Camera Status Section -->
+                <div class="cam-sidebar-section">
+                    <div class="cam-status-header">
+                        <h3>Camera Status</h3>
+                        <span class="badge badge-red" id="cam-conn-badge">OFFLINE</span>
+                    </div>
+                    <div class="cam-stat-row">
+                        <div class="cam-stat-box">
+                            <div class="cam-stat-val" id="stat-fps">--</div>
+                            <div class="cam-stat-lbl">FPS</div>
+                        </div>
+                        <div class="cam-stat-box">
+                            <div class="cam-stat-val" id="stat-res">VGA</div>
+                            <div class="cam-stat-lbl">Resolution</div>
+                        </div>
+                        <div class="cam-stat-box">
+                            <div class="cam-stat-val" id="stat-latency">--</div>
+                            <div class="cam-stat-lbl">Latency ms</div>
+                        </div>
+                        <div class="cam-stat-box">
+                            <div class="cam-stat-val" id="stat-qual">HD</div>
+                            <div class="cam-stat-lbl">Quality</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Detection Section -->
+                <div class="cam-sidebar-section">
+                    <h3>AI Detection</h3>
+                    <div class="detection-grid">
+                        <!-- Motion -->
+                        <div class="detection-tile" id="tile-motion">
+                            <span class="detection-tile-icon">🎯</span>
+                            <span class="detection-tile-name">Motion</span>
+                            <span class="detection-tile-status" id="status-motion">CLEAR</span>
+                        </div>
+                        <!-- Human -->
+                        <div class="detection-tile" id="tile-human">
+                            <span class="detection-tile-icon">👤</span>
+                            <span class="detection-tile-name">Human</span>
+                            <span class="detection-tile-status" id="status-human">CLEAR</span>
+                        </div>
+                        <!-- Hazard -->
+                        <div class="detection-tile" id="tile-hazard">
+                            <span class="detection-tile-icon">☢️</span>
+                            <span class="detection-tile-name">Hazard</span>
+                            <span class="detection-tile-status" id="status-hazard">CLEAR</span>
+                        </div>
+                        <!-- Fire -->
+                        <div class="detection-tile" id="tile-fire">
+                            <span class="detection-tile-icon">🔥</span>
+                            <span class="detection-tile-name">Fire</span>
+                            <span class="detection-tile-status" id="status-fire">CLEAR</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Event Log Section -->
+                <div class="cam-sidebar-section">
+                    <h3>AI Event Log</h3>
+                    <div class="ai-log-list" id="ai-log-list">
+                        <div class="ai-log-empty">No events detected</div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- end cam-sidebar -->
+
+        </div>
+        <!-- end camera-shell -->
+
+    </div>
+    <!-- end main-column -->
+
+</div>
+<!-- end app-shell -->
+
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<script type="module" src="../shared/mqtt-client.js"></script>
+<script type="module" src="../shared/shared.js"></script>
+<script type="module" src="./camera.js"></script>
+<script>
+    // Lucide icons — runs after all scripts loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+</script>
 </body>
 </html>

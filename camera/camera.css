@@ -1,71 +1,477 @@
-.camera-grid {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: var(--s-6);
-    height: 100%;
+/* ============================================================
+   RESCUEBOT — VISION ARRAY MODULE
+   Premium Fullscreen Camera Layout
+   ============================================================ */
+
+/* ── Main Camera Shell ───────────────────────────────────── */
+.camera-shell {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  height: calc(100vh - var(--nav-height));
+  gap: 0;
+  overflow: hidden;
 }
 
-.main-view-card {
-    padding: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+/* ── Main Feed Panel ─────────────────────────────────────── */
+.main-feed-panel {
+  position: relative;
+  background: #000;
+  overflow: hidden;
 }
 
-.view-header {
-    padding: var(--s-4) var(--s-5);
-    border-bottom: 1px solid var(--border-light);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.feed-video-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.video-view-area {
-    flex: 1;
-    background: #000;
-    position: relative;
-    min-height: 400px;
+.feed-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.control-bar {
-    padding: var(--s-4) var(--s-5);
-    background: var(--bg-surface);
-    display: flex;
-    justify-content: center;
-    gap: var(--s-4);
-    border-top: 1px solid var(--border-light);
+/* ── HUD Overlay ─────────────────────────────────────────── */
+.feed-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
-.sidebar-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--s-5);
+/* Corner Brackets */
+.corner-bracket {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #00D4FF;
+  opacity: 0.8;
 }
 
-.log-panel {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: var(--s-5);
-    overflow: hidden;
+.corner-bracket.tl {
+  top: 16px;
+  left: 16px;
+  border-right: none;
+  border-bottom: none;
 }
 
-.log-title {
-    font-size: 0.75rem;
-    font-weight: 800;
-    color: var(--text-muted);
-    margin-bottom: var(--s-4);
-    text-transform: uppercase;
+.corner-bracket.tr {
+  top: 16px;
+  right: 16px;
+  border-left: none;
+  border-bottom: none;
 }
 
-.log-entries {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: var(--s-3);
+.corner-bracket.bl {
+  bottom: 16px;
+  left: 16px;
+  border-right: none;
+  border-top: none;
 }
 
+.corner-bracket.br {
+  bottom: 16px;
+  right: 16px;
+  border-left: none;
+  border-top: none;
+}
+
+/* ── HUD Top Badges ──────────────────────────────────────── */
+.hud-top {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.hud-badge {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  padding: 5px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #E8F4FD;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hud-badge.rec {
+  color: #FF2D55;
+  border-color: rgba(255, 45, 85, 0.4);
+  animation: blink 1s step-end infinite;
+}
+
+.hud-badge.live {
+  color: #00FF88;
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+/* ── HUD Timestamp ───────────────────────────────────────── */
+.hud-timestamp {
+  position: absolute;
+  top: 16px;
+  left: 52px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(232, 244, 253, 0.5);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+/* ── Feed Controls ───────────────────────────────────────── */
+.feed-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  pointer-events: all;
+  z-index: 10;
+}
+
+.feed-btn {
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #E8F4FD;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  letter-spacing: 0.05em;
+  font-family: var(--font-body);
+  white-space: nowrap;
+}
+
+.feed-btn svg,
+.feed-btn i {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.feed-btn:hover {
+  border-color: #00D4FF;
+  color: #00D4FF;
+  background: rgba(0, 212, 255, 0.08);
+}
+
+.feed-btn.danger:hover {
+  border-color: #FF2D55;
+  color: #FF2D55;
+  background: rgba(255, 45, 85, 0.08);
+}
+
+.feed-btn.active-stream {
+  border-color: rgba(255, 45, 85, 0.5);
+  color: #FF2D55;
+}
+
+/* ── Feed Placeholder ────────────────────────────────────── */
+.feed-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: rgba(232, 244, 253, 0.3);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.feed-placeholder svg,
+.feed-placeholder i {
+  width: 56px;
+  height: 56px;
+  opacity: 0.3;
+  stroke-width: 1;
+}
+
+/* Scan line effect inside feed */
+.feed-placeholder::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 212, 255, 0.015) 3px,
+    rgba(0, 212, 255, 0.015) 4px
+  );
+  pointer-events: none;
+}
+
+/* ── Camera Sidebar ──────────────────────────────────────── */
+.cam-sidebar {
+  background: var(--bg-deep);
+  border-left: 1px solid var(--border-dim);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.cam-sidebar-section {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-dim);
+  flex-shrink: 0;
+}
+
+.cam-sidebar-section:last-child {
+  border-bottom: none;
+  flex: 1;
+}
+
+/* ── Camera Status Header ────────────────────────────────── */
+.cam-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.cam-status-header h3 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── Stat Row Grid ───────────────────────────────────────── */
+.cam-stat-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.cam-stat-box {
+  background: var(--bg-elevated);
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+}
+
+.cam-stat-val {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.cam-stat-lbl {
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* ── AI Detection Section Headers ────────────────────────── */
+.cam-sidebar-section h3 {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+/* ── Detection Grid ──────────────────────────────────────── */
+.detection-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.detection-tile {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  text-align: center;
+  transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+  cursor: default;
+}
+
+.detection-tile.triggered {
+  border-color: var(--amber);
+  background: var(--amber-glow);
+  box-shadow: 0 0 16px rgba(255, 184, 0, 0.15);
+}
+
+.detection-tile.danger-triggered {
+  border-color: var(--red);
+  background: var(--red-glow);
+  box-shadow: 0 0 16px rgba(255, 45, 85, 0.2);
+}
+
+.detection-tile-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  display: block;
+  line-height: 1;
+}
+
+.detection-tile-name {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: block;
+}
+
+.detection-tile-status {
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 4px;
+  display: block;
+  color: var(--text-secondary);
+  transition: color 0.3s;
+}
+
+.detection-tile.triggered .detection-tile-status {
+  color: var(--amber);
+}
+
+.detection-tile.danger-triggered .detection-tile-status {
+  color: var(--red);
+}
+
+/* ── AI Event Log ────────────────────────────────────────── */
+.ai-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.ai-log-entry {
+  background: var(--bg-card);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  border-left: 2px solid var(--border-dim);
+  animation: slideInLog 0.3s ease;
+  line-height: 1.5;
+}
+
+.ai-log-entry.log-motion  { border-left-color: var(--cyan); }
+.ai-log-entry.log-human   { border-left-color: var(--green); }
+.ai-log-entry.log-hazard  { border-left-color: var(--amber); }
+.ai-log-entry.log-fire    { border-left-color: var(--red); }
+.ai-log-entry.log-default { border-left-color: var(--text-muted); }
+
+.ai-log-time {
+  color: var(--text-muted);
+  font-size: 10px;
+  margin-right: 8px;
+}
+
+.ai-log-label {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.ai-log-conf {
+  color: var(--text-muted);
+  font-size: 10px;
+  margin-left: 6px;
+}
+
+.ai-log-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: center;
+  padding: 24px 0;
+  font-family: var(--font-body);
+  letter-spacing: 0.05em;
+}
+
+/* ── Keyframes ───────────────────────────────────────────── */
+@keyframes slideInLog {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* blink is defined globally in shared.css, but re-declared for safety */
+@keyframes blinkRec {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Live Rec Dot States ─────────────────────────────────── */
+.live-dot.recording {
+  background: var(--red) !important;
+  box-shadow: 0 0 12px var(--red) !important;
+}
+
+.live-dot.standby {
+  background: var(--text-muted) !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+
+/* ── Fullscreen Adjustments ──────────────────────────────── */
+.main-feed-panel:fullscreen {
+  background: #000;
+}
+
+.main-feed-panel:fullscreen .feed-img {
+  object-fit: contain;
+}
+
+/* ── Responsive Collapse ─────────────────────────────────── */
 @media (max-width: 1100px) {
-    .camera-grid { grid-template-columns: 1fr; }
+  .camera-shell {
+    grid-template-columns: 1fr 280px;
+  }
+}
+
+@media (max-width: 860px) {
+  .camera-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    height: auto;
+    min-height: calc(100vh - var(--nav-height));
+  }
+
+  .main-feed-panel {
+    min-height: 55vw;
+  }
+
+  .cam-sidebar {
+    border-left: none;
+    border-top: 1px solid var(--border-dim);
+  }
 }

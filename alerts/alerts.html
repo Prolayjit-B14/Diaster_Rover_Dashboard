@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RescueBOT | Alert Center</title>
+    <link rel="stylesheet" href="../shared/shared.css">
+    <link rel="stylesheet" href="./alerts.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+<div class="app-shell">
+
+    <!-- ══ SIDEBAR ══════════════════════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-mark">R</div>
+            <div class="logo-text">
+                <span class="logo-name">RescueBOT</span>
+                <span class="logo-ver">v3.1 · MISSION</span>
+            </div>
+        </div>
+
+        <button class="sidebar-collapse-btn" id="sidebar-collapse-btn">
+            <i data-lucide="chevrons-left" style="width:14px;height:14px;"></i>
+        </button>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Mission Control</div>
+            <a href="../dashboard/dashboard.html" class="nav-item">
+                <i data-lucide="layout-dashboard"></i>
+                <span class="nav-label">Dashboard</span>
+            </a>
+            <a href="../camera/camera.html" class="nav-item">
+                <i data-lucide="video"></i>
+                <span class="nav-label">Camera Feed</span>
+            </a>
+            <a href="../map/map.html" class="nav-item">
+                <i data-lucide="map"></i>
+                <span class="nav-label">Tactical Map</span>
+            </a>
+            <a href="../sensors/sensors.html" class="nav-item">
+                <i data-lucide="activity"></i>
+                <span class="nav-label">Sensor Array</span>
+            </a>
+            <a href="./alerts.html" class="nav-item active">
+                <i data-lucide="bell-ring"></i>
+                <span class="nav-label">Alerts</span>
+                <span class="nav-badge" id="sidebar-alert-count">0</span>
+            </a>
+
+            <div class="nav-section-label" style="margin-top:16px;">System</div>
+            <a href="../" class="nav-item">
+                <i data-lucide="home"></i>
+                <span class="nav-label">Home</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i data-lucide="settings"></i>
+                <span class="nav-label">Settings</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="status-pill" style="width:100%; justify-content:center;">
+                <div class="status-dot" id="mqtt-dot"></div>
+                <span id="mqtt-status-text" class="mqtt-status-text" style="font-family:var(--font-mono);font-size:10px;">CONNECTING...</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ══ MAIN COLUMN ══════════════════════════════════════════ -->
+    <div class="main-column">
+
+        <!-- TOP NAVBAR -->
+        <header class="top-navbar">
+            <div class="nav-left">
+                <span class="nav-page-title">Alert Center</span>
+                <span class="nav-breadcrumb">/ Alerts</span>
+            </div>
+            <div class="nav-right">
+                <div class="status-pill">
+                    <div class="status-dot"></div>
+                    <span>ROVER ONLINE</span>
+                </div>
+                <div class="status-pill">
+                    <i data-lucide="clock" style="width:12px;height:12px;"></i>
+                    <span id="mission-clock" style="font-family:var(--font-mono);">--:--:--</span>
+                </div>
+                <button class="icon-btn" title="Notifications">
+                    <i data-lucide="bell"></i>
+                </button>
+                <button class="icon-btn" id="theme-toggle" title="Toggle Theme">
+                    <i data-lucide="sun"></i>
+                </button>
+                <div class="icon-btn" style="background:var(--cyan);color:var(--bg-void);font-weight:700;font-size:12px;cursor:default;">PB</div>
+            </div>
+        </header>
+
+        <!-- PAGE CONTENT -->
+        <main class="page-content">
+
+            <!-- SECTION HEADER -->
+            <div class="section-header">
+                <div>
+                    <div class="section-title">Emergency Alerts</div>
+                    <div class="section-subtitle">Priority-classified incident monitoring</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <!-- Sound toggle (navbar area) -->
+                    <button class="sound-toggle" id="sound-toggle" title="Toggle sound alerts">
+                        <span class="sound-toggle-label">
+                            <i data-lucide="bell" style="width:15px;height:15px;"></i>
+                            SOUND ALERTS
+                        </span>
+                        <div class="toggle-track">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                    </button>
+                    <!-- Critical count badge -->
+                    <span class="badge badge-red" id="critical-count-badge">0 CRITICAL</span>
+                </div>
+            </div>
+
+            <!-- ALERTS LAYOUT (main + sidebar) -->
+            <div class="alerts-layout">
+
+                <!-- LEFT: MAIN ALERTS PANEL -->
+                <div class="alerts-main">
+
+                    <!-- Filter Tabs -->
+                    <div class="alert-filter-row">
+                        <button class="filter-tab active" id="tab-all" data-filter="all">
+                            ALL
+                        </button>
+                        <button class="filter-tab" id="tab-critical" data-filter="critical">
+                            🔴 CRITICAL
+                            <span class="count" id="cnt-critical">0</span>
+                        </button>
+                        <button class="filter-tab" id="tab-high" data-filter="high">
+                            🟠 HIGH
+                            <span class="count" id="cnt-high">0</span>
+                        </button>
+                        <button class="filter-tab" id="tab-medium" data-filter="medium">
+                            🟡 MEDIUM
+                            <span class="count" id="cnt-medium">0</span>
+                        </button>
+                        <button class="filter-tab" id="tab-low" data-filter="low">
+                            🔵 LOW
+                            <span class="count" id="cnt-low">0</span>
+                        </button>
+                    </div>
+
+                    <!-- Alert List (JS-populated) -->
+                    <div class="alert-list" id="alert-list"></div>
+
+                    <!-- Empty State -->
+                    <div class="empty-alerts" id="empty-alerts" style="display:none;">
+                        <span class="empty-icon">✅</span>
+                        <h3>No Active Alerts</h3>
+                        <p>All systems nominal — monitoring continues</p>
+                    </div>
+
+                </div><!-- /alerts-main -->
+
+                <!-- RIGHT: SIDEBAR PANELS -->
+                <div class="alerts-sidebar">
+
+                    <!-- SOS Panel -->
+                    <div class="glass-card sos-panel">
+                        <h3 style="font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-secondary);">Emergency SOS</h3>
+                        <button class="sos-btn" id="sos-btn">SOS</button>
+                        <p style="color:var(--text-muted);font-size:12px;line-height:1.5;">
+                            Triggers immediate emergency broadcast via MQTT
+                        </p>
+                    </div>
+
+                    <!-- Alert Statistics -->
+                    <div class="glass-card">
+                        <div class="section-title-sm">Alert Statistics</div>
+                        <div class="stats-row-alerts">
+                            <div class="alert-stat-box">
+                                <div class="alert-stat-num" id="stat-total" style="color:var(--text-primary);">0</div>
+                                <div class="alert-stat-lbl">Total</div>
+                            </div>
+                            <div class="alert-stat-box">
+                                <div class="alert-stat-num" id="stat-critical" style="color:#FF2D55;">0</div>
+                                <div class="alert-stat-lbl">Critical</div>
+                            </div>
+                            <div class="alert-stat-box">
+                                <div class="alert-stat-num" id="stat-resolved" style="color:var(--green);">0</div>
+                                <div class="alert-stat-lbl">Resolved</div>
+                            </div>
+                            <div class="alert-stat-box">
+                                <div class="alert-stat-num" id="stat-uptime" style="color:var(--cyan);font-size:15px;">00:00:00</div>
+                                <div class="alert-stat-lbl">Uptime</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sound Settings -->
+                    <div class="glass-card">
+                        <h3 class="sound-settings-header">Sound Settings</h3>
+                        <button class="sound-toggle" id="sound-toggle-card">
+                            <span class="sound-toggle-label">
+                                <i data-lucide="volume-2" style="width:15px;height:15px;"></i>
+                                Audio Alerts
+                            </span>
+                            <div class="toggle-track">
+                                <div class="toggle-thumb"></div>
+                            </div>
+                        </button>
+                        <p style="font-size:12px;color:var(--text-muted);margin-top:12px;line-height:1.5;">
+                            Enable audio notifications for critical alerts
+                        </p>
+                    </div>
+
+                </div><!-- /alerts-sidebar -->
+
+            </div><!-- /alerts-layout -->
+
+        </main>
+    </div>
+</div>
+
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<script type="module" src="../shared/mqtt-client.js"></script>
+<script type="module" src="../shared/shared.js"></script>
+<script type="module" src="./alerts.js"></script>
+</body>
+</html>

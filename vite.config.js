@@ -8,13 +8,15 @@ export default defineConfig({
     outDir: 'dist',
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
+        main:      resolve(__dirname, 'index.html'),
         dashboard: resolve(__dirname, 'dashboard/dashboard.html'),
-        camera: resolve(__dirname, 'camera/camera.html'),
-        map: resolve(__dirname, 'map/map.html'),
-        sensors: resolve(__dirname, 'sensors/sensors.html'),
+        camera:    resolve(__dirname, 'camera/camera.html'),
+        map:       resolve(__dirname, 'map/map.html'),
+        sensors:   resolve(__dirname, 'sensors/sensors.html'),
+        alerts:    resolve(__dirname, 'alerts/alerts.html'),
       },
     },
   },
 });
+
 

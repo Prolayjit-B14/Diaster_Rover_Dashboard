@@ -1,114 +1,123 @@
 /**
- * RescueBOT Shared UI Logic
- * Handles global components like the clock, navbar, and icon system.
+ * RescueBOT Shared UI Logic v2.0
+ * Handles sidebar, theme, clock, nav, page transitions
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- THEME CONTROLLER ---
-    const themeToggle = document.getElementById('theme-toggle');
-    const html = document.documentElement;
-    
-    // Initial Theme Load
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    html.setAttribute('data-theme', savedTheme);
-    updateThemeIcon(savedTheme);
 
-    if (themeToggle) {
-        themeToggle.addEventListener('click', () => {
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
+    // ── SIDEBAR COLLAPSE ───────────────────────────────────────
+    const sidebar = document.getElementById('sidebar');
+    const collapseBtn = document.getElementById('sidebar-collapse-btn');
+    if (sidebar && collapseBtn) {
+        const savedState = localStorage.getItem('sidebar-collapsed') === 'true';
+        if (savedState) sidebar.classList.add('collapsed');
+        collapseBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
         });
     }
 
-    function updateThemeIcon(theme) {
-        const icon = themeToggle?.querySelector('i');
-        if (icon) {
-            icon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
-            if (window.lucide) window.lucide.createIcons();
+    // ── ACTIVE NAV ITEM ────────────────────────────────────────
+    const currentPath = window.location.pathname.toLowerCase();
+    document.querySelectorAll('.nav-item').forEach(item => {
+        const href = (item.getAttribute('href') || '').toLowerCase();
+        const page = href.split('/').filter(Boolean).pop() || 'index';
+        if (currentPath.includes(page) || (page === 'index' && currentPath.endsWith('/'))) {
+            item.classList.add('active');
         }
-    }
+    });
 
-    // --- ICON INITIALIZATION ---
-    const initIcons = () => {
-        if (window.lucide) {
-            window.lucide.createIcons();
-        }
-    };
-    initIcons();
-    
-    // Export for dynamic content updates
-    window.refreshIcons = initIcons;
-
-    // --- REAL-TIME MISSION CLOCK ---
-    const timeDisplay = document.getElementById('current-time');
-    const updateClock = () => {
-        if (!timeDisplay) return;
-        const now = new Date();
-        timeDisplay.textContent = now.toLocaleTimeString('en-GB', { 
-            hour12: false,
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
+    // ── THEME TOGGLE ───────────────────────────────────────────
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+            document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
         });
-    };
-    
-    if (timeDisplay) {
-        setInterval(updateClock, 1000);
-        updateClock();
+        const saved = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', saved);
     }
 
-    // --- NAVIGATION ACTIVE STATE ---
-    const markActiveNav = () => {
-        const currentPath = window.location.pathname.toLowerCase();
-        const navItems = document.querySelectorAll('.nav-item');
-        
-        navItems.forEach(item => {
-            const href = item.getAttribute('href').toLowerCase().replace('../', '');
-            if (currentPath.includes(href)) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
-            }
-        });
-    };
-    markActiveNav();
-
-    // --- PAGE TRANSITION EFFECT ---
-    const frame = document.querySelector('.app-frame');
-    if (frame) {
-        frame.style.opacity = '1';
+    // ── MISSION CLOCK ──────────────────────────────────────────
+    const clockEl = document.getElementById('mission-clock');
+    if (clockEl) {
+        const tick = () => {
+            const now = new Date();
+            clockEl.textContent = now.toLocaleTimeString('en-GB', { hour12: false });
+        };
+        setInterval(tick, 1000);
+        tick();
     }
 
-    // Intercept all internal links for smooth exit
-    document.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', (e) => {
+    // ── MISSION TIMER ──────────────────────────────────────────
+    const timerEl = document.getElementById('mission-timer');
+    if (timerEl) {
+        let secs = 0;
+        setInterval(() => {
+            secs++;
+            const h = String(Math.floor(secs / 3600)).padStart(2, '0');
+            const m = String(Math.floor((secs % 3600) / 60)).padStart(2, '0');
+            const s = String(secs % 60).padStart(2, '0');
+            timerEl.textContent = `${h}:${m}:${s}`;
+        }, 1000);
+    }
+
+    // ── PAGE TRANSITION ────────────────────────────────────────
+    const content = document.querySelector('.page-content, .page-enter-target');
+    if (content) content.classList.add('page-enter');
+
+    document.querySelectorAll('a.nav-item, a[data-nav]').forEach(link => {
+        link.addEventListener('click', e => {
             const href = link.getAttribute('href');
             if (href && !href.startsWith('http') && !href.startsWith('#')) {
                 e.preventDefault();
-                if (frame) {
-                    frame.style.opacity = '0';
-                    frame.style.transform = 'scale(0.98)';
-                    frame.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                const shell = document.querySelector('.app-shell, body');
+                if (shell) {
+                    shell.style.opacity = '0';
+                    shell.style.transition = 'opacity 0.25s ease';
                 }
-                setTimeout(() => {
-                    window.location.href = href;
-                }, 400);
+                setTimeout(() => window.location.href = href, 250);
             }
         });
     });
+
+    // ── ICON INITIALIZATION ─────────────────────────────────────
+    if (window.lucide) window.lucide.createIcons();
+    window.refreshIcons = () => { if (window.lucide) window.lucide.createIcons(); };
 });
 
-/**
- * Global UI Utilities
- */
-window.ARES_UI = {
-    toast: (message, type = 'info') => {
-        console.log(`[ARES-UI] ${type.toUpperCase()}: ${message}`);
-        // Implementation for a toast system could go here if needed
+// ── GLOBAL UTILITIES ────────────────────────────────────────────
+window.RESCUEBOT_UI = {
+    toast(message, type = 'info') {
+        const colors = { info: '#00D4FF', success: '#00FF88', warning: '#FFB800', error: '#FF2D55' };
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+            background: #0D1B35; border: 1px solid ${colors[type] || colors.info};
+            color: #E8F4FD; padding: 12px 20px; border-radius: 10px;
+            font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 20px ${colors[type]}33;
+            animation: slideInToast 0.3s ease; max-width: 320px;
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3500);
+    },
+
+    formatValue(val, decimals = 1) {
+        if (val === null || val === undefined || val === '--') return '--';
+        return parseFloat(val).toFixed(decimals);
+    },
+
+    animateValue(element, from, to, duration = 500) {
+        const start = performance.now();
+        const update = (time) => {
+            const progress = Math.min((time - start) / duration, 1);
+            const eased = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
+            element.textContent = (from + (to - from) * eased).toFixed(1);
+            if (progress < 1) requestAnimationFrame(update);
+        };
+        requestAnimationFrame(update);
     }
 };
-
