@@ -317,9 +317,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('[Camera] Dispatched SET_NIGHT_MODE:', enabled);
         });
     }
-            console.log('[Camera] Dispatched SET_NIGHT_MODE:', enabled);
-        });
-    }
 
     // ── Snapshot ──────────────────────────────────────────────
     if (btnSnapshot) {
