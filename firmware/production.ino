@@ -321,7 +321,6 @@ void publishTelemetry() {
 
   // 4. BATTERY SENSE & WIFI SIGNAL
   float batt = (analogRead(PIN_BATT_SENSE) / 4095.0) * 3.3 * 4.0;
-  if (batt < 1.0) batt = 11.8 + random(-5, 5) * 0.1; 
   doc.clear();
   doc["sensor"] = "batt";
   doc["value"]  = String(batt, 1);
@@ -347,83 +346,22 @@ void publishTelemetry() {
   client.publish(TOPIC_TELEMETRY, buffer);
 
   // 6. ULTRASONIC RANGE FINDER (Trig/Echo) - Guarded against PSRAM conflict on GPIO 16
-  float distance = 150.0;
-  if (psramFound()) {
-    distance = 120.0 + random(-3, 3); // Dynamic mock to bypass GPIO 16 read crash
-  } else {
+  if (!psramFound()) {
     digitalWrite(PIN_ULTRA_TRIG, LOW);
     delayMicroseconds(2);
     digitalWrite(PIN_ULTRA_TRIG, HIGH);
     delayMicroseconds(10);
     digitalWrite(PIN_ULTRA_TRIG, LOW);
     long duration = pulseIn(PIN_ULTRA_ECHO, HIGH, 25000); 
-    distance = duration * 0.034 / 2.0;
-    if (distance <= 0 || distance > 400) distance = 150.0 + random(-3, 3); 
+    float distance = duration * 0.034 / 2.0;
+    if (distance > 0 && distance <= 400) {
+      doc.clear();
+      doc["sensor"] = "ultrasonic";
+      doc["value"]  = String(distance, 0);
+      serializeJson(doc, buffer);
+      client.publish(TOPIC_TELEMETRY, buffer);
+    }
   }
-  
-  doc.clear();
-  doc["sensor"] = "ultrasonic";
-  doc["value"]  = String(distance, 0);
-  serializeJson(doc, buffer);
-  client.publish(TOPIC_TELEMETRY, buffer);
-
-  // 7. MOCK DATA TELEMETRY (DYNAMIC ENVIRONMENT ANIMATIONS)
-  float temp = 24.2 + (random(-5, 5) * 0.1);
-  doc.clear();
-  doc["sensor"] = "temp";
-  doc["value"]  = String(temp, 1);
-  serializeJson(doc, buffer);
-  client.publish(TOPIC_TELEMETRY, buffer);
-
-  float humidity = 45.0 + (random(-8, 8) * 0.2);
-  doc.clear();
-  doc["sensor"] = "humidity";
-  doc["value"]  = String(humidity, 0);
-  serializeJson(doc, buffer);
-  client.publish(TOPIC_TELEMETRY, buffer);
-
-  float gyro = 0.5 + (random(-10, 10) * 0.05);
-  doc.clear();
-  doc["sensor"] = "gyro";
-  doc["value"]  = String(gyro, 1);
-  serializeJson(doc, buffer);
-  client.publish(TOPIC_TELEMETRY, buffer);
-
-  float tilt = 1.1 + (random(-4, 4) * 0.1);
-  doc.clear();
-  doc["sensor"] = "tilt";
-  doc["value"]  = String(tilt, 1);
-  serializeJson(doc, buffer);
-  client.publish(TOPIC_TELEMETRY, buffer);
-}
-
-void publishGPS() {
-  if (isStreaming) {
-    compassHeading += random(-15, 15);
-    if (compassHeading >= 360.0) compassHeading -= 360.0;
-    if (compassHeading < 0) compassHeading += 360.0;
-
-    roverSpeed = 1.2 + random(-4, 6) * 0.1;
-    if (roverSpeed < 0) roverSpeed = 0;
-
-    roverLat += (roverSpeed * 0.000005) * cos(compassHeading * DEG_TO_RAD);
-    roverLng += (roverSpeed * 0.000005) * sin(compassHeading * DEG_TO_RAD);
-    mockAltitude = 24.5 + random(-5, 5) * 0.1;
-  } else {
-    roverSpeed = 0.0;
-  }
-
-  StaticJsonDocument<192> doc;
-  doc["lat"]        = roverLat;
-  doc["lng"]        = roverLng;
-  doc["heading"]    = compassHeading;
-  doc["speed"]      = roverSpeed;
-  doc["satellites"] = 8;
-  doc["alt"]        = mockAltitude;
-
-  char buffer[192];
-  serializeJson(doc, buffer);
-  client.publish(TOPIC_GPS, buffer);
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -567,7 +505,6 @@ void loop() {
   if (now - lastUpdate > updateInterval) {
     lastUpdate = now;
     publishTelemetry();
-    publishGPS();
     publishCameraStatus();
   }
 }
