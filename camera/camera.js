@@ -712,7 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Dispatch MQTT alarm
                 publishAlert('HUMAN', scorePercent, 'Edge AI confirms active human biometric outline in stream matrix.');
             }
-            else if (['backpack', 'handbag', 'cat', 'dog', 'chair', 'cell phone', 'laptop', 'bottle', 'cup', 'scissors'].includes(p.class)) {
+            else if (['backpack', 'handbag', 'cat', 'dog', 'chair', 'cell phone', 'laptop', 'bottle', 'cup', 'scissors', 'car', 'truck', 'motorcycle', 'fire hydrant', 'stop sign', 'traffic light', 'umbrella', 'suitcase', 'bird'].includes(p.class)) {
                 hazardDetected = true;
 
                 // Position hazard bracket
