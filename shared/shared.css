@@ -1397,8 +1397,8 @@ html, body {
   box-shadow: none !important;
 }
 
-/* Hide brand logo on landing page to place horizontal navbar */
-.landing-nav .nav-brand {
+/* Remove launch dashboard CTA button on landing navbar */
+.landing-nav .nav-cta {
   display: none !important;
 }
 

@@ -32,11 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const prefix = isRoot ? './' : '../';
     const homePrefix = isRoot ? './' : '../';
 
-    // Inject center horizontal floating navbar on app pages
-    const topNavbar = document.querySelector('.top-navbar');
+    // Inject center horizontal floating navbar on app pages and landing page
+    const topNavbar = document.querySelector('.top-navbar, .landing-nav');
     if (topNavbar) {
-        const navContainer = document.createElement('div');
-        navContainer.className = 'nav-links-center';
+        const isLanding = topNavbar.classList.contains('landing-nav');
 
         const items = [
             { label: 'Home', path: '', icon: 'home' },
@@ -47,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { label: 'Alerts', path: 'alerts/alerts.html', icon: 'bell-ring' }
         ];
 
-        navContainer.innerHTML = items.map(item => {
+        const innerHTML = items.map(item => {
             const fullPath = item.path ? `${prefix}${item.path}` : homePrefix;
             
             let isActive = false;
@@ -55,18 +54,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 const folder = item.path.split('/')[0];
                 isActive = window.location.pathname.toLowerCase().includes('/' + folder + '/');
             } else {
-                isActive = window.location.pathname.endsWith('/') || window.location.pathname.endsWith('/index.html');
+                isActive = window.location.pathname.endsWith('/') || window.location.pathname.endsWith('/index.html') || (isRoot && item.label === 'Home');
             }
             
             const activeClass = isActive ? 'active' : '';
             return `<a href="${fullPath}" class="nav-link-item ${activeClass}" data-tooltip="${item.label}"><i data-lucide="${item.icon}"></i></a>`;
         }).join('');
 
-        const rightSection = topNavbar.querySelector('.nav-right');
-        topNavbar.insertBefore(navContainer, rightSection);
+        let navContainer;
+        if (isLanding) {
+            navContainer = topNavbar.querySelector('.nav-links');
+            if (navContainer) {
+                navContainer.innerHTML = innerHTML;
+            }
+        } else {
+            navContainer = document.createElement('div');
+            navContainer.className = 'nav-links-center';
+            navContainer.innerHTML = innerHTML;
+            const rightSection = topNavbar.querySelector('.nav-right');
+            topNavbar.insertBefore(navContainer, rightSection);
+        }
 
         // Render dynamic Lucide icons inside the injected navbar
-        if (window.lucide) {
+        if (window.lucide && navContainer) {
             window.lucide.createIcons({
                 nodes: navContainer.querySelectorAll('[data-lucide]')
             });

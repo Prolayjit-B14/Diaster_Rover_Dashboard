@@ -403,17 +403,142 @@
 
         /* ── FOOTER ──────────────────────────────────────────────── */
         .landing-footer {
-            text-align: center;
-            padding: 32px 40px;
+            padding: 64px 40px 32px;
             border-top: 1px solid var(--border-subtle);
+            background: var(--bg-deep);
+            position: relative; z-index: 1;
+        }
+        .footer-grid {
+            max-width: 1200px;
+            margin: 0 auto 40px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1.2fr;
+            gap: 48px;
+        }
+        .footer-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .footer-brand {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .footer-desc {
+            font-size: 12.5px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        .footer-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .footer-link {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color var(--t-fast);
+        }
+        .footer-link:hover {
+            color: var(--accent);
+        }
+        .footer-status-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .footer-status-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            padding-bottom: 6px;
+        }
+        .footer-status-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .footer-status-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .footer-status-val {
+            font-weight: 600;
+        }
+        .status-beacon {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--status-ok);
+            box-shadow: 0 0 8px var(--status-ok);
+        }
+        .status-beacon.active {
+            animation: pulseOnline 2s infinite alternate;
+        }
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             font-size: 12px;
             color: var(--text-muted);
-            position: relative; z-index: 1;
-            background: var(--bg-deep);
-            line-height: 1.8;
         }
-
-        .landing-footer strong { color: var(--text-secondary); font-weight: 500; }
+        .footer-copyright {
+            line-height: 1.5;
+            text-align: left;
+        }
+        .footer-copyright strong {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .footer-git-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color var(--t-fast);
+        }
+        .footer-git-link:hover {
+            color: var(--accent);
+        }
+        .footer-git-link svg {
+            width: 14px;
+            height: 14px;
+        }
+        @media (max-width: 768px) {
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+            .footer-copyright {
+                text-align: center;
+            }
+        }
 
         /* ── SUBTLE GRID BG ────────────────────────────────────── */
         .grid-bg {
@@ -526,7 +651,7 @@
     <!-- STATS BAR -->
     <div class="stats-bar">
         <div class="stat-item">
-            <div class="stat-num" id="stat-uptime">00:00:00</div>
+            <div class="stat-num uptime-val">00:00:00</div>
             <div class="stat-lbl">Mission Uptime</div>
         </div>
         <div class="stat-item">
@@ -604,44 +729,84 @@
     <!-- TECH STACK -->
     <section class="tech-section">
         <div class="section-eyebrow">Technology Stack</div>
-        <h2 class="features-title" style="font-size:1.5rem;margin-bottom:0;">Built on Proven Hardware &amp; Protocols</h2>
+        <h2 class="features-title" style="font-size:1.5rem;margin-bottom:0;">Built on Modern Web Technologies</h2>
         <div class="tech-chips">
-            <span class="tech-chip">ESP32-CAM</span>
-            <span class="tech-chip">MQTT / EMQX</span>
-            <span class="tech-chip">NEO-6M GPS</span>
-            <span class="tech-chip">MQ-2 Gas</span>
-            <span class="tech-chip">MPU6050</span>
-            <span class="tech-chip">DHT11</span>
-            <span class="tech-chip">HC-SR04</span>
-            <span class="tech-chip">Leaflet.js</span>
-            <span class="tech-chip">L298N Motor</span>
-            <span class="tech-chip">Vite + Vanilla JS</span>
-            <span class="tech-chip">WebSocket</span>
-            <span class="tech-chip">TensorFlow.js</span>
-            <span class="tech-chip">Vercel</span>
+            <span class="tech-chip">HTML5 / CSS3</span>
+            <span class="tech-chip">ES6+ JavaScript</span>
+            <span class="tech-chip">Vite Bundler</span>
+            <span class="tech-chip">Leaflet.js Mapping</span>
+            <span class="tech-chip">MQTT.js Protocol</span>
+            <span class="tech-chip">WebSockets Stream</span>
+            <span class="tech-chip">Lucide Icons</span>
+            <span class="tech-chip">TensorFlow.js AI</span>
+            <span class="tech-chip">COCO-SSD Object Detection</span>
+            <span class="tech-chip">EMQX Cloud Broker</span>
+            <span class="tech-chip">Vercel Deploy</span>
         </div>
     </section>
 
     <!-- FOOTER -->
     <footer class="landing-footer">
-        <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px;" class="sys-status-bar">
-            <div style="display:flex;align-items:center;gap:6px;">
-                <div class="status-beacon" style="width:6px;height:6px;--status-ok:#22c55e;"></div>
-                <span class="stat-lbl" style="font-size:9px;">MQTT Gateway</span>
+        <div class="footer-grid">
+            <!-- Brand Column -->
+            <div class="footer-col">
+                <div class="footer-brand">
+                    <i data-lucide="shield-alert" style="color: var(--accent); width: 20px; height: 20px;"></i>
+                    RescueBOT Console
+                </div>
+                <p class="footer-desc">
+                    A real-time GIS mapping, computer vision AI hazard detection, and hardware telemetry command console for autonomous emergency search and rescue rovers.
+                </p>
             </div>
-            <span class="sys-stat-sep" style="width:1px;height:8px;background:var(--border-subtle);"></span>
-            <div style="display:flex;align-items:center;gap:6px;">
-                <div class="status-beacon" style="width:6px;height:6px;--status-ok:#22c55e;"></div>
-                <span class="stat-lbl" style="font-size:9px;">Web Stream</span>
+            <!-- Links Column -->
+            <div class="footer-col">
+                <div class="footer-title">Tactical Modules</div>
+                <div class="footer-links">
+                    <a href="./dashboard/dashboard.html" class="footer-link">Operations Dashboard</a>
+                    <a href="./camera/camera.html" class="footer-link">Live Vision Feed</a>
+                    <a href="./map/map.html" class="footer-link">Tactical GIS Map</a>
+                    <a href="./sensors/sensors.html" class="footer-link">Telemetry Array</a>
+                    <a href="./alerts/alerts.html" class="footer-link">Alert Center</a>
+                </div>
             </div>
-            <span class="sys-stat-sep" style="width:1px;height:8px;background:var(--border-subtle);"></span>
-            <div style="display:flex;align-items:center;gap:6px;">
-                <div class="status-beacon" style="width:6px;height:6px;--status-ok:#22c55e;"></div>
-                <span class="stat-lbl" style="font-size:9px;">AI Core</span>
+            <!-- Status Column -->
+            <div class="footer-col">
+                <div class="footer-title">System Indicators</div>
+                <div class="footer-status-list">
+                    <div class="footer-status-item">
+                        <div class="footer-status-label">
+                            <div class="status-beacon active"></div>
+                            MQTT Gateway
+                        </div>
+                        <span class="footer-status-val" style="color:var(--status-ok);">ONLINE</span>
+                    </div>
+                    <div class="footer-status-item">
+                        <div class="footer-status-label">
+                            <div class="status-beacon active"></div>
+                            Vision Processor
+                        </div>
+                        <span class="footer-status-val" style="color:var(--status-ok);">ACTIVE</span>
+                    </div>
+                    <div class="footer-status-item">
+                        <div class="footer-status-label">
+                            <div class="status-beacon active"></div>
+                            System Uptime
+                        </div>
+                        <span class="footer-status-val uptime-val" style="color:var(--accent-bright);">00:00:00</span>
+                    </div>
+                </div>
             </div>
         </div>
-        <strong>RescueBOT Operations</strong> — Disaster Rescue &amp; Emergency Coordination System<br>
-        &copy; 2026 Team Bot Things &middot; Platform Status: <span style="color:var(--status-ok);font-weight:600;">ACTIVE</span>
+        <!-- Bottom Bar -->
+        <div class="footer-bottom">
+            <div class="footer-copyright">
+                <strong>RescueBOT Command</strong> &copy; 2026 Team Bot Things &middot; Platform Status: <span style="color:var(--status-ok);font-weight:600;">ACTIVE</span>
+            </div>
+            <a href="https://github.com/Prolayjit-B14/Diaster_Rover_Dashboard" class="footer-git-link" target="_blank" rel="noopener noreferrer">
+                <i data-lucide="github"></i>
+                GitHub Repository
+            </a>
+        </div>
     </footer>
 
     <script>
@@ -649,12 +814,14 @@
 
         // ── UPTIME COUNTER ──────────────────────────────────────
         let secs = 0;
+        const uptimeEls = document.querySelectorAll('.uptime-val');
         setInterval(() => {
             secs++;
             const h = String(Math.floor(secs / 3600)).padStart(2, '0');
             const m = String(Math.floor((secs % 3600) / 60)).padStart(2, '0');
             const s = String(secs % 60).padStart(2, '0');
-            document.getElementById('stat-uptime').textContent = `${h}:${m}:${s}`;
+            const timeStr = `${h}:${m}:${s}`;
+            uptimeEls.forEach(el => el.textContent = timeStr);
         }, 1000);
 
         // ── SCROLL FADE-IN & STAGGERED CHIPS ───────────────────────
