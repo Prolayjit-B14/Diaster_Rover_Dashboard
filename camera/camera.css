@@ -16,12 +16,25 @@
     border-bottom: 1px solid var(--status-danger-bd);
     padding: 0 var(--space-6);
     flex-shrink: 0;
-    animation: slideDownBanner 0.3s ease;
+    animation: slideDownBanner 0.3s ease, alertBannerPulse 2.5s ease-in-out infinite;
+    box-shadow: inset 0 -4px 12px rgba(239, 68, 68, 0.05);
 }
 
 @keyframes slideDownBanner {
     from { transform: translateY(-100%); opacity: 0; }
     to   { transform: translateY(0);     opacity: 1; }
+}
+
+@keyframes alertBannerPulse {
+    0%, 100% {
+        background-color: rgba(239, 68, 68, 0.07);
+        border-bottom-color: rgba(239, 68, 68, 0.22);
+    }
+    50% {
+        background-color: rgba(239, 68, 68, 0.15);
+        border-bottom-color: rgba(239, 68, 68, 0.45);
+        box-shadow: inset 0 -4px 20px rgba(239, 68, 68, 0.15);
+    }
 }
 
 .ai-alert-banner-inner {
@@ -111,12 +124,13 @@
     min-width: 0;
 }
 
-/* ── MONITORING CARD HEADER ──────────────────────────────────── */
+/* ── MONITORING CARD HEADER ───────────────────────────────── */
 .monitoring-card-header {
     padding: 14px var(--space-5);
-    border-bottom: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-default);
     flex-shrink: 0;
     background: var(--bg-surface);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .header-title-block {
@@ -242,20 +256,21 @@
     border-radius: var(--radius-sm);
     min-width: 120px;
     pointer-events: none;
-    animation: bboxFadeIn 0.2s ease;
+    animation: bboxFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 12px var(--hud-glow-color, rgba(59, 130, 246, 0.45));
 }
 
 @keyframes bboxFadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1); }
 }
 
-.hud-bbox.human  { border-color: var(--status-ok); }
-.hud-bbox.hazard { border-color: var(--status-warn); }
-.hud-bbox.fire   { border-color: var(--status-danger); }
-.hud-bbox.motion { border-color: var(--accent); }
-.hud-bbox.smoke-box { border-color: #f97316; }
-.hud-bbox.face-box  { border-color: #3b82f6; }
+.hud-bbox.human  { border-color: var(--status-ok); --hud-glow-color: rgba(34, 197, 94, 0.45); }
+.hud-bbox.hazard { border-color: var(--status-warn); --hud-glow-color: rgba(245, 158, 11, 0.45); }
+.hud-bbox.fire   { border-color: var(--status-danger); --hud-glow-color: rgba(239, 68, 68, 0.55); }
+.hud-bbox.motion { border-color: var(--accent); --hud-glow-color: rgba(59, 130, 246, 0.45); }
+.hud-bbox.smoke-box { border-color: #f97316; --hud-glow-color: rgba(249, 115, 22, 0.45); }
+.hud-bbox.face-box  { border-color: #3b82f6; --hud-glow-color: rgba(59, 130, 246, 0.45); }
 
 .bbox-label {
     position: absolute;
@@ -311,8 +326,8 @@
 
 /* ── CAM SIDEBAR ─────────────────────────────────────────────── */
 .cam-sidebar {
-    width: 300px;
-    min-width: 300px;
+    width: 320px;
+    min-width: 320px;
     background: var(--bg-deep);
     border-left: 1px solid var(--border-subtle);
     overflow-y: auto;
@@ -320,8 +335,31 @@
 }
 
 .cam-sidebar-section {
-    padding: var(--space-5);
+    padding: 14px 16px;
     border-bottom: 1px solid var(--border-subtle);
+    position: relative;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: sidebarSectionReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes sidebarSectionReveal {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.cam-sidebar-section:nth-child(1) { animation-delay: 0.05s; }
+.cam-sidebar-section:nth-child(2) { animation-delay: 0.12s; }
+.cam-sidebar-section:nth-child(3) { animation-delay: 0.18s; }
+.cam-sidebar-section:nth-child(4) { animation-delay: 0.24s; }
+.cam-sidebar-section:nth-child(5) { animation-delay: 0.30s; }
+
+.cam-sidebar-section::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 16px; right: 16px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-default) 30%, var(--border-default) 70%, transparent);
+    opacity: 0.6;
 }
 
 .section-title-row {
@@ -332,7 +370,7 @@
 }
 
 .section-title-row h3 {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--text-primary);
     letter-spacing: -0.01em;
@@ -644,7 +682,7 @@ details[open] summary .chevron-icon {
 }
 
 .timeline-msg {
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-secondary);
     line-height: 1.4;
 }
@@ -681,13 +719,13 @@ details[open] summary .chevron-icon {
     background: var(--status-danger-bg);
     border-bottom: 1px solid var(--status-danger-bd);
     padding: 10px var(--space-5);
-    animation: bannerPulse 3s ease-in-out infinite;
+    animation: bannerPulse 1.6s ease-in-out infinite alternate;
     z-index: 10;
 }
 
 @keyframes bannerPulse {
-    0%, 100% { background-color: rgba(239, 68, 68, 0.12); }
-    50% { background-color: rgba(239, 68, 68, 0.22); }
+    0%   { background-color: rgba(239, 68, 68, 0.12); box-shadow: inset 0 0 12px rgba(239, 68, 68, 0.15); }
+    100% { background-color: rgba(239, 68, 68, 0.32); box-shadow: inset 0 0 24px rgba(239, 68, 68, 0.35); }
 }
 
 .scene-hazard-banner.hazard-critical {
@@ -841,7 +879,7 @@ details[open] summary .chevron-icon {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 10px;
+    padding: 10px 12px;
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
@@ -896,7 +934,7 @@ details[open] summary .chevron-icon {
 }
 
 .tile-label {
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -904,7 +942,7 @@ details[open] summary .chevron-icon {
 }
 
 .tile-status {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 500;
     color: var(--text-secondary);
     white-space: nowrap;
@@ -935,7 +973,7 @@ details[open] summary .chevron-icon {
 }
 
 .tile-conf-bar {
-    width: 32px;
+    width: 36px;
     height: 3px;
     background: var(--bg-elevated);
     border-radius: 99px;
@@ -946,7 +984,20 @@ details[open] summary .chevron-icon {
 .tile-conf-fill {
     height: 100%;
     width: 0%;
-    transition: width 0.3s ease;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tile-conf-val {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--text-dim);
+    margin-top: 2px;
+    letter-spacing: 0.02em;
+}
+
+.detection-tile.triggered .tile-conf-val {
+    color: var(--text-muted);
 }
 
 .human-fill { background: var(--status-ok); }
@@ -1030,7 +1081,7 @@ details[open] summary .chevron-icon {
 }
 
 .env-risk-label {
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -1038,7 +1089,7 @@ details[open] summary .chevron-icon {
 }
 
 .env-risk-value {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
 }

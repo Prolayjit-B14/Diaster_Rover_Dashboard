@@ -134,9 +134,9 @@
         }
 
         .hero-title {
-            font-size: clamp(1.9rem, 4vw, 3.2rem);
-            font-weight: 700;
-            line-height: 1.1;
+            font-size: clamp(2rem, 4.5vw, 3.6rem);
+            font-weight: 800;
+            line-height: 1.08;
             letter-spacing: -0.03em;
             margin-bottom: 18px;
             color: var(--text-primary);
@@ -208,28 +208,43 @@
         .stats-bar {
             display: flex; gap: 0;
             background: var(--bg-surface);
-            border-top: 1px solid var(--border-subtle);
-            border-bottom: 1px solid var(--border-subtle);
+            border-top: 1px solid var(--border-default);
+            border-bottom: 1px solid var(--border-default);
             position: relative; z-index: 1;
             overflow-x: auto;
+            box-shadow: var(--shadow-sm);
         }
 
         .stat-item {
             flex: 1;
             text-align: center;
-            padding: 16px 20px;
+            padding: 18px 24px;
             border-right: 1px solid var(--border-subtle);
             min-width: 110px;
+            position: relative;
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity var(--t-fast);
+        }
+        .stat-item:hover::before {
+            opacity: 0.8;
         }
 
         .stat-item:last-child { border-right: none; }
 
         .stat-num {
             font-family: var(--font-mono);
-            font-size: 1.3rem; font-weight: 600;
-            color: var(--accent);
+            font-size: 1.5rem; font-weight: 700;
+            color: var(--accent-bright);
             line-height: 1;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
         }
 
         .stat-lbl {
@@ -295,17 +310,35 @@
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
             padding: 24px;
-            transition: border-color var(--t-fast), box-shadow var(--t-fast);
+            transition: border-color var(--t-fast), box-shadow var(--t-med), transform var(--t-med);
             cursor: default;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; bottom: 0;
+            width: 3px;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity var(--t-fast);
         }
 
         .feature-card:hover {
-            border-color: var(--border-default);
-            box-shadow: var(--shadow-sm);
+            border-color: var(--border-strong);
+            box-shadow: var(--shadow-md), 0 10px 24px -10px rgba(59, 130, 246, 0.12);
+            transform: translateY(-3.5px);
+        }
+
+        .feature-card:hover::after {
+            opacity: 1;
         }
 
         .feature-icon-wrap {
-            width: 40px; height: 40px;
+            width: 44px; height: 44px;
             border-radius: var(--radius-md);
             display: flex; align-items: center; justify-content: center;
             margin-bottom: 16px;
@@ -381,9 +414,9 @@
             background-image:
                 linear-gradient(var(--border-subtle) 1px, transparent 1px),
                 linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
-            background-size: 48px 48px;
+            background-size: 64px 64px;
             pointer-events: none;
-            opacity: 0.6;
+            opacity: 0.25;
         }
 
         /* ── ANIMATIONS ──────────────────────────────────────────── */
@@ -579,8 +612,24 @@
 
     <!-- FOOTER -->
     <footer class="landing-footer">
-        <strong>Rescue Intel Operations</strong> — Disaster Monitoring &amp; Emergency Response Platform<br>
-        &copy; 2026 Team Bot Things — Prolayjit Biswas &middot; Arghya Roy &middot; Shubhajit Haldar &middot; Papan Chowdhury
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:12px;" class="sys-status-bar">
+            <div style="display:flex;align-items:center;gap:6px;">
+                <div class="status-beacon" style="width:6px;height:6px;--status-ok:#22c55e;"></div>
+                <span class="stat-lbl" style="font-size:9px;">MQTT Gateway</span>
+            </div>
+            <span class="sys-stat-sep" style="width:1px;height:8px;background:var(--border-subtle);"></span>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <div class="status-beacon" style="width:6px;height:6px;--status-ok:#22c55e;"></div>
+                <span class="stat-lbl" style="font-size:9px;">Web Stream</span>
+            </div>
+            <span class="sys-stat-sep" style="width:1px;height:8px;background:var(--border-subtle);"></span>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <div class="status-beacon" style="width:6px;height:6px;--status-ok:#22c55e;"></div>
+                <span class="stat-lbl" style="font-size:9px;">AI Core</span>
+            </div>
+        </div>
+        <strong>Rescue Intel Operations</strong> — Disaster Rescue &amp; Emergency Coordination System<br>
+        &copy; 2026 Team Bot Things &middot; Platform Status: <span style="color:var(--status-ok);font-weight:600;">ACTIVE</span>
     </footer>
 
     <script>

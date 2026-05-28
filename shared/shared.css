@@ -10,14 +10,14 @@
    ============================================================ */
 :root {
   /* ── Backgrounds ──────────────────────────── */
-  --bg-base:        #090D17;
-  --bg-deep:        #0C1120;
-  --bg-surface:     #101624;
-  --bg-card:        #151C2C;
-  --bg-card-hover:  #1A2236;
-  --bg-elevated:    #1A2236;
-  --bg-input:       #101624;
-  --bg-overlay:     rgba(9, 13, 23, 0.92);
+  --bg-base:        #080D16;
+  --bg-deep:        #05080E;
+  --bg-surface:     #0E1520;
+  --bg-card:        #111827;
+  --bg-card-hover:  #1F2937;
+  --bg-elevated:    #18213A;
+  --bg-input:       #0B0F19;
+  --bg-overlay:     rgba(8, 13, 22, 0.94);
 
   /* ── Accent — operational blue ── */
   --accent:         #3B82F6;
@@ -58,9 +58,9 @@
   --text-danger:    #EF4444;
 
   /* ── Borders ────────────────────────────────── */
-  --border-subtle:  rgba(255, 255, 255, 0.045);
-  --border-default: rgba(255, 255, 255, 0.08);
-  --border-strong:  rgba(255, 255, 255, 0.14);
+  --border-subtle:  rgba(255, 255, 255, 0.07);
+  --border-default: rgba(255, 255, 255, 0.11);
+  --border-strong:  rgba(255, 255, 255, 0.18);
   --border-accent:  rgba(59, 130, 246, 0.28);
 
   /* ── Shadows ────────────────────────────────── */
@@ -68,16 +68,16 @@
   --shadow-sm:  0 2px 6px rgba(0,0,0,0.45);
   --shadow-md:  0 4px 14px rgba(0,0,0,0.5);
   --shadow-lg:  0 8px 28px rgba(0,0,0,0.6);
-  --shadow-inset: inset 0 1px 0 rgba(255,255,255,0.04);
+  --shadow-inset: inset 0 1px 0 rgba(255,255,255,0.06);
 
   /* ── Typography ─────────────────────────────── */
   --font-body:    'Inter', system-ui, -apple-system, sans-serif;
   --font-mono:    'JetBrains Mono', 'Courier New', monospace;
 
   /* ── Type Scale ─────────────────────────────── */
-  --text-xs:    10px;
-  --text-sm:    11px;
-  --text-base:  13px;
+  --text-xs:    11px;
+  --text-sm:    12px;
+  --text-base:  13.5px;
   --text-md:    14px;
   --text-lg:    16px;
   --text-xl:    18px;
@@ -387,6 +387,7 @@
 /* ── Smooth theme transitions ──────────────────────────── */
 html {
   transition: background-color 0.25s ease, color 0.25s ease;
+  scroll-behavior: smooth;
 }
 
 /* ============================================================
@@ -400,11 +401,11 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Default color transitions for smooth theme switching */
-* {
-  transition-property: background-color, border-color, color, box-shadow, opacity;
+/* Default color transitions for smooth theme switching (de-globalized to avoid real-time dashboard flicker) */
+.sidebar, .top-navbar, .nav-item, .icon-btn, .btn, .filter-tab, .glass-card, [data-theme] {
+  transition-property: background-color, border-color, color, box-shadow, opacity, transform;
   transition-duration: 180ms;
-  transition-timing-function: ease;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Exemptions from transitions to prevent lag or glitching on animated/real-time elements */
@@ -528,7 +529,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 11px 0;
+  padding: 12px 0;
   cursor: pointer;
   border-radius: 0;
   position: relative;
@@ -567,37 +568,37 @@ html, body {
 /* ── SIDEBAR NAV ICON COLORFUL CONFIG ────────────────────────── */
 .nav-item[data-tooltip="Overview"] i,
 .nav-item[data-tooltip="Overview"] svg {
-  color: #00D4FF;
+  color: #60A5FA;
 }
 
 .nav-item[data-tooltip="Live Monitoring"] i,
 .nav-item[data-tooltip="Live Monitoring"] svg {
-  color: #FF5722;
+  color: #F87171;
 }
 
 .nav-item[data-tooltip="Incident Map"] i,
 .nav-item[data-tooltip="Incident Map"] svg {
-  color: #00FF88;
+  color: #4ADE80;
 }
 
 .nav-item[data-tooltip="Field Sensors"] i,
 .nav-item[data-tooltip="Field Sensors"] svg {
-  color: #A066FF;
+  color: #A78BFA;
 }
 
 .nav-item[data-tooltip="Alert Center"] i,
 .nav-item[data-tooltip="Alert Center"] svg {
-  color: #FFB800;
+  color: #FBBF24;
 }
 
 .nav-item[data-tooltip="Home"] i,
 .nav-item[data-tooltip="Home"] svg {
-  color: #8BA4C0;
+  color: #94A3B8;
 }
 
 .nav-item[data-tooltip="Settings"] i,
 .nav-item[data-tooltip="Settings"] svg {
-  color: #8BA4C0;
+  color: #94A3B8;
 }
 
 .nav-label  { display: none; }
@@ -640,7 +641,8 @@ html, body {
   background: var(--navbar-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-default);
+  box-shadow: 0 1px 0 var(--border-default), 0 4px 20px -4px rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -674,15 +676,18 @@ html, body {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 4px 10px;
+  padding: 4px 12px;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
   font-size: var(--text-sm);
-  font-weight: var(--fw-medium);
-  color: var(--text-secondary);
+  font-weight: var(--fw-semibold);
+  color: var(--text-primary);
   white-space: nowrap;
   letter-spacing: 0.01em;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: var(--shadow-xs);
 }
 
 .status-dot {
@@ -782,14 +787,31 @@ html, body {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
-  box-shadow: var(--shadow-inset), var(--shadow-xs);
-  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+  box-shadow: var(--shadow-inset), var(--shadow-sm);
+  transition: border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
   position: relative;
 }
 
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity var(--t-fast);
+  border-top-left-radius: var(--radius-lg);
+  border-bottom-left-radius: var(--radius-lg);
+}
+
 .glass-card:hover {
-  border-color: var(--border-default);
-  box-shadow: var(--shadow-inset), var(--shadow-sm);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-inset), var(--shadow-md);
+  transform: translateY(-1.5px);
+}
+
+.glass-card:hover::before {
+  opacity: 0.85;
 }
 
 .card-header {
@@ -922,14 +944,14 @@ html, body {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 7px;
+  padding: 3px 8px;
   border-radius: var(--radius-full);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: var(--fw-semibold);
-  letter-spacing: 0.07em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   white-space: nowrap;
-  line-height: 1.4;
+  line-height: 1.2;
 }
 
 .badge-green  {
@@ -1137,11 +1159,21 @@ html, body {
    PAGE TRANSITION
    ============================================================ */
 .page-enter {
-  animation: pageIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: pageIn 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -1223,19 +1255,18 @@ html, body {
   border-radius: 50%;
   border: 1px solid var(--status-ok);
   opacity: 0;
-  animation: beaconRing 3s ease-out infinite;
+  animation: beaconRing 2.8s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
 }
 
 @keyframes beaconRing {
-  0%   { transform: scale(0.7); opacity: 0.6; }
-  80%  { transform: scale(2.0); opacity: 0; }
-  100% { opacity: 0; }
+  0%   { transform: scale(0.7); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
 }
 
 .status-beacon.danger       { background: var(--status-danger); }
-.status-beacon.danger::after{ border-color: var(--status-danger); }
+.status-beacon.danger::after{ border-color: var(--status-danger); animation-duration: 1.5s; }
 .status-beacon.warn         { background: var(--status-warn); }
-.status-beacon.warn::after  { border-color: var(--status-warn); animation: none; }
+.status-beacon.warn::after  { border-color: var(--status-warn); animation: beaconRing 2.0s cubic-bezier(0.1, 0.8, 0.3, 1) infinite; }
 .status-beacon.offline      { background: var(--status-standby); }
 .status-beacon.offline::after { display: none; }
 

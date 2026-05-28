@@ -26,7 +26,8 @@
     padding: var(--space-4) var(--space-5);
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-4);
+    min-height: 120px;
 }
 
 .status-icon-row {
@@ -91,8 +92,9 @@
 
 .coord-val {
     font-family: var(--font-mono);
-    font-size: var(--text-sm); font-weight: var(--fw-medium);
+    font-size: 12px; font-weight: var(--fw-semibold);
     color: var(--text-primary);
+    letter-spacing: -0.01em;
 }
 
 .gps-bottom {
@@ -124,7 +126,7 @@
 
 .battery-ring-wrap {
     position: relative;
-    width: 80px; height: 80px;
+    width: 88px; height: 88px;
     flex-shrink: 0;
 }
 
@@ -190,7 +192,7 @@
 /* ── ENVIRONMENT CARD ─────────────────────────────────────── */
 .env-card { padding: var(--space-4) var(--space-5); }
 
-.env-items { display: flex; flex-direction: column; gap: var(--space-3); }
+.env-items { display: flex; flex-direction: column; gap: 14px; }
 
 .env-item {
     display: flex; align-items: center;
@@ -231,7 +233,7 @@
 .env-unit { font-size: var(--text-xs); color: var(--text-muted); }
 
 .env-bar {
-    width: 100%; height: 3px;
+    width: 100%; height: 4px;
     background: var(--bg-elevated);
     border-radius: var(--radius-full);
     overflow: hidden;
@@ -325,7 +327,7 @@
 
 .alert-mini-text {
     flex: 1;
-    font-size: var(--text-sm); font-weight: var(--fw-medium);
+    font-size: 12px; font-weight: var(--fw-medium);
     color: var(--text-primary);
 }
 
@@ -339,14 +341,14 @@
     justify-content: center;
     gap: var(--space-2);
     width: 100%;
-    padding: 11px;
+    padding: 12px;
     background: var(--status-danger-bg);
     border: 1px solid var(--status-danger-bd);
     border-radius: var(--radius-md);
     color: var(--status-danger);
     font-size: var(--text-sm);
-    font-weight: var(--fw-semibold);
-    letter-spacing: 0.06em;
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     cursor: pointer;
     font-family: var(--font-body);
@@ -355,9 +357,10 @@
 }
 
 .estop-btn:hover {
-    background: rgba(239, 68, 68, 0.14);
+    background: rgba(239, 68, 68, 0.26);
     border-color: var(--status-danger);
-    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.12);
+    box-shadow: 0 0 20px 4px rgba(239, 68, 68, 0.5);
+    transform: translateY(-0.5px);
 }
 
 .estop-btn svg, .estop-btn i { width: 15px; height: 15px; }
@@ -427,7 +430,7 @@
 
 .tele-val {
     font-family: var(--font-mono);
-    font-size: var(--text-xl); font-weight: var(--fw-semibold);
+    font-size: 20px; font-weight: var(--fw-semibold);
     color: var(--text-primary);
     line-height: 1;
 }
@@ -450,8 +453,13 @@
     .widget-grid-bottom { grid-template-columns: repeat(2, 1fr); }
 }
 
+@media (max-width: 1200px) {
+    .widget-grid-top    { grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+    .widget-grid-bottom { grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+}
+
 @media (max-width: 1100px) {
-    .widget-grid-mid { grid-template-columns: 1fr; }
+    .widget-grid-mid { grid-template-columns: 1fr; gap: var(--space-3); }
     .mini-map-card, .mini-cam-card { height: 260px; }
 }
 

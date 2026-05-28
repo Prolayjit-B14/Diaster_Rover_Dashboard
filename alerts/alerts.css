@@ -39,8 +39,8 @@
 
 .alert-stat-val {
     font-family: var(--font-mono);
-    font-size: var(--text-lg);
-    font-weight: var(--fw-semibold);
+    font-size: 18px;
+    font-weight: var(--fw-bold);
     line-height: 1;
 }
 
@@ -55,7 +55,7 @@
 .alert-stat-sep {
     width: 1px;
     height: 28px;
-    background: var(--border-subtle);
+    background: var(--border-default);
     flex-shrink: 0;
 }
 
@@ -84,7 +84,7 @@
     display: flex;
     align-items: flex-start;
     gap: var(--space-3);
-    padding: 12px var(--space-4);
+    padding: 14px var(--space-4);
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
@@ -99,7 +99,7 @@
     content: '';
     position: absolute;
     left: 0; top: 0; bottom: 0;
-    width: 2px;
+    width: 3px;
     background: var(--alert-color, var(--accent));
 }
 
@@ -108,10 +108,29 @@
     border-color: var(--border-default);
 }
 
-.alert-item.critical { --alert-color: var(--status-danger); border-color: var(--status-danger-bd); }
-.alert-item.high     { --alert-color: #F97316; border-color: rgba(249,115,22,0.18); }
-.alert-item.medium   { --alert-color: var(--status-warn);  border-color: var(--status-warn-bd); }
-.alert-item.low      { --alert-color: var(--accent);       border-color: var(--accent-border); }
+.alert-item.critical {
+    --alert-color: var(--status-danger);
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.07) 0%, var(--bg-card) 60%);
+    border-color: rgba(239, 68, 68, 0.22);
+}
+.alert-item.critical:hover {
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.10) 0%, var(--bg-card-hover) 60%);
+}
+.alert-item.high {
+    --alert-color: #F97316;
+    background: linear-gradient(90deg, rgba(249, 115, 22, 0.05) 0%, var(--bg-card) 60%);
+    border-color: rgba(249, 115, 22, 0.16);
+}
+.alert-item.medium {
+    --alert-color: var(--status-warn);
+    background: linear-gradient(90deg, rgba(245, 158, 11, 0.04) 0%, var(--bg-card) 60%);
+    border-color: rgba(245, 158, 11, 0.14);
+}
+.alert-item.low {
+    --alert-color: var(--accent);
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.03) 0%, var(--bg-card) 60%);
+    border-color: rgba(59, 130, 246, 0.14);
+}
 
 /* ── ALERT ICON ──────────────────────────────────────────────── */
 .alert-icon {
@@ -137,10 +156,10 @@
 }
 
 .alert-title {
-    font-size: var(--text-base);
+    font-size: 14px;
     font-weight: var(--fw-semibold);
     color: var(--text-primary);
-    margin-bottom: 2px;
+    margin-bottom: 3px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -148,7 +167,7 @@
 }
 
 .alert-desc {
-    font-size: var(--text-sm);
+    font-size: 12px;
     color: var(--text-secondary);
     line-height: 1.5;
 }
@@ -228,11 +247,11 @@
 
 /* ── SOS BUTTON ──────────────────────────────────────────────── */
 .sos-btn {
-    width: 96px;
-    height: 96px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     background: var(--status-danger);
-    border: 2px solid rgba(239, 68, 68, 0.35);
+    border: 2px solid rgba(239, 68, 68, 0.5);
     cursor: pointer;
     font-family: var(--font-body);
     font-size: 16px;
@@ -240,22 +259,49 @@
     color: white;
     transition: transform var(--t-fast), box-shadow var(--t-fast);
     letter-spacing: 0.1em;
+    position: relative;
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.12), 0 0 0 12px rgba(239, 68, 68, 0.05);
+}
+
+.sos-btn::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    animation: sosPersistentRing 2.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    pointer-events: none;
+}
+
+@keyframes sosPersistentRing {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50%       { opacity: 0.9; transform: scale(1.06); }
 }
 
 .sos-btn:hover {
-    transform: scale(1.04);
-    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.45);
+    transform: scale(1.05);
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.18), 0 6px 28px rgba(239, 68, 68, 0.55);
 }
 
 .sos-btn:active { transform: scale(0.97); }
 
-@keyframes sosPulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-    50%       { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0.28); }
+@keyframes sosDoublePulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7), 0 0 0 0 rgba(239, 68, 68, 0.35);
+    }
+    40% {
+        box-shadow: 0 0 0 14px rgba(239, 68, 68, 0), 0 0 0 0 rgba(239, 68, 68, 0.35);
+    }
+    80% {
+        box-shadow: 0 0 0 14px rgba(239, 68, 68, 0), 0 0 0 28px rgba(239, 68, 68, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0), 0 0 0 0 rgba(239, 68, 68, 0);
+    }
 }
 
 .sos-btn.triggered {
-    animation: sosPulse 1.2s ease-in-out infinite;
+    animation: sosDoublePulse 1.4s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
 }
 
 /* ── SOUND TOGGLE ────────────────────────────────────────────── */
