@@ -432,9 +432,11 @@ html {
     color 0.35s ease;
 }
 
+/* Scope global theme transitions to color/opacity only — NOT transform or layout
+   to avoid sluggishness on complex dashboard pages. */
 *, *::before, *::after {
-  transition-property: background-color, border-color, color, box-shadow, opacity;
-  transition-duration: 0.25s;
+  transition-property: background-color, border-color, color, box-shadow, opacity, fill, stroke;
+  transition-duration: 0.2s;
   transition-timing-function: ease;
 }
 

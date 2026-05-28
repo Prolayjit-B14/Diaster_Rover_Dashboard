@@ -1,12 +1,17 @@
 /**
- * RescueBOT — Sensor Integration Array
+ * RescueBOT — Sensor Integration Array v2.1
  * sensors/sensors.js
  *
  * Subscribes to MQTT telemetry and routes data to the 12 sensor cards.
+ *
+ * Fixes applied:
+ *  - Removed dead `if (false) { ... }` block
+ *  - Moved mqttController reference inside DOMContentLoaded (prevents early binding crash)
+ *  - Fixed PIR value comparison — now handles '1' (string) as well as 1 (int)
+ *  - Fixed updateSensor() to actually append unit when provided
+ *  - Removed duplicate sidebar collapse handler (handled by shared.js)
+ *  - Guarded lucide.createIcons() with window.lucide check
  */
-
-// mqtt-client.js is loaded via script tag and exposes window.mqttController
-const mqttCtrl = window.mqttController;
 
 /* ── CIRCUMFERENCE for r=32 SVG rings ────────────────────── */
 const CIRC = 2 * Math.PI * 32; // ≈ 201.06
@@ -18,14 +23,14 @@ const CIRC = 2 * Math.PI * 32; // ≈ 201.06
 
 /**
  * Set inner text of a value element.
- * @param {string} id   - Element ID
- * @param {string|number} val - Value to display
- * @param {string} [unit] - Optional unit suffix appended with space
+ * @param {string}        id   - Element ID
+ * @param {string|number} val  - Value to display
+ * @param {string}        [unit] - Optional unit suffix appended after a space
  */
 function updateSensor(id, val, unit) {
     const el = document.getElementById(id);
     if (!el) return;
-    el.textContent = unit !== undefined ? `${val}` : `${val}`;
+    el.textContent = unit !== undefined ? `${val} ${unit}` : `${val}`;
 }
 
 /**
@@ -50,7 +55,7 @@ function updateStatus(id, status, colour) {
     if (!el) return;
     el.textContent = status;
     // Remove all colour classes then apply the correct one
-    el.className = el.className.replace(/badge-(green|amber|red|cyan|orange)/g, '');
+    el.className = el.className.replace(/badge-(green|amber|red|cyan|orange)/g, '').trim();
     el.classList.add(`badge-${colour}`);
 }
 
@@ -84,32 +89,15 @@ function setCardState(cardId, state) {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    /* ── Mission Clock ───────────────────────────────────── */
-    const clockEl = document.getElementById('mission-clock');
-    if (clockEl) {
-        setInterval(() => {
-            clockEl.textContent = new Date().toLocaleTimeString('en-GB', { hour12: false });
-        }, 1000);
-    }
-
-    /* ── Sidebar Collapse Toggle ─────────────────────────── */
-    const sidebarCollapseBtn = document.getElementById('sidebar-collapse-btn');
-    const sidebar = document.getElementById('sidebar');
-    if (sidebarCollapseBtn && sidebar) {
-        sidebarCollapseBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-            const icon = sidebarCollapseBtn.querySelector('[data-lucide]');
-            if (icon) {
-                const isCollapsed = sidebar.classList.contains('collapsed');
-                icon.setAttribute('data-lucide', isCollapsed ? 'chevrons-right' : 'chevrons-left');
-                lucide.createIcons();
-            }
-        });
-    }
-
-    /* ── MQTT Telemetry Routing ──────────────────────────── */
+    /* ── Resolve mqttController inside DOMContentLoaded ─────── */
+    /* (avoids early top-level binding before MQTT initialises) */
     const mc = window.mqttController;
-    if (!mc) return;
+
+    /* ── MQTT Telemetry Routing ──────────────────────────────── */
+    if (!mc) {
+        console.warn('[Sensors] mqttController not found. Sensor updates disabled.');
+        return;
+    }
 
     mc.on('telemetry', (d) => {
         if (!d || !d.sensor) return;
@@ -119,12 +107,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             /* ① Temperature ─────────────────────────────── */
             case 'temp': {
-                updateSensor('val-temp', parseFloat(v).toFixed(1));
-                updateBar('bar-temp', (v / 50) * 100);
-                if (v > 40) {
+                const tempVal = parseFloat(v);
+                if (isNaN(tempVal)) break;
+                updateSensor('val-temp', tempVal.toFixed(1));
+                updateBar('bar-temp', (tempVal / 50) * 100);
+                if (tempVal > 40) {
                     updateStatus('status-temp', 'CRITICAL', 'red');
                     setCardState('card-temp', 'alert');
-                } else if (v > 30) {
+                } else if (tempVal > 30) {
                     updateStatus('status-temp', 'WARNING', 'amber');
                     setCardState('card-temp', 'warning');
                 } else {
@@ -136,11 +126,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             /* ② Humidity ────────────────────────────────── */
             case 'humidity': {
-                const hVal = parseFloat(v).toFixed(1);
-                const hPct = Math.min(100, Math.max(0, v));
-                updateSensor('val-humidity', `${hVal}%`);
+                const hVal = parseFloat(v);
+                if (isNaN(hVal)) break;
+                const hPct = Math.min(100, Math.max(0, hVal));
+                updateSensor('val-humidity', `${hVal.toFixed(1)}%`);
                 updateCircularRing('ring-humidity', hPct);
-                if (v > 85 || v < 20) {
+                if (hVal > 85 || hVal < 20) {
                     updateStatus('status-humidity', 'WARNING', 'amber');
                 } else {
                     updateStatus('status-humidity', 'OPTIMAL', 'green');
@@ -150,12 +141,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             /* ③ Gas ─────────────────────────────────────── */
             case 'gas': {
-                updateSensor('val-gas', Math.round(v));
-                updateBar('bar-gas', (v / 4095) * 100);
-                if (v > 2500) {
+                const gasVal = parseInt(v, 10);
+                if (isNaN(gasVal)) break;
+                updateSensor('val-gas', gasVal);
+                updateBar('bar-gas', (gasVal / 4095) * 100);
+                if (gasVal > 2500) {
                     updateStatus('status-gas', 'CRITICAL', 'red');
                     setCardState('card-gas', 'alert');
-                } else if (v > 1500) {
+                } else if (gasVal > 1500) {
                     updateStatus('status-gas', 'WARNING', 'amber');
                     setCardState('card-gas', 'warning');
                 } else {
@@ -167,12 +160,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             /* ④ Ultrasonic ───────────────────────────────── */
             case 'ultrasonic': {
-                updateSensor('val-ultrasonic', parseFloat(v).toFixed(1));
-                updateBar('bar-ultrasonic', (v / 400) * 100);
-                if (v < 10) {
+                const uVal = parseFloat(v);
+                if (isNaN(uVal)) break;
+                updateSensor('val-ultrasonic', uVal.toFixed(1));
+                updateBar('bar-ultrasonic', (uVal / 400) * 100);
+                if (uVal < 10) {
                     updateStatus('status-ultrasonic', 'DANGER', 'red');
                     setCardState('card-ultrasonic', 'alert');
-                } else if (v < 30) {
+                } else if (uVal < 30) {
                     updateStatus('status-ultrasonic', 'WARNING', 'amber');
                     setCardState('card-ultrasonic', 'warning');
                 } else {
@@ -184,13 +179,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             /* ⑤ PIR Motion ──────────────────────────────── */
             case 'pir': {
-                const detected = v === 1 || v === true || v === 'DETECTED';
-                const pirText  = detected ? 'DETECTED' : 'CLEAR';
+                // Handle both int (1/0), string ('1'/'0'), bool, and keyword values
+                const detected =
+                    v === 1 || v === '1' || v === true ||
+                    v === 'true' || v === 'DETECTED';
+                const pirText = detected ? 'DETECTED' : 'CLEAR';
                 updateSensor('val-pir', pirText);
                 const pulseEl = document.getElementById('pir-pulse');
-                if (pulseEl) {
-                    pulseEl.classList.toggle('active', detected);
-                }
+                if (pulseEl) pulseEl.classList.toggle('active', detected);
                 if (detected) {
                     updateStatus('status-pir', 'DETECTED', 'red');
                     setCardState('card-pir', 'alert');
@@ -203,13 +199,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             /* ⑥ Vibration ───────────────────────────────── */
             case 'vibration': {
-                updateSensor('val-vib', parseFloat(v).toFixed(2));
+                const vibVal = parseFloat(v);
+                if (isNaN(vibVal)) break;
+                updateSensor('val-vib', vibVal.toFixed(2));
                 // Normalise roughly to 0–2g range
-                updateBar('bar-vib', Math.min(100, (v / 2) * 100));
-                if (v > 1.5) {
+                updateBar('bar-vib', Math.min(100, (vibVal / 2) * 100));
+                if (vibVal > 1.5) {
                     updateStatus('status-vib', 'CRITICAL', 'red');
                     setCardState('card-vib', 'alert');
-                } else if (v > 0.8) {
+                } else if (vibVal > 0.8) {
                     updateStatus('status-vib', 'WARNING', 'amber');
                     setCardState('card-vib', 'warning');
                 } else {
@@ -221,9 +219,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             /* ⑦ Tilt ─────────────────────────────────────── */
             case 'tilt': {
-                updateSensor('val-tilt', parseFloat(v).toFixed(1));
-                updateBar('bar-tilt', (v / 180) * 100);
-                if (v > 45) {
+                const tiltVal = parseFloat(v);
+                if (isNaN(tiltVal)) break;
+                updateSensor('val-tilt', tiltVal.toFixed(1));
+                updateBar('bar-tilt', (tiltVal / 180) * 100);
+                if (tiltVal > 45) {
                     updateStatus('status-tilt', 'TILTED', 'amber');
                     setCardState('card-tilt', 'warning');
                 } else {
@@ -235,9 +235,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             /* ⑧ Gyroscope ───────────────────────────────── */
             case 'gyro': {
-                updateSensor('val-gyro', parseFloat(v).toFixed(1));
-                updateBar('bar-gyro', (Math.abs(v) / 250) * 100);
-                if (Math.abs(v) > 200) {
+                const gyroVal = parseFloat(v);
+                if (isNaN(gyroVal)) break;
+                updateSensor('val-gyro', gyroVal.toFixed(1));
+                updateBar('bar-gyro', (Math.abs(gyroVal) / 250) * 100);
+                if (Math.abs(gyroVal) > 200) {
                     updateStatus('status-gyro', 'RAPID', 'amber');
                     setCardState('card-gyro', 'warning');
                 } else {
@@ -249,11 +251,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             /* ⑨ GPS ─────────────────────────────────────── */
             case 'gps': {
-                // Expected: { sensor:'gps', value: { status, sats } }
                 const gpsStatus = d.status || (d.value && d.value.status) || 'ACQUIRING';
                 const gpsSats   = d.sats   || (d.value && d.value.sats)   || '--';
                 updateSensor('val-gps-status', gpsStatus);
-                updateSensor('val-gps-sats', gpsSats);
+                updateSensor('val-gps-sats',   gpsSats);
                 if (gpsStatus === 'FIXED' || gpsStatus === '3D FIX') {
                     updateStatus('status-gps', 'FIXED', 'green');
                 } else if (gpsStatus === 'ACQUIRING') {
@@ -266,10 +267,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             /* ⑩ Battery ─────────────────────────────────── */
             case 'batt': {
-                // Expected: { sensor:'batt', value: pct, voltage: V }
                 const pct     = parseFloat(v);
                 const voltage = d.voltage !== undefined ? parseFloat(d.voltage).toFixed(2) : '--';
-                updateSensor('val-battery', `${Math.round(pct)}%`);
+                if (isNaN(pct)) break;
+                updateSensor('val-battery',      `${Math.round(pct)}%`);
                 updateCircularRing('ring-battery', pct);
                 updateSensor('val-batt-voltage', `${voltage}V`);
                 if (pct < 20) {
@@ -288,6 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
             /* ⑪ WiFi Signal ─────────────────────────────── */
             case 'wifi': {
                 const dbm = parseFloat(v);
+                if (isNaN(dbm)) break;
                 updateSensor('val-wifi', Math.round(dbm));
                 // Map dBm range -100 (worst) to -30 (best) → 0–100%
                 const wifiPct = Math.min(100, Math.max(0, ((dbm + 100) / 70) * 100));
@@ -308,6 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
             /* ⑫ Camera FPS ──────────────────────────────── */
             case 'fps': {
                 const fps = parseFloat(v);
+                if (isNaN(fps)) break;
                 updateSensor('val-fps', Math.round(fps));
                 if (fps > 25) {
                     updateStatus('status-cam', 'OPTIMAL', 'green');
@@ -331,28 +334,18 @@ document.addEventListener('DOMContentLoaded', () => {
     mc.on('statusChanged', (status) => {
         const dot  = document.getElementById('mqtt-dot');
         const text = document.getElementById('mqtt-status-text');
-        if (status === 'CONNECTED') {
-            if (dot)  dot.className  = 'status-dot';
-            if (text) text.textContent = 'MQTT ONLINE';
-        } else {
-            if (dot)  dot.className  = 'status-dot offline';
-            if (text) text.textContent = status;
+        if (dot) {
+            dot.className = 'status-dot' +
+                (status === 'CONNECTED'  ? '' :
+                 status === 'CONNECTING' ? ' warning' : ' offline');
+        }
+        if (text) {
+            text.textContent =
+                status === 'CONNECTED'  ? 'MQTT ONLINE'    :
+                status === 'CONNECTING' ? 'CONNECTING...'  : status;
         }
     });
-    /* legacy stubs */
-    if (false) { // removed
-    mc.on('connect', () => {
-        const dot  = document.getElementById('mqtt-dot');
-        const text = document.getElementById('mqtt-status-text');
-        if (dot)  { dot.className  = 'status-dot'; }
-        if (text) { text.textContent = 'MQTT ONLINE'; }
-    });
-
-    mc.on('disconnect', () => {});
-    } // end if false
 
     /* ── Initialise Lucide icons ─────────────────────────── */
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
+    if (window.lucide) window.lucide.createIcons();
 });

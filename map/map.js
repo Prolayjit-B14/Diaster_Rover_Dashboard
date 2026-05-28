@@ -162,18 +162,9 @@ class MapDashboard {
             });
         }
 
-        // Also listen via window events (fallback)
-        window.addEventListener('ares:gps', (e) => {
-            const d = e.detail;
-            this.updateRobot(
-                parseFloat(d.lat)  || 0,
-                parseFloat(d.lng)  || 0,
-                parseFloat(d.heading)  || 0,
-                parseFloat(d.speed)    || 0,
-                parseInt(d.satellites) || 0,
-                d.altitude ? parseFloat(d.altitude) : null
-            );
-        });
+        // NOTE: Only use mqttController.on('gps') — do NOT also listen to
+        // window 'ares:gps' event because mqtt-client.js fires both.
+        // Listening to both caused every GPS packet to trigger updateRobot() twice.
     }
 
     // ── MAP & TOOL LISTENERS ─────────────────────────────────────────────────
@@ -204,7 +195,7 @@ class MapDashboard {
                     if (this.isFollowing && this.currentPos) {
                         this.map.panTo(this.currentPos);
                     }
-                    RESCUEBOT_UI.toast(
+                    window.RESCUEBOT_UI?.toast(
                         this.isFollowing ? 'Follow mode: ON' : 'Follow mode: OFF',
                         this.isFollowing ? 'success' : 'info'
                     );
@@ -225,7 +216,7 @@ class MapDashboard {
                     this.activeTool = tool;
                     btn.classList.add('active');
                     this.map.getContainer().style.cursor = 'crosshair';
-                    RESCUEBOT_UI.toast(
+                    window.RESCUEBOT_UI?.toast(
                         `Click map to place: ${LANDMARK_CONFIG[tool]?.label || tool}`,
                         'info'
                     );
@@ -269,7 +260,7 @@ class MapDashboard {
             if (this.currentPos) {
                 this.map.setView(this.currentPos, Math.max(this.map.getZoom(), 15), { animate: true });
             } else {
-                RESCUEBOT_UI.toast('No GPS fix yet', 'warning');
+            window.RESCUEBOT_UI?.toast('No GPS fix yet', 'warning');
             }
         });
 
@@ -303,8 +294,11 @@ class MapDashboard {
         // Rotate heading needle
         this._updateRoverHeading(heading);
 
-        // Append path
+        // Append path — cap at 500 points to prevent memory growth on long missions
         this.pathCoords.push(latlng);
+        if (this.pathCoords.length > 500) {
+            this.pathCoords.shift();
+        }
         this.pathLine.setLatLngs(this.pathCoords);
 
         // Pan if following
@@ -342,47 +336,13 @@ class MapDashboard {
 
     // ── HEADING ARROW ─────────────────────────────────────────────────────────
     _updateRoverHeading(degrees) {
-        // Re-render marker icon with rotation
-        const roverIconHtml = `
-            <div style="
-                position:relative;
-                width:20px; height:20px;
-                display:flex; align-items:center; justify-content:center;
-                transform: rotate(${degrees}deg);
-            ">
-                <div class="rover-icon-inner" style="
-                    width:16px; height:16px;
-                    background:#00D4FF;
-                    border-radius:50%;
-                    border:2px solid rgba(255,255,255,0.8);
-                    box-shadow: 0 0 0 0 rgba(0,212,255,0.5),
-                                0 0 12px rgba(0,212,255,0.8);
-                    display:flex; align-items:center; justify-content:center;
-                ">
-                    <div style="
-                        width:6px; height:6px;
-                        background:#fff;
-                        border-radius:50%;
-                    "></div>
-                </div>
-                <div style="
-                    position:absolute;
-                    top:-6px; left:50%;
-                    transform:translateX(-50%);
-                    width:0; height:0;
-                    border-left:4px solid transparent;
-                    border-right:4px solid transparent;
-                    border-bottom:8px solid #00D4FF;
-                "></div>
-            </div>
-        `;
-        const icon = L.divIcon({
-            html: roverIconHtml,
-            className: '',
-            iconSize: [20, 20],
-            iconAnchor: [10, 10],
-        });
-        this.roverMarker.setIcon(icon);
+        // Instead of recreating the full Leaflet icon (expensive DOM operation),
+        // find the existing marker element and apply a CSS transform rotation.
+        const markerEl = this.roverMarker?.getElement();
+        if (markerEl) {
+            const inner = markerEl.querySelector('div');
+            if (inner) inner.style.transform = `rotate(${degrees}deg)`;
+        }
     }
 
     // ── ADD LANDMARK ─────────────────────────────────────────────────────────
@@ -452,7 +412,7 @@ class MapDashboard {
         this.activeTool = null;
         this.map.getContainer().style.cursor = '';
 
-        RESCUEBOT_UI.toast(`${name} placed`, 'success');
+        window.RESCUEBOT_UI?.toast(`${name} placed`, 'success');
     }
 
     // ── UPDATE LANDMARK UI ───────────────────────────────────────────────────

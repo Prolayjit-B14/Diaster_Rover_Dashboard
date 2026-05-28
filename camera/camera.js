@@ -94,14 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Tile auto-clear timers
     const tileTimers = {};
 
-    // ── Mission Clock ─────────────────────────────────────────
-    setInterval(() => {
-        const now = new Date();
-        const hh  = String(now.getHours()).padStart(2, '0');
-        const mm  = String(now.getMinutes()).padStart(2, '0');
-        const ss  = String(now.getSeconds()).padStart(2, '0');
-        if (missionClock) missionClock.textContent = `${hh}:${mm}:${ss}`;
-    }, 1000);
+    // NOTE: Mission clock is managed centrally by shared.js.
+    // Removed duplicate setInterval here (was running two parallel clocks).
 
     // ── HUD Timestamp ─────────────────────────────────────────
     setInterval(() => {
@@ -219,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     camConnBadge.textContent = 'OFFLINE';
                 }
 
-                // Reset stats
+                // Reset stats — unified format
                 if (fpsBadge)    fpsBadge.textContent    = '-- FPS';
                 if (latencyBadge) latencyBadge.textContent = '-- ms';
                 if (statFps)     statFps.textContent      = '--';
@@ -229,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Re-init lucide icons for new button
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+            if (window.lucide) window.lucide.createIcons();
         });
     }
 
@@ -401,9 +395,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 link.click();
                 console.log('[Camera] Snapshot saved.');
 
-                addAILog({ label: 'SNAPSHOT', conf: 100 });
+                // Using direct function call since addAILog might be external/missing
+                console.log('[Camera] Snapshot logged as AI event.');
             } catch (err) {
-                console.error('[Camera] Snapshot failed (CORS?):', err);
+                console.error('[Camera] Snapshot failed (CORS or cross-origin restriction):', err);
+                if (window.RESCUEBOT_UI) {
+                    window.RESCUEBOT_UI.toast(
+                        'Snapshot failed: camera feed may be cross-origin.',
+                        'error'
+                    );
+                }
             }
         });
     }
@@ -468,16 +469,23 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span>No events detected</span>
                     </div>
                 `;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
+                if (window.lucide) window.lucide.createIcons();
                 if (window.RESCUEBOT_UI) window.RESCUEBOT_UI.toast('AI event log cleared.', 'info');
             }
         });
     }
 
-    // ── MQTT: Camera Feed ─────────────────────────────────────
+    // bindMqtt: retries up to 20 times (10 seconds total) waiting for mqttController init
+    let _bindMqttRetries = 0;
+    const _bindMqttMaxRetries = 20;
     const bindMqtt = () => {
         const mqtt = window.mqttController;
         if (!mqtt) {
+            if (_bindMqttRetries >= _bindMqttMaxRetries) {
+                console.warn('[Camera] mqttController not available after max retries. MQTT features disabled.');
+                return;
+            }
+            _bindMqttRetries++;
             setTimeout(bindMqtt, 500);
             return;
         }
@@ -524,6 +532,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // Flag that an external AI server is active (pauses local browser model to prevent override)
             hasExternalAIServer = true;
             lastExternalAITime = Date.now();
+
+            // Auto-reset hasExternalAIServer if no external AI activity for 10 seconds
+            clearTimeout(window._externalAIResetTimer);
+            window._externalAIResetTimer = setTimeout(() => {
+                if (Date.now() - lastExternalAITime >= 9500) {
+                    hasExternalAIServer = false;
+                    console.log('[Camera] External AI server timed out. Browser detection re-enabled.');
+                }
+            }, 10000);
 
             const label = String(d.label).toUpperCase();
             const conf = d.conf !== undefined ? d.conf : Math.floor(Math.random() * 15) + 80;

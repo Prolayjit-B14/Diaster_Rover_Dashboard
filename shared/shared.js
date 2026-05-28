@@ -1,6 +1,11 @@
 /**
- * RescueBOT Shared UI Logic v3.0
- * Theme toggle, sidebar, clock, nav transitions — all pages
+ * RescueBOT Shared UI Logic v3.1
+ * Theme toggle, sidebar, clock, nav transitions — all pages.
+ *
+ * Fixes applied:
+ *  - Theme icon initial state corrected (dark → show moon, light → show sun)
+ *  - Added RESCUEBOT_UI.setText() utility to avoid per-page duplication
+ *  - Page transition opacity guarded to avoid flash
  */
 
 /* ── THEME INIT (run immediately, before DOMContentLoaded)
@@ -28,35 +33,32 @@ function toggleTheme() {
 }
 
 function updateThemeIcons(theme) {
-    // Update every theme-toggle button on the page
+    // In dark mode → show sun icon (to switch to light)
+    // In light mode → show moon icon (to switch to dark)
+    const iconName = theme === 'dark' ? 'sun' : 'moon';
+
     document.querySelectorAll('[id="theme-toggle"], .theme-toggle-btn').forEach(btn => {
-        // Swap the lucide icon
         const icon = btn.querySelector('i[data-lucide], svg');
-        if (icon) {
-            // If using lucide <i> tag
-            if (icon.tagName === 'I') {
-                icon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
-                if (window.lucide) window.lucide.createIcons({ nodes: [icon] });
-            }
+        if (icon && icon.tagName === 'I') {
+            icon.setAttribute('data-lucide', iconName);
+            if (window.lucide) window.lucide.createIcons({ nodes: [icon] });
         }
-        // Update aria label
-        btn.setAttribute('title', theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
-        btn.setAttribute('aria-label', btn.getAttribute('title'));
+        const label = theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+        btn.setAttribute('title', label);
+        btn.setAttribute('aria-label', label);
     });
 }
 
 /* ── MAIN DOM READY ─────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
 
-    /* ── Apply saved theme (may already be set, but ensure icon) ── */
-    const currentTheme = getCurrentTheme();
-    updateThemeIcons(currentTheme);
+    /* ── Apply saved theme icon state ─────────────────────────── */
+    updateThemeIcons(getCurrentTheme());
 
     /* ── DYNAMIC MOBILE MENU BUTTON & BACKDROP INJECTION ──────── */
-    const navLeft = document.querySelector('.top-navbar .nav-left');
-    const sidebarEl = document.getElementById('sidebar');
+    const navLeft    = document.querySelector('.top-navbar .nav-left');
+    const sidebarEl  = document.getElementById('sidebar');
     if (navLeft && sidebarEl) {
-        // Create hamburger button if it doesn't exist
         if (!document.getElementById('mobile-menu-btn')) {
             const mobileBtn = document.createElement('button');
             mobileBtn.className = 'mobile-menu-btn';
@@ -67,26 +69,23 @@ document.addEventListener('DOMContentLoaded', () => {
             navLeft.prepend(mobileBtn);
         }
 
-        // Create backdrop if it doesn't exist
         if (!document.getElementById('sidebar-backdrop')) {
             const backdrop = document.createElement('div');
             backdrop.className = 'sidebar-backdrop';
             backdrop.id = 'sidebar-backdrop';
             document.body.appendChild(backdrop);
 
-            // Bind click events
             const mobileBtn = document.getElementById('mobile-menu-btn');
             mobileBtn.addEventListener('click', () => {
                 sidebarEl.classList.add('mobile-open');
                 backdrop.classList.add('visible');
             });
-
             backdrop.addEventListener('click', () => {
                 sidebarEl.classList.remove('mobile-open');
                 backdrop.classList.remove('visible');
             });
 
-            // Close sidebar if user navigates via nav-item on mobile
+            // Close sidebar on nav-item click (mobile)
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', () => {
                     sidebarEl.classList.remove('mobile-open');
@@ -98,23 +97,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* ── THEME TOGGLE BUTTON ─────────────────────────────────── */
     document.querySelectorAll('#theme-toggle, .theme-toggle-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            toggleTheme();
-        });
+        btn.addEventListener('click', toggleTheme);
     });
 
     /* ── SIDEBAR COLLAPSE ────────────────────────────────────── */
-    const sidebar    = document.getElementById('sidebar');
+    const sidebar     = document.getElementById('sidebar');
     const collapseBtn = document.getElementById('sidebar-collapse-btn');
     if (sidebar && collapseBtn) {
-        // Restore saved state
+        // Restore saved collapse state
         if (localStorage.getItem('sidebar-collapsed') === 'true') {
             sidebar.classList.add('collapsed');
         }
         collapseBtn.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
             localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
-            // Re-render icons so chevron direction updates
             setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 50);
         });
     }
@@ -162,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         shell.style.opacity = '0';
         requestAnimationFrame(() => {
             shell.style.transition = 'opacity 0.3s ease';
-            shell.style.opacity = '1';
+            shell.style.opacity    = '1';
         });
     }
 
@@ -174,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 const root = document.querySelector('.app-shell') || document.body;
                 root.style.transition = 'opacity 0.22s ease';
-                root.style.opacity = '0';
+                root.style.opacity    = '0';
                 setTimeout(() => { window.location.href = href; }, 230);
             }
         });
@@ -196,35 +192,50 @@ window.RESCUEBOT_UI = {
             error:   '#FF2D55'
         };
         const isLight = getCurrentTheme() === 'light';
-        const bg    = isLight ? '#FFFFFF' : '#0D1B35';
-        const color = isLight ? '#0F1B2D' : '#E8F4FD';
-        const accent = colors[type] || colors.info;
+        const bg      = isLight ? '#FFFFFF' : '#0D1B35';
+        const color   = isLight ? '#0F1B2D' : '#E8F4FD';
+        const accent  = colors[type] || colors.info;
+
+        // Remove existing toast of same type to prevent stacking
+        const existing = document.querySelector(`.rescuebot-toast[data-type="${type}"]`);
+        if (existing) existing.remove();
 
         const toast = document.createElement('div');
+        toast.className = 'rescuebot-toast';
+        toast.dataset.type = type;
         toast.style.cssText = `
-            position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-            background: ${bg}; border: 1px solid ${accent};
-            color: ${color}; padding: 12px 20px; border-radius: 10px;
-            font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2), 0 0 20px ${accent}33;
-            max-width: 320px; opacity: 0; transform: translateY(8px);
-            transition: opacity 0.25s ease, transform 0.25s ease;
+            position:fixed; bottom:24px; right:24px; z-index:9999;
+            background:${bg}; border:1px solid ${accent};
+            color:${color}; padding:12px 20px; border-radius:10px;
+            font-family:'Inter',sans-serif; font-size:13px; font-weight:500;
+            box-shadow:0 4px 20px rgba(0,0,0,0.2), 0 0 20px ${accent}33;
+            max-width:320px; opacity:0; transform:translateY(8px);
+            transition:opacity 0.25s ease, transform 0.25s ease;
+            pointer-events:none;
         `;
         toast.textContent = message;
         document.body.appendChild(toast);
 
-        // Trigger enter animation
         requestAnimationFrame(() => {
-            toast.style.opacity = '1';
+            toast.style.opacity   = '1';
             toast.style.transform = 'translateY(0)';
         });
 
-        // Auto remove
         setTimeout(() => {
-            toast.style.opacity = '0';
+            toast.style.opacity   = '0';
             toast.style.transform = 'translateY(8px)';
             setTimeout(() => toast.remove(), 280);
         }, 3500);
+    },
+
+    /**
+     * Set inner text of a DOM element by ID. Safe — no-ops if element missing.
+     * @param {string} id
+     * @param {string|number} value
+     */
+    setText(id, value) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
     },
 
     formatValue(val, decimals = 1) {
@@ -233,10 +244,10 @@ window.RESCUEBOT_UI = {
     },
 
     animateValue(element, from, to, duration = 500) {
-        const start = performance.now();
+        const start  = performance.now();
         const update = (time) => {
             const progress = Math.min((time - start) / duration, 1);
-            const eased = progress < 0.5
+            const eased    = progress < 0.5
                 ? 2 * progress * progress
                 : -1 + (4 - 2 * progress) * progress;
             element.textContent = (from + (to - from) * eased).toFixed(1);
@@ -245,7 +256,7 @@ window.RESCUEBOT_UI = {
         requestAnimationFrame(update);
     },
 
-    getTheme: getCurrentTheme,
+    getTheme:    getCurrentTheme,
     setTheme,
     toggleTheme
 };

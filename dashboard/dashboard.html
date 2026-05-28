@@ -60,7 +60,7 @@
                 <i data-lucide="home"></i>
                 <span class="nav-label">Home</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="#" class="nav-item" aria-disabled="true" title="Coming Soon" style="opacity:0.45;cursor:not-allowed;pointer-events:none;">
                 <i data-lucide="settings"></i>
                 <span class="nav-label">Settings</span>
             </a>
@@ -84,19 +84,19 @@
                 <span class="nav-breadcrumb">/ Dashboard</span>
             </div>
             <div class="nav-right">
-                <div class="status-pill">
-                    <div class="status-dot"></div>
+                <div class="status-pill" id="rover-status-pill">
+                    <div class="status-dot" id="rover-conn-dot"></div>
                     <span>ROVER ONLINE</span>
                 </div>
                 <div class="status-pill">
                     <i data-lucide="clock" style="width:12px;height:12px;"></i>
                     <span id="mission-clock" style="font-family:var(--font-mono);">--:--:--</span>
                 </div>
-                <button class="icon-btn" title="Notifications">
+                <button class="icon-btn" title="Notifications" aria-label="Notifications">
                     <i data-lucide="bell"></i>
                 </button>
-                <button class="icon-btn" id="theme-toggle" title="Toggle Theme">
-                    <i data-lucide="sun"></i>
+                <button class="icon-btn" id="theme-toggle" title="Switch to Light Mode" aria-label="Switch to Light Mode">
+                    <i data-lucide="moon"></i>
                 </button>
                 <div class="icon-btn" style="background:var(--cyan);color:var(--bg-void);font-weight:700;font-size:12px;cursor:default;">PB</div>
             </div>
@@ -136,11 +136,11 @@
                     <div class="gps-coord-row">
                         <div class="coord-box">
                             <div class="coord-label-sm">Latitude</div>
-                            <div class="coord-val" id="val-lat">0.000000°</div>
+                            <div class="coord-val" id="val-lat">--</div>
                         </div>
                         <div class="coord-box">
                             <div class="coord-label-sm">Longitude</div>
-                            <div class="coord-val" id="val-lng">0.000000°</div>
+                            <div class="coord-val" id="val-lng">--</div>
                         </div>
                     </div>
                     <div class="gps-bottom">

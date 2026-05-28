@@ -6,6 +6,8 @@
     <title>RescueBOT | Disaster Rescue Monitoring System</title>
     <meta name="description" content="Real-time disaster rescue monitoring, rover control, hazard detection and emergency response system powered by IoT, ESP32, and MQTT.">
     <link rel="icon" type="image/png" href="./assets/favicon.png">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://rescuebot.vercel.app/">
     <!-- Apply theme before CSS parses to prevent flash -->
     <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('rescuebot-theme') || 'dark');</script>
     <link rel="stylesheet" href="./shared/shared.css">
@@ -514,9 +516,9 @@
         © 2026 TEAM BOT THINGS — Prolayjit Biswas · Arghya Roy · Shubhajit Haldar · Papan Chowdhury
     </footer>
 
-    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-        lucide.createIcons();
+        // Lucide already loaded in <head>; initialize icons on DOM ready
+        if (window.lucide) lucide.createIcons();
 
         // ── PARTICLE CANVAS ────────────────────────────────────────
         const canvas = document.getElementById('particle-canvas');

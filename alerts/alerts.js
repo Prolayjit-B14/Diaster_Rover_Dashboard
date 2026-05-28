@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let soundEnabled = false;
     let activeFilter = 'all';
     let uptimeSecs   = 0;
+    // Deduplication: track last-seen time for each type+priority combo
+    const lastAlertTime = {};
 
     // ── DOM REFS ───────────────────────────────────────────────
     const alertList          = document.getElementById('alert-list');
@@ -53,10 +55,25 @@ document.addEventListener('DOMContentLoaded', () => {
         return priority.toUpperCase();
     }
 
+    // ── SANITIZE ──────────────────────────────────────────────
+    function sanitize(str) {
+        const el = document.createElement('div');
+        el.textContent = String(str);
+        return el.innerHTML;
+    }
+
     // ── ADD ALERT ──────────────────────────────────────────────
     function addAlert(type, priority, title, desc, icon) {
+        // Deduplication: reject identical type+priority combos within 5 seconds
+        const dedupKey = `${type}:${priority}`;
+        const now = Date.now();
+        if (lastAlertTime[dedupKey] && now - lastAlertTime[dedupKey] < 5000) {
+            return;
+        }
+        lastAlertTime[dedupKey] = now;
+
         const alert = {
-            id:        Date.now(),
+            id:        now,
             type,
             priority,
             title,
@@ -101,10 +118,10 @@ document.addEventListener('DOMContentLoaded', () => {
             item.style.animationDelay = `${idx * 0.04}s`;
 
             item.innerHTML = `
-                <div class="alert-icon">${alert.icon}</div>
+                <div class="alert-icon">${sanitize(alert.icon)}</div>
                 <div class="alert-content">
-                    <div class="alert-title">${alert.title}</div>
-                    <div class="alert-desc">${alert.desc}</div>
+                    <div class="alert-title">${sanitize(alert.title)}</div>
+                    <div class="alert-desc">${sanitize(alert.desc)}</div>
                     <div class="alert-time">⏱ ${formatTime(alert.timestamp)}</div>
                 </div>
                 <div class="alert-priority-badge">
@@ -125,9 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (statCritical) statCritical.textContent = critical;
         if (statResolved) statResolved.textContent = resolved;
 
-        // Critical badge in section header
+        // Critical badge — hide when count is 0
         if (criticalBadge) {
             criticalBadge.textContent = `${critical} CRITICAL`;
+            criticalBadge.style.display = critical > 0 ? '' : 'none';
         }
 
         // Sidebar nav badge
@@ -160,10 +178,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ── SOS BUTTON ─────────────────────────────────────────────
+    // ── SOS BUTTON (one-shot: cannot be un-triggered once fired) ──
     if (sosBtn) {
         sosBtn.addEventListener('click', () => {
-            sosBtn.classList.toggle('triggered');
+            // Prevent re-clicking once triggered
+            if (sosBtn.classList.contains('triggered')) return;
+
+            sosBtn.classList.add('triggered');
+            sosBtn.textContent = 'SOS SENT';
+            sosBtn.disabled = true;
 
             // Send MQTT command
             if (window.mqttController) {

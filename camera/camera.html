@@ -61,7 +61,7 @@
                 <i data-lucide="home"></i>
                 <span class="nav-label">Home</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="#" class="nav-item" aria-disabled="true" title="Coming Soon" style="opacity:0.45;cursor:not-allowed;pointer-events:none;">
                 <i data-lucide="settings"></i>
                 <span class="nav-label">Settings</span>
             </a>
@@ -90,24 +90,41 @@
                     <div class="live-dot standby" id="cam-rec-dot"></div>
                     <span id="cam-rec-label">STANDBY</span>
                 </div>
+                <!-- AI Server Status Pill -->
+                <div class="status-pill" id="ai-server-pill" title="Python AI Backend Status">
+                    <div class="status-dot offline" id="ai-server-dot"></div>
+                    <span id="ai-server-text" style="font-family:var(--font-mono);font-size:10px;">AI OFFLINE</span>
+                </div>
                 <!-- Mission Clock -->
                 <div class="status-pill">
                     <i data-lucide="clock" style="width:12px;height:12px;"></i>
                     <span id="mission-clock" style="font-family:var(--font-mono);">--:--:--</span>
                 </div>
-                <!-- Notifications -->
-                <button class="icon-btn" title="Notifications">
+                <button class="icon-btn" title="Notifications" aria-label="Notifications">
                     <i data-lucide="bell"></i>
                 </button>
                 <!-- Theme Toggle -->
-                <button class="icon-btn" id="theme-toggle" title="Toggle Theme">
-                    <i data-lucide="sun"></i>
+                <button class="icon-btn" id="theme-toggle" title="Switch to Light Mode" aria-label="Switch to Light Mode">
+                    <i data-lucide="moon"></i>
                 </button>
             </div>
         </header>
 
         <!-- CAMERA SHELL (no page-content padding) -->
         <div class="camera-shell">
+
+            <!-- ── AI ALERT BANNER ─────────────────────────────── -->
+            <div class="ai-alert-banner" id="ai-alert-banner" style="display:none;">
+                <div class="ai-alert-banner-inner">
+                    <div class="ai-alert-icon"><i data-lucide="alert-triangle" style="width:16px;height:16px;"></i></div>
+                    <div class="ai-alert-content">
+                        <span class="ai-alert-title" id="ai-alert-title">CRITICAL EVENT DETECTED</span>
+                        <span class="ai-alert-desc" id="ai-alert-desc">Possible survivor signaling for help</span>
+                    </div>
+                    <div class="ai-alert-priority" id="ai-alert-priority-badge">CRITICAL</div>
+                    <button class="ai-alert-close" id="ai-alert-close">&#x2715;</button>
+                </div>
+            </div>
 
             <!-- ── MAIN FEED PANEL ─────────────────────────────── -->
             <div class="main-feed-panel" id="main-feed-panel">
@@ -466,6 +483,137 @@
                     </div>
                 </div>
 
+                <!-- ── RESCUE INTELLIGENCE CARDS ──────────────────── -->
+                <div class="cam-sidebar-section">
+                    <div class="section-title-row">
+                        <h3>Rescue Intelligence</h3>
+                        <span class="badge" id="rescue-priority-badge" style="font-size:9px;padding:2px 6px;">LOW</span>
+                    </div>
+                    <div class="rescue-intel-grid">
+                        <div class="ri-card" id="ri-human">
+                            <span class="ri-icon">👤</span>
+                            <div class="ri-info">
+                                <span class="ri-label">Human Detected</span>
+                                <span class="ri-value" id="ri-human-val">NONE</span>
+                            </div>
+                            <span class="ri-count" id="ri-human-count">0</span>
+                        </div>
+                        <div class="ri-card" id="ri-motion">
+                            <span class="ri-icon">〰️</span>
+                            <div class="ri-info">
+                                <span class="ri-label">Movement Level</span>
+                                <span class="ri-value" id="ri-motion-val">NONE</span>
+                            </div>
+                        </div>
+                        <div class="ri-card" id="ri-fire">
+                            <span class="ri-icon">🔥</span>
+                            <div class="ri-info">
+                                <span class="ri-label">Fire Risk</span>
+                                <span class="ri-value" id="ri-fire-val">CLEAR</span>
+                            </div>
+                        </div>
+                        <div class="ri-card" id="ri-smoke">
+                            <span class="ri-icon">💨</span>
+                            <div class="ri-info">
+                                <span class="ri-label">Smoke Level</span>
+                                <span class="ri-value" id="ri-smoke-val">CLEAR</span>
+                            </div>
+                        </div>
+                        <div class="ri-card" id="ri-gesture">
+                            <span class="ri-icon">🤚</span>
+                            <div class="ri-info">
+                                <span class="ri-label">Gesture</span>
+                                <span class="ri-value" id="ri-gesture-val">NONE</span>
+                            </div>
+                        </div>
+                        <div class="ri-card" id="ri-blood">
+                            <span class="ri-icon">🩸</span>
+                            <div class="ri-info">
+                                <span class="ri-label">Blood Detection</span>
+                                <span class="ri-value" id="ri-blood-val">CLEAR</span>
+                            </div>
+                        </div>
+                        <div class="ri-card" id="ri-injury">
+                            <span class="ri-icon">🏥</span>
+                            <div class="ri-info">
+                                <span class="ri-label">Injury Est.</span>
+                                <span class="ri-value" id="ri-injury-val">—</span>
+                            </div>
+                        </div>
+                        <div class="ri-card ri-card-wide" id="ri-survivor">
+                            <span class="ri-icon">💚</span>
+                            <div class="ri-info">
+                                <span class="ri-label">Survivor Confidence</span>
+                                <div class="ri-meter-wrap">
+                                    <div class="ri-meter-bar"><div class="ri-meter-fill survivor-fill" id="ri-survivor-fill" style="width:0%"></div></div>
+                                    <span class="ri-meter-val" id="ri-survivor-val">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ri-card ri-card-wide" id="ri-priority">
+                            <span class="ri-icon">🚨</span>
+                            <div class="ri-info">
+                                <span class="ri-label">Rescue Priority</span>
+                                <div class="ri-meter-wrap">
+                                    <div class="ri-meter-bar"><div class="ri-meter-fill priority-fill" id="ri-priority-fill" style="width:0%"></div></div>
+                                    <span class="ri-meter-val" id="ri-priority-val">LOW</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ri-card" id="ri-firstaid">
+                            <span class="ri-icon">⛑️</span>
+                            <div class="ri-info">
+                                <span class="ri-label">First Aid Urgency</span>
+                                <span class="ri-value" id="ri-firstaid-val">VERIFY</span>
+                            </div>
+                        </div>
+                        <div class="ri-card" id="ri-livestatus">
+                            <span class="ri-icon">📡</span>
+                            <div class="ri-info">
+                                <span class="ri-label">Live Status</span>
+                                <span class="ri-value" id="ri-livestatus-val">UNKNOWN</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── CONFIDENCE METERS ────────────────────────────── -->
+                <div class="cam-sidebar-section">
+                    <div class="section-title-row"><h3>Confidence Meters</h3></div>
+                    <div class="conf-meters">
+                        <div class="conf-meter-row">
+                            <span class="conf-meter-lbl">Person</span>
+                            <div class="conf-meter-bar"><div class="conf-meter-fill person-fill" id="cm-person" style="width:0%"></div></div>
+                            <span class="conf-meter-pct" id="cm-person-pct">0%</span>
+                        </div>
+                        <div class="conf-meter-row">
+                            <span class="conf-meter-lbl">Fire</span>
+                            <div class="conf-meter-bar"><div class="conf-meter-fill fire-fill" id="cm-fire" style="width:0%"></div></div>
+                            <span class="conf-meter-pct" id="cm-fire-pct">0%</span>
+                        </div>
+                        <div class="conf-meter-row">
+                            <span class="conf-meter-lbl">Smoke</span>
+                            <div class="conf-meter-bar"><div class="conf-meter-fill smoke-fill" id="cm-smoke" style="width:0%"></div></div>
+                            <span class="conf-meter-pct" id="cm-smoke-pct">0%</span>
+                        </div>
+                        <div class="conf-meter-row">
+                            <span class="conf-meter-lbl">Gesture</span>
+                            <div class="conf-meter-bar"><div class="conf-meter-fill gesture-fill" id="cm-gesture" style="width:0%"></div></div>
+                            <span class="conf-meter-pct" id="cm-gesture-pct">0%</span>
+                        </div>
+                        <div class="conf-meter-row">
+                            <span class="conf-meter-lbl">Survivor</span>
+                            <div class="conf-meter-bar"><div class="conf-meter-fill survivor-fill" id="cm-survivor" style="width:0%"></div></div>
+                            <span class="conf-meter-pct" id="cm-survivor-pct">0%</span>
+                        </div>
+                        <div class="conf-meter-row">
+                            <span class="conf-meter-lbl">Rescue</span>
+                            <div class="conf-meter-bar"><div class="conf-meter-fill priority-fill" id="cm-rescue" style="width:0%"></div></div>
+                            <span class="conf-meter-pct" id="cm-rescue-pct">0%</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- AI Event Log Section -->
                 <div class="cam-sidebar-section">
                     <div class="section-title-row">
@@ -476,6 +624,34 @@
                         <div class="ai-log-empty">
                             <i data-lucide="radar" class="ai-log-radar-icon"></i>
                             <span>No events detected</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── INCIDENT TIMELINE ────────────────────────────── -->
+                <div class="cam-sidebar-section">
+                    <div class="section-title-row">
+                        <h3>Incident Timeline</h3>
+                        <button class="section-action-btn" id="btn-clear-timeline">CLEAR</button>
+                    </div>
+                    <div class="timeline-list" id="timeline-list">
+                        <div class="timeline-empty">
+                            <i data-lucide="clock" style="width:20px;height:20px;opacity:0.3;"></i>
+                            <span>No incidents logged</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── SNAPSHOT PANEL ───────────────────────────────── -->
+                <div class="cam-sidebar-section">
+                    <div class="section-title-row">
+                        <h3>Auto Snapshots</h3>
+                        <span class="ri-count" id="snap-count">0</span>
+                    </div>
+                    <div class="snapshot-gallery" id="snapshot-gallery">
+                        <div class="snapshot-empty">
+                            <i data-lucide="image" style="width:20px;height:20px;opacity:0.3;"></i>
+                            <span>No snapshots captured</span>
                         </div>
                     </div>
                 </div>
@@ -496,6 +672,7 @@
 <script type="module" src="../shared/mqtt-client.js"></script>
 <script type="module" src="../shared/shared.js"></script>
 <script type="module" src="./camera.js"></script>
+<script type="module" src="./ai-backend.js"></script>
 <script>
     // Lucide icons — runs after all scripts loaded
     document.addEventListener('DOMContentLoaded', () => {

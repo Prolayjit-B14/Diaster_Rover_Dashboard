@@ -5,6 +5,7 @@
     { "source": "/dashboard", "destination": "/dashboard/dashboard.html" },
     { "source": "/camera", "destination": "/camera/camera.html" },
     { "source": "/map", "destination": "/map/map.html" },
-    { "source": "/sensors", "destination": "/sensors/sensors.html" }
+    { "source": "/sensors", "destination": "/sensors/sensors.html" },
+    { "source": "/alerts", "destination": "/alerts/alerts.html" }
   ]
 }

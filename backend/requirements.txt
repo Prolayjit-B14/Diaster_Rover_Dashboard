@@ -1,0 +1,26 @@
+# RescueBOT AI Inference Engine — Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# ── Core Framework ────────────────────────────────────────────────────────────
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.6.0
+python-multipart>=0.0.9
+
+# ── Computer Vision ───────────────────────────────────────────────────────────
+opencv-python>=4.9.0
+numpy>=1.24.0
+
+# ── AI/ML Models ─────────────────────────────────────────────────────────────
+ultralytics>=8.1.0          # YOLOv8 / YOLO11 (auto-downloads weights on first run)
+# torch>=2.2.0              # Uncomment for PyTorch scene classifier
+# torchvision>=0.17.0       # Uncomment for PyTorch scene classifier
+
+# ── Gesture Detection ─────────────────────────────────────────────────────────
+mediapipe>=0.10.9            # MediaPipe Hands + Pose
+
+# ── MQTT Bridge (for legacy dashboard compatibility) ──────────────────────────
+paho-mqtt>=2.0.0
+
+# ── Optional: Image serving ───────────────────────────────────────────────────
+Pillow>=10.2.0

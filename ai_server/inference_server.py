@@ -75,6 +75,7 @@ TOPIC_CAMERA  = "ares1/Robot/camera"
 DEFAULT_STREAM_URL = "http://192.168.1.100:81/stream"
 
 # ── SENSOR FUSION STATE ──────────────────────────────────────────────────────────────────────────
+_sensor_state_lock = threading.Lock()
 sensor_state = {
     "gas": 0,
     "vibration": 0.0,
@@ -194,6 +195,7 @@ class ThreadedStreamReader:
 # ── MULTI-MODEL AI INFERENCE PIPELINE ────────────────────────────────────────────────────────────
 class DisasterAIEngine:
     def __init__(self):
+        global HAS_MEDIAPIPE, HAS_PYTORCH
         print("\n[AI Setup] Initializing multi-model AI suite...")
         self.sim_mode = False
         
@@ -267,14 +269,19 @@ class DisasterAIEngine:
                 )
                 print("[AI Setup] MediaPipe Pose Engine online.")
             except Exception as e:
-                global HAS_MEDIAPIPE
                 HAS_MEDIAPIPE = False
                 print(f"[AI Setup] MediaPipe initialization failed: {e}. Switching fallback to YOLO-Pose.")
 
         # 5. MobileNetV3 Scene Classification setup
         if HAS_PYTORCH:
             try:
-                self.scene_classifier = mobilenet_v3_small(pretrained=True)
+                # Use new Weights API (deprecated pretrained=True since torchvision 0.13)
+                try:
+                    from torchvision.models import MobileNet_V3_Small_Weights
+                    self.scene_classifier = mobilenet_v3_small(weights=MobileNet_V3_Small_Weights.DEFAULT)
+                except (ImportError, AttributeError):
+                    # Fallback for older torchvision versions
+                    self.scene_classifier = mobilenet_v3_small(pretrained=True)  # noqa: deprecated
                 self.scene_classifier.eval()
                 self.transform = T.Compose([
                     T.ToPILImage(),
@@ -284,12 +291,26 @@ class DisasterAIEngine:
                 ])
                 print("[AI Setup] PyTorch MobileNetV3 scene classifier successfully mounted.")
             except Exception as e:
-                global HAS_PYTORCH
                 HAS_PYTORCH = False
                 print(f"[AI Setup] MobileNetV3 failed to load: {e}. Switching fallback to sensory heuristic classifier.")
 
         # 6. Initialize OpenCV Motion Background Subtractor
         self.bg_subtractor = cv2.createBackgroundSubtractorMOG2(history=120, varThreshold=45, detectShadows=True)
+        
+        # Preprocessing setup (Phase 1)
+        self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        gamma_val = 1.5
+        self.gamma_lut = np.array([((i / 255.0) ** (1.0 / gamma_val)) * 255 for i in np.arange(0, 256)]).astype("uint8")
+        
+        # Frame counter for classifier sub-sampling
+        self.frame_counter = 0
+        self.last_scene_type = "Unknown emergency"
+        self.last_scene_conf = 30
+        
+        # Temporal confirmation queues for Fire and Smoke (Phase 4)
+        self.fire_confirm_queue = []
+        self.smoke_confirm_queue = []
+        self.confirm_frame_limit = 10
         
         # Bounding box history list for motionless person tracking
         # Format: {"bbox": [x,y,w,h], "first_seen": ts, "last_seen": ts, "last_moved": ts, "is_motionless": bool}
@@ -297,7 +318,7 @@ class DisasterAIEngine:
         
         # Alert cooldown counters to prevent MQTT cluster congestion
         self.last_alert_time = {}
-        self.alert_cooldown = 3.0 # seconds
+        self.alert_cooldown = 5.0 # seconds (Phase 9 spec)
         self.last_fire_state = False
         self.last_fire_time = 0.0
         print("[AI Setup] All pipelines online and ready!")
@@ -356,6 +377,76 @@ class DisasterAIEngine:
     def _cleanup_tracked_persons(self, current_time):
         """Purges old tracks."""
         self.tracked_persons = [tp for tp in self.tracked_persons if current_time - tp["last_seen"] < 2.5]
+
+    def _preprocess_frame(self, frame):
+        """Phase 1: Advanced OpenCV preprocessing pipeline for hostile disaster environments."""
+        if frame is None:
+            return None
+        
+        # 1. Resize to target size dynamically
+        h, w, _ = frame.shape
+        if w != 640 or h != 480:
+            processed = cv2.resize(frame, (640, 480), interpolation=cv2.INTER_LINEAR)
+        else:
+            processed = frame.copy()
+            
+        # 2. Denoise using Fast Bilateral Filtering (preserves edges, cleans dust/noise)
+        processed = cv2.bilateralFilter(processed, d=5, sigmaColor=50, sigmaSpace=50)
+        
+        # 3. Dynamic low-light enhancement (Gamma LUT)
+        gray = cv2.cvtColor(processed, cv2.COLOR_BGR2GRAY)
+        mean_brightness = np.mean(gray)
+        if mean_brightness < 95.0:
+            processed = cv2.LUT(processed, self.gamma_lut)
+            
+        # 4. Smoke-aware contrast correction (CLAHE on L-channel of LAB space)
+        lab = cv2.cvtColor(processed, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        cl = self.clahe.apply(l)
+        limg = cv2.merge((cl, a, b))
+        processed = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+        
+        return processed
+
+    def _verify_fire_candidate(self, frame, bbox):
+        """Phase 4: HSV flame check to reduce false positives from sunlight/lamps."""
+        bx, by, bw, bh = bbox
+        h_img, w_img, _ = frame.shape
+        x1, y1 = max(0, bx), max(0, by)
+        x2, y2 = min(w_img, bx + bw), min(h_img, by + bh)
+        
+        roi = frame[y1:y2, x1:x2]
+        if roi.size == 0:
+            return False
+            
+        hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+        lower_fire = np.array([0, 70, 120], dtype="uint8")
+        upper_fire = np.array([35, 255, 255], dtype="uint8")
+        mask = cv2.inRange(hsv, lower_fire, upper_fire)
+        
+        fire_pixels = cv2.countNonZero(mask)
+        total_pixels = roi.shape[0] * roi.shape[1]
+        percentage = (fire_pixels / float(total_pixels)) * 100 if total_pixels > 0 else 0.0
+        return percentage > 8.0  # Verification threshold: 8% flame color density
+
+    def _verify_smoke_candidate(self, frame, bbox):
+        """Phase 4: Laplacian texture check to distinguish diffuse smoke from solid structures/fog."""
+        bx, by, bw, bh = bbox
+        h_img, w_img, _ = frame.shape
+        x1, y1 = max(0, bx), max(0, by)
+        x2, y2 = min(w_img, bx + bw), min(h_img, by + bh)
+        
+        roi = frame[y1:y2, x1:x2]
+        if roi.size == 0:
+            return False
+            
+        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+        # Smoke has low high-frequency content, hence low Laplacian variance
+        laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+        
+        # Check standard deviation (diffuse smoke has low std deviation)
+        std_dev = np.std(gray)
+        return laplacian_var < 150.0 and std_dev < 32.0
 
     def _detect_bleeding(self, roi):
         """Scans bounding box for localized blood-red/crimson color masks."""
@@ -647,8 +738,15 @@ class DisasterAIEngine:
             return annotated_frame
 
         # ── STANDARD OPERATIONAL INFERENCE PIPELINE ──
+        # Phase 1: Preprocessing
+        frame = self._preprocess_frame(frame)
+        height, width, _ = frame.shape
+        annotated_frame = frame.copy()
         
-        # 1. OpenCV PROXIMITY MOTION TRACKING
+        # Initialize hazard tracking list for Phase 5 risk mapping
+        hazard_boxes = []
+
+        # 1. OpenCV PROXIMITY MOTION TRACKING (Phase 7)
         motion_detected, motion_bbox = self._detect_motion(frame)
         motion_score = 0
         if motion_detected:
@@ -666,7 +764,7 @@ class DisasterAIEngine:
                 "Optical frames isolate active kinetic movement under debris."
             )
 
-        # 2. YOLO CUSTOM / HSV FIRE & SMOKE TRACKERS
+        # 2. YOLO CUSTOM / HSV FIRE & SMOKE TRACKERS (Phase 4)
         fire_detected = False
         fire_bbox = None
         fire_conf = 0
@@ -678,18 +776,31 @@ class DisasterAIEngine:
                     conf = float(box.conf[0])
                     if conf > 0.50:
                         xyxy = box.xyxy[0].tolist()
-                        fire_detected = True
-                        fire_conf = int(conf * 100)
-                        fire_bbox = [int(xyxy[0]), int(xyxy[1]), int(xyxy[2]-xyxy[0]), int(xyxy[3]-xyxy[1])]
-                        break
+                        candidate_bbox = [int(xyxy[0]), int(xyxy[1]), int(xyxy[2]-xyxy[0]), int(xyxy[3]-xyxy[1])]
+                        if self._verify_fire_candidate(frame, candidate_bbox):
+                            fire_detected = True
+                            fire_conf = int(conf * 100)
+                            fire_bbox = candidate_bbox
+                            break
             except Exception:
                 pass
         
-        if not fire_detected: # HSV Fallback
-            fire_detected, fire_bbox, fire_conf = self._detect_fire_hsv(frame)
+        if not fire_detected: # HSV Fallback + verification
+            raw_fire, raw_bbox, raw_conf = self._detect_fire_hsv(frame)
+            if raw_fire and self._verify_fire_candidate(frame, raw_bbox):
+                fire_detected = True
+                fire_bbox = raw_bbox
+                fire_conf = raw_conf
 
-        if fire_detected:
+        # Phase 4: 10-frame Temporal Confirmation for Fire
+        self.fire_confirm_queue.append(fire_detected)
+        if len(self.fire_confirm_queue) > self.confirm_frame_limit:
+            self.fire_confirm_queue.pop(0)
+        confirmed_fire = (sum(self.fire_confirm_queue) >= 7)
+
+        if confirmed_fire and fire_bbox is not None:
             self.last_fire_time = now_ts
+            hazard_boxes.append(fire_bbox)
             if not self.last_fire_state:
                 self.last_fire_state = True
                 if mqtt_client is not None:
@@ -713,7 +824,7 @@ class DisasterAIEngine:
                 f"Fire Detected ({fire_conf}%) - High combustion flame thermal zone isolated."
             )
         else:
-            # If fire was active but hasn't been seen for 3.0s, clear telemetry state
+            # If fire was active but hasn't been confirmed/seen for 3.0s, clear telemetry state
             if self.last_fire_state and (now_ts - self.last_fire_time > 3.0):
                 self.last_fire_state = False
                 if mqtt_client is not None:
@@ -736,18 +847,31 @@ class DisasterAIEngine:
                     conf = float(box.conf[0])
                     if conf > 0.50:
                         xyxy = box.xyxy[0].tolist()
-                        smoke_detected = True
-                        smoke_prob = int(conf * 100)
-                        smoke_bbox = [int(xyxy[0]), int(xyxy[1]), int(xyxy[2]-xyxy[0]), int(xyxy[3]-xyxy[1])]
-                        break
+                        candidate_bbox = [int(xyxy[0]), int(xyxy[1]), int(xyxy[2]-xyxy[0]), int(xyxy[3]-xyxy[1])]
+                        if self._verify_smoke_candidate(frame, candidate_bbox):
+                            smoke_detected = True
+                            smoke_prob = int(conf * 100)
+                            smoke_bbox = candidate_bbox
+                            break
             except Exception:
                 pass
                     
-        if not smoke_detected: # HSV Fallback
-            smoke_detected, smoke_bbox, smoke_prob = self._detect_smoke_hsv(frame)
+        if not smoke_detected: # HSV Fallback + verification
+            raw_smoke, raw_bbox, raw_prob = self._detect_smoke_hsv(frame)
+            if raw_smoke and self._verify_smoke_candidate(frame, raw_bbox):
+                smoke_detected = True
+                smoke_bbox = raw_bbox
+                smoke_prob = raw_prob
 
-        if smoke_detected:
+        # Phase 4: 10-frame Temporal Confirmation for Smoke
+        self.smoke_confirm_queue.append(smoke_detected)
+        if len(self.smoke_confirm_queue) > self.confirm_frame_limit:
+            self.smoke_confirm_queue.pop(0)
+        confirmed_smoke = (sum(self.smoke_confirm_queue) >= 7)
+
+        if confirmed_smoke and smoke_bbox is not None:
             sx, sy, sw, sh = smoke_bbox
+            hazard_boxes.append(smoke_bbox)
             smoke_roi = frame[sy:sy+sh, sx:sx+sw]
             density, std = self._calculate_smoke_density(smoke_roi)
             cv2.rectangle(annotated_frame, (sx, sy), (sx+sw, sy+sh), (128, 128, 128), 1)
@@ -762,10 +886,11 @@ class DisasterAIEngine:
                 f"Smoke Detected ({smoke_prob}%) - {density.capitalize()} smoke plume diffusing, low visibility."
             )
 
-        # 3. Custom YOLO / HSV ENVIRONMENTAL HAZARDS
+        # 3. Custom YOLO / HSV ENVIRONMENTAL HAZARDS (Phase 5)
         flood_detected, flood_bbox, flood_pct = self._detect_flooding(frame)
         if flood_detected:
             flx, fly, flw, flh = flood_bbox
+            hazard_boxes.append(flood_bbox)
             cv2.rectangle(annotated_frame, (flx, fly), (flx+flw, fly+flh), (255, 100, 0), 1)
             cv2.putText(annotated_frame, f"FLOOD RISK ({int(flood_pct)}%)", (flx, fly - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 100, 0), 1)
             
@@ -794,6 +919,7 @@ class DisasterAIEngine:
                         debris_detected = True
                         debris_score = int(conf * 100)
                         debris_bbox = [int(xyxy[0]), int(xyxy[1]), int(xyxy[2]-xyxy[0]), int(xyxy[3]-xyxy[1])]
+                        hazard_boxes.append(debris_bbox)
                         
                         cv2.rectangle(annotated_frame, (debris_bbox[0], debris_bbox[1]), 
                                       (debris_bbox[0]+debris_bbox[2], debris_bbox[1]+debris_bbox[3]), (0, 165, 255), 1)
@@ -814,6 +940,7 @@ class DisasterAIEngine:
             debris_detected, debris_bbox, debris_score = self._detect_rubble_debris(frame)
             if debris_detected:
                 dx, dy, dw, dh = debris_bbox
+                hazard_boxes.append(debris_bbox)
                 cv2.rectangle(annotated_frame, (dx, dy), (dx+dw, dy+dh), (140, 140, 140), 1, cv2.LINE_DASHED)
                 cv2.putText(annotated_frame, "CONCRETE RUBBLE / DEBRIS", (dx, dy - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (140, 140, 140), 1)
                 
@@ -830,6 +957,7 @@ class DisasterAIEngine:
         person_count = 0
         hazard_count = 0
         bleeding_count = 0
+        max_survivor_prob = 0
         
         if self.human_detector is not None:
             try:
@@ -855,6 +983,8 @@ class DisasterAIEngine:
                         
                         # Bleeding wound cue
                         bleeding_detected, bleed_pct, bleed_mask = self._detect_bleeding(roi)
+                        if bleeding_detected:
+                            bleeding_count += 1
                         
                         # ── MEDIAPIPE / YOLO POSE EVALUATION ──
                         pose_detected = False
@@ -928,10 +1058,22 @@ class DisasterAIEngine:
                         # Posture label mapping
                         is_fallen = body_angle < 35.0
                         
-                        # ── SURVIVOR PROBABILITY FUSION LOGIC ──
+                        # ── SURVIVOR PROBABILITY FUSION LOGIC (Phase 8) ──
                         H = int(conf * 100) # Human confidence
-                        M = motion_score    # OpenCV Proximity motion score
                         
+                        # Phase 7 & 8: Proximity motion score inside person ROI
+                        M = 0
+                        if motion_detected and motion_bbox is not None:
+                            mx, my, mw, mh = motion_bbox
+                            ix1 = max(x1, mx)
+                            iy1 = max(y1, my)
+                            ix2 = min(x2, mx + mw)
+                            iy2 = min(y2, my + mh)
+                            if ix2 > ix1 and iy2 > iy1:
+                                overlap_area = (ix2 - ix1) * (iy2 - iy1)
+                                if overlap_area > 0.1 * (mw * mh):
+                                    M = 85  # Motion isolated within human box
+
                         # Posture confidence estimation
                         P = 50
                         if distress_waving:
@@ -948,9 +1090,14 @@ class DisasterAIEngine:
                         if sensor_state["pir_sensor"] == "TRIGGERED":
                             T_sensor = max(T_sensor, 90)
                         
-                        survivor_prob = int((0.40 * H) + (0.25 * M) + (0.20 * P) + (0.15 * T_sensor))
+                        # Scene context score
+                        S_scene = self.last_scene_conf if self.last_scene_type != "Unknown emergency" else 30
                         
-                        # Classes mapping output formatting
+                        # Fusion formula: 0.35*H + 0.20*M + 0.25*P + 0.10*T_sensor + 0.10*S_scene
+                        survivor_prob = int((0.35 * H) + (0.20 * M) + (0.25 * P) + (0.10 * T_sensor) + (0.10 * S_scene))
+                        max_survivor_prob = max(max_survivor_prob, survivor_prob)
+                        
+                        # Default state labels and colors
                         sub_label = "Human Detected"
                         severity = "medium"
                         color = (0, 212, 255)
@@ -975,7 +1122,18 @@ class DisasterAIEngine:
                             sub_label = "Injured Person"
                             severity = "high"
                             color = (0, 128, 255)
-                            bleeding_count += 1
+
+                        # ── PHASE 9: EVENT REASONING ENGINE RULES ──
+                        # Rule 1: Fallen Unconscious Trapped in Collapsed Scene
+                        if is_fallen and is_motionless and stationary_time > 15.0 and self.last_scene_type in ["Building collapse", "Earthquake damage"]:
+                            sub_label = "Trapped Unconscious Survivor"
+                            severity = "critical"
+                            color = (0, 0, 255)
+                        # Rule 2: Active Survivor Signaling under Debris
+                        elif (sub_label == "Survivor (Distress Posture)" or distress_waving) and debris_detected and M > 50:
+                            sub_label = "Active Trapped Survivor"
+                            severity = "high"
+                            color = (0, 255, 128)
 
                         # Visual HUD bracket overlays
                         cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), color, 2)
@@ -1006,6 +1164,7 @@ class DisasterAIEngine:
                     # 3b. Environmental obstacle hazards
                     elif cls_name in ["car", "truck", "backpack", "handbag", "suitcase", "chair", "fire hydrant", "bottle"]:
                         hazard_count += 1
+                        hazard_boxes.append([bx, by, bw, bh])
                         if not debris_detected: # only draw standard if custom yolo debris didn't cover it
                             cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 165, 255), 1)
                             cv2.putText(annotated_frame, f"HAZARD: {cls_name.upper()}", (x1, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 165, 255), 1)
@@ -1030,6 +1189,8 @@ class DisasterAIEngine:
                 roi = frame[my:my+mh, mx:mx+mw]
                 is_rescuer = self._check_high_vis(roi)
                 bleeding_detected, bleed_pct, bleed_mask = self._detect_bleeding(roi)
+                if bleeding_detected:
+                    bleeding_count += 1
                 
                 H = 0 # YOLO bypassed
                 M = 85 # motion confirmed
@@ -1038,7 +1199,12 @@ class DisasterAIEngine:
                 if sensor_state["pir_sensor"] == "TRIGGERED":
                     T_sensor = max(T_sensor, 90)
                 
-                survivor_prob = int((0.40 * H) + (0.25 * M) + (0.20 * P) + (0.15 * T_sensor))
+                # Scene Context Score
+                S_scene = self.last_scene_conf if self.last_scene_type != "Unknown emergency" else 30
+                
+                # Fusion formula
+                survivor_prob = int((0.35 * H) + (0.20 * M) + (0.25 * P) + (0.10 * T_sensor) + (0.10 * S_scene))
+                max_survivor_prob = max(max_survivor_prob, survivor_prob)
                 
                 sub_label = "Potential Survivor"
                 severity = "medium"
@@ -1052,7 +1218,6 @@ class DisasterAIEngine:
                     sub_label = "Injured Person"
                     severity = "high"
                     color = (0, 128, 255)
-                    bleeding_count += 1
                 
                 cv2.rectangle(annotated_frame, (mx, my), (mx+mw, my+mh), color, 2)
                 cv2.putText(annotated_frame, f"Heuristic: {sub_label} ({survivor_prob}%)", (mx, my - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
@@ -1070,22 +1235,26 @@ class DisasterAIEngine:
                     desc_text
                 )
 
-        # 5. MobileNetV3 / EfficientNet DISASTER SCENE CLASSIFIER (PROT ACTIVE)
-        disaster_type, disaster_conf = self._classify_disaster_scene(
-            frame,
-            fire_detected, 
-            smoke_detected, 
-            hazard_count, 
-            person_count, 
-            flood_detected, 
-            bleeding_count
-        )
+        # Phase 6: Disaster Scene Classifier sub-sampling (Every 5th frame)
+        self.frame_counter += 1
+        if self.frame_counter % 5 == 0 or not hasattr(self, 'last_scene_type'):
+            disaster_type, disaster_conf = self._classify_disaster_scene(
+                frame,
+                confirmed_fire, 
+                confirmed_smoke, 
+                hazard_count, 
+                person_count, 
+                flood_detected, 
+                bleeding_count
+            )
+            self.last_scene_type = disaster_type
+            self.last_scene_conf = disaster_conf
         
-        if disaster_type != "Unknown emergency":
+        if self.last_scene_type != "Unknown emergency":
             tele_payload = {
                 "sensor": "disaster_scene",
-                "value": f"{disaster_type} ({disaster_conf}%)",
-                "status": "CRITICAL" if disaster_conf > 75 else "WARNING"
+                "value": f"{self.last_scene_type} ({self.last_scene_conf}%)",
+                "status": "CRITICAL" if self.last_scene_conf > 75 else "WARNING"
             }
             if mqtt_client is not None:
                 try:
@@ -1097,11 +1266,64 @@ class DisasterAIEngine:
             self._dispatch_alert(
                 mqtt_client, 
                 "HAZARD", 
-                disaster_conf, 
+                self.last_scene_conf, 
                 [0, 0, width, height], 
-                "high" if disaster_conf > 75 else "medium", 
-                f"Disaster Type: {disaster_type} ({disaster_conf}%) - Vision + Telemetry Classifier active."
+                "high" if self.last_scene_conf > 75 else "medium", 
+                f"Disaster Type: {self.last_scene_type} ({self.last_scene_conf}%) - Vision + Telemetry Classifier active."
             )
+
+        # ── PHASE 5: RISK GRID MAP & DANGER SCORE AGGREGATION ──
+        risk_grid = [[0.0 for _ in range(4)] for _ in range(4)]
+        cell_w = width / 4.0
+        cell_h = height / 4.0
+        for h_box in hazard_boxes:
+            hx, hy, hw, hh = h_box
+            start_col = int(max(0, hx // cell_w))
+            end_col = int(min(3, (hx + hw) // cell_w))
+            start_row = int(max(0, hy // cell_h))
+            end_row = int(min(3, (hy + hh) // cell_h))
+            for r in range(start_row, end_row + 1):
+                for c in range(start_col, end_col + 1):
+                    risk_grid[r][c] = 1.0
+
+        global_hazard_score = min(1.0, 0.40 * (1.0 if confirmed_fire else 0.0) + 0.35 * (1.0 if flood_detected else 0.0) + 0.25 * (1.0 if debris_detected else 0.0))
+        urgency = "low"
+        if person_count > 0:
+            urgency = "medium"
+        if confirmed_fire or flood_detected:
+            urgency = "high"
+        if person_count > 0 and (confirmed_fire or flood_detected or bleeding_count > 0):
+            urgency = "critical"
+
+        # Rule 4: Critical fire and gas outbreak
+        if confirmed_fire and confirmed_smoke and sensor_state["gas"] > 1500:
+            self._dispatch_alert(
+                mqtt_client,
+                "FIRE",
+                98,
+                [0, 0, width, height],
+                "critical",
+                f"CRITICAL FIRE OUTBREAK: Live flames, dense smoke, and toxic gas ({sensor_state['gas']} ppm) detected!"
+            )
+
+        # Publish the Phase 11 structured JSON payload as telemetry
+        structured_telemetry = {
+            "timestamp": int(time.time() * 1000),
+            "camera_id": "cam_ares_01",
+            "scene": {
+                "label": self.last_scene_type,
+                "confidence": self.last_scene_conf / 100.0
+            },
+            "survivor_probability": float(max_survivor_prob) / 100.0,
+            "urgency": urgency,
+            "global_hazard_score": global_hazard_score,
+            "risk_grid": risk_grid
+        }
+        if mqtt_client is not None:
+            try:
+                mqtt_client.publish(TOPIC_TELE, json.dumps(structured_telemetry))
+            except Exception:
+                pass
 
         return annotated_frame
 
