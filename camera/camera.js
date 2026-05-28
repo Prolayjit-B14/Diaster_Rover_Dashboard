@@ -175,7 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 isRecording = true;
 
                 // Update button
-                btnStreamToggle.innerHTML = `<i data-lucide="square"></i> STOP STREAM`;
+                btnStreamToggle.innerHTML = `<i data-lucide="square"></i>`;
+                btnStreamToggle.title = 'Stop Monitoring';
                 btnStreamToggle.classList.add('active-stream');
 
                 // Update navbar REC indicator
@@ -193,7 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 isRecording = false;
 
                 // Reset button
-                btnStreamToggle.innerHTML = `<i data-lucide="play"></i> START STREAM`;
+                btnStreamToggle.innerHTML = `<i data-lucide="play"></i>`;
+                btnStreamToggle.title = 'Start Monitoring';
                 btnStreamToggle.classList.remove('active-stream');
 
                 // Hide img, show placeholder

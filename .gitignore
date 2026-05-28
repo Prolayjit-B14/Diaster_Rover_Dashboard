@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python and backend binaries
+__pycache__/
+*.py[cod]
+*$py.class
+*.pt
+*.db
+

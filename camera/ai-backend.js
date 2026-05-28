@@ -201,18 +201,18 @@
         // ── Update Rescue Intelligence Cards ──────────────────────────────────
         updateRiHuman(p);
         updateRiMotion(mo);
-        updateRiCard(DOM.riFireVal,  fi.detected,  fi.detected ? `${pct(fi.confidence)}%` : 'CLEAR',
+        updateRiCard(DOM.riFireVal,  fi.detected,  fi.detected ? `Active risk (${pct(fi.confidence)}%)` : 'No immediate risk detected',
                      fi.detected ? 'danger' : 'safe');
-        updateRiCard(DOM.riSmokeVal, sm.detected,  sm.detected ? (sm.density || 'LOW').toUpperCase() : 'CLEAR',
+        updateRiCard(DOM.riSmokeVal, sm.detected,  sm.detected ? `Density: ${(sm.density || 'LOW').toLowerCase()}` : 'Clear',
                      sm.detected ? 'warning' : 'safe');
-        updateRiCard(DOM.riGestureVal, ge.detected, ge.detected ? (ge.gesture_type || 'DETECTED').replace(/_/g, ' ').toUpperCase() : 'NONE',
+        updateRiCard(DOM.riGestureVal, ge.detected, ge.detected ? `Distress: ${(ge.gesture_type || 'DETECTED').replace(/_/g, ' ').toLowerCase()}` : 'No gestures detected',
                      ge.detected ? 'active' : '');
-        updateRiCard(DOM.riBloodVal, bl.detected, bl.detected ? `DETECTED (${bl.score?.toFixed(1)}%)` : 'CLEAR',
+        updateRiCard(DOM.riBloodVal, bl.detected, bl.detected ? `Bleeding signs (${bl.score?.toFixed(1)}%)` : 'No signs detected',
                      bl.detected ? 'danger' : '');
         if (DOM.riInjuryVal) {
             DOM.riInjuryVal.textContent = inj.estimated
-                ? (inj.label || 'POSSIBLE').replace(/_/g, ' ').toUpperCase()
-                : '—';
+                ? (inj.label || 'POSSIBLE').replace(/_/g, ' ').charAt(0).toUpperCase() + (inj.label || 'POSSIBLE').replace(/_/g, ' ').slice(1).toLowerCase()
+                : 'Not assessed';
             DOM.riInjuryVal.className = 'ri-value' + (inj.estimated ? ' warning' : '');
         }
 
@@ -224,20 +224,20 @@
         // Rescue Priority meter
         const rp_pct = Math.round((rp.score || 0) * 100);
         if (DOM.riPriorityFill) DOM.riPriorityFill.style.width = rp_pct + '%';
-        if (DOM.riPriorityVal)  DOM.riPriorityVal.textContent   = (rp.level || 'LOW');
+        if (DOM.riPriorityVal)  DOM.riPriorityVal.textContent   = rp.level ? rp.level.charAt(0).toUpperCase() + rp.level.slice(1).toLowerCase() : 'Low';
 
         // Priority badge
         updatePriorityBadge(rp.level || 'LOW');
 
         // First Aid Urgency
         const urgencyMap = {
-            immediate_attention: 'IMMEDIATE',
-            medium_urgency: 'MEDIUM',
-            low_urgency: 'LOW',
-            needs_verification: 'VERIFY'
+            immediate_attention: 'Immediate attention',
+            medium_urgency: 'Assistance recommended',
+            low_urgency: 'Minor assistance',
+            needs_verification: 'Verification needed'
         };
         if (DOM.riFirstaidVal) {
-            DOM.riFirstaidVal.textContent = urgencyMap[fa.level] || 'VERIFY';
+            DOM.riFirstaidVal.textContent = urgencyMap[fa.level] || 'Verification needed';
             DOM.riFirstaidVal.className = 'ri-value' + (
                 fa.level === 'immediate_attention' ? ' danger' :
                 fa.level === 'medium_urgency' ? ' warning' : ''
@@ -246,11 +246,17 @@
 
         // Live Status
         if (DOM.riLivestatusVal) {
-            DOM.riLivestatusVal.textContent = (ls.label || 'unknown').replace(/_/g, ' ').toUpperCase();
+            const rawStatus = ls.label || 'unknown';
+            const statusText = rawStatus === 'active_survivor' ? 'Monitoring active'
+                             : rawStatus === 'possible_unconscious' ? 'Attention required'
+                             : rawStatus === 'low_movement' ? 'Low activity'
+                             : rawStatus === 'unknown' ? 'Monitoring unavailable'
+                             : rawStatus.replace(/_/g, ' ').charAt(0).toUpperCase() + rawStatus.replace(/_/g, ' ').slice(1).toLowerCase();
+            DOM.riLivestatusVal.textContent = statusText;
             DOM.riLivestatusVal.className = 'ri-value' + (
-                ls.label === 'active_survivor' ? ' safe' :
-                ls.label === 'possible_unconscious' ? ' danger' :
-                ls.label === 'low_movement' ? ' warning' : ''
+                rawStatus === 'active_survivor' ? ' safe' :
+                rawStatus === 'possible_unconscious' ? ' danger' :
+                rawStatus === 'low_movement' ? ' warning' : ''
             );
         }
 
@@ -289,13 +295,14 @@
     function updateRiHuman(p) {
         if (!DOM.riHumanVal) return;
         if (p.detected) {
-            DOM.riHumanVal.textContent = (p.pose_state || 'DETECTED').replace(/_/g, ' ').toUpperCase();
+            const pose = p.pose_state || 'detected';
+            DOM.riHumanVal.textContent = pose === 'fallen' ? 'Fallen presence' : pose.charAt(0).toUpperCase() + pose.slice(1).toLowerCase();
             DOM.riHumanVal.className = 'ri-value ' + (
                 p.pose_state === 'fallen' || p.is_motionless ? 'danger' : 'active'
             );
             if (DOM.riHumanCount) DOM.riHumanCount.textContent = p.count || 1;
         } else {
-            DOM.riHumanVal.textContent = 'NONE';
+            DOM.riHumanVal.textContent = 'No human detected';
             DOM.riHumanVal.className = 'ri-value';
         }
         // Update card style
@@ -309,11 +316,11 @@
     function updateRiMotion(mo) {
         if (!DOM.riMotionVal) return;
         if (mo.detected) {
-            const lvl = mo.score > 0.7 ? 'HIGH' : mo.score > 0.4 ? 'MEDIUM' : 'LOW';
-            DOM.riMotionVal.textContent = `${lvl} (${pct(mo.score)}%)`;
+            const lvl = mo.score > 0.7 ? 'High' : mo.score > 0.4 ? 'Moderate' : 'Low';
+            DOM.riMotionVal.textContent = `${lvl} activity (${pct(mo.score)}%)`;
             DOM.riMotionVal.className   = 'ri-value ' + (mo.score > 0.7 ? 'warning' : 'active');
         } else {
-            DOM.riMotionVal.textContent = 'NONE';
+            DOM.riMotionVal.textContent = 'No activity detected';
             DOM.riMotionVal.className   = 'ri-value';
         }
     }
