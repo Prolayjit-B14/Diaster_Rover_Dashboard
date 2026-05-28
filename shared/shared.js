@@ -56,42 +56,68 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ── Apply saved theme icon state ─────────────────────────── */
     updateThemeIcons(getCurrentTheme());
 
-    /* ── MOBILE MENU + BACKDROP + COLLAPSE ───────────────────── */
+    /* ── DYNAMIC NAVIGATION & AVATAR INJECTION ──────────────── */
     const sidebarEl = document.getElementById('sidebar');
     const mobileBtn = document.getElementById('mobile-menu-btn');
     const backdrop  = document.getElementById('sidebar-backdrop');
 
-    // Restore desktop collapsed state on page load
-    if (sidebarEl && window.innerWidth > 900) {
-        const isCollapsed = localStorage.getItem('rescuebot-sidebar-collapsed') === 'true';
-        if (isCollapsed) {
-            sidebarEl.classList.add('collapsed');
-        }
+    // Hide sidebar elements as layout is borderless horizontal
+    if (sidebarEl) sidebarEl.style.display = 'none';
+    if (mobileBtn) mobileBtn.style.display = 'none';
+    if (backdrop) backdrop.style.display = 'none';
+
+    const isRoot = !['/camera/', '/dashboard/', '/map/', '/sensors/', '/alerts/'].some(dir => window.location.pathname.toLowerCase().includes(dir));
+    const prefix = isRoot ? './' : '../';
+    const homePrefix = isRoot ? './' : '../';
+
+    // Inject center horizontal floating navbar on app pages
+    const topNavbar = document.querySelector('.top-navbar');
+    if (topNavbar) {
+        const navContainer = document.createElement('div');
+        navContainer.className = 'nav-links-center';
+
+        const items = [
+            { label: 'Overview', path: 'dashboard/dashboard.html' },
+            { label: 'Live Monitoring', path: 'camera/camera.html' },
+            { label: 'Incident Map', path: 'map/map.html' },
+            { label: 'Field Sensors', path: 'sensors/sensors.html' },
+            { label: 'Alerts', path: 'alerts/alerts.html' },
+            { label: 'Home', path: '' }
+        ];
+
+        navContainer.innerHTML = items.map(item => {
+            const fullPath = item.path ? `${prefix}${item.path}` : homePrefix;
+            
+            let isActive = false;
+            if (item.path) {
+                const folder = item.path.split('/')[0];
+                isActive = window.location.pathname.toLowerCase().includes('/' + folder + '/');
+            } else {
+                isActive = window.location.pathname.endsWith('/') || window.location.pathname.endsWith('/index.html');
+            }
+            
+            const activeClass = isActive ? 'active' : '';
+            return `<a href="${fullPath}" class="nav-link-item ${activeClass}">${item.label}</a>`;
+        }).join('');
+
+        const rightSection = topNavbar.querySelector('.nav-right');
+        topNavbar.insertBefore(navContainer, rightSection);
     }
 
-    if (sidebarEl && mobileBtn) {
-        mobileBtn.addEventListener('click', () => {
-            if (window.innerWidth <= 900) {
-                sidebarEl.classList.add('mobile-open');
-                if (backdrop) backdrop.classList.add('visible');
-            } else {
-                sidebarEl.classList.toggle('collapsed');
-                const isCollapsed = sidebarEl.classList.contains('collapsed');
-                localStorage.setItem('rescuebot-sidebar-collapsed', isCollapsed ? 'true' : 'false');
-            }
-        });
-        if (backdrop) {
-            backdrop.addEventListener('click', () => {
-                sidebarEl.classList.remove('mobile-open');
-                backdrop.classList.remove('visible');
-            });
+    // Inject profile avatar in top right
+    const avatar = document.createElement('div');
+    avatar.className = 'nav-profile-avatar';
+    avatar.textContent = 'PB';
+    avatar.title = 'Prolayjit Banerjee';
+
+    const navRight = document.querySelector('.nav-right');
+    if (navRight) {
+        navRight.appendChild(avatar);
+    } else {
+        const landingRight = document.querySelector('.landing-nav div[style*="display:flex"]');
+        if (landingRight) {
+            landingRight.appendChild(avatar);
         }
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', () => {
-                sidebarEl.classList.remove('mobile-open');
-                if (backdrop) backdrop.classList.remove('visible');
-            });
-        });
     }
 
     /* ── THEME TOGGLE BUTTON ─────────────────────────────────── */
@@ -147,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ── NAVIGATION CLICK — smooth fade out before navigate ──── */
-    document.querySelectorAll('a.nav-item, a[data-nav]').forEach(link => {
+    document.querySelectorAll('a.nav-item, a.nav-link-item, a[data-nav]').forEach(link => {
         link.addEventListener('click', e => {
             const href = link.getAttribute('href');
             if (href && !href.startsWith('http') && !href.startsWith('#') && !href.startsWith('javascript')) {

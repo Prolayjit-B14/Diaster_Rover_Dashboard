@@ -1375,3 +1375,142 @@ html, body {
   flex-shrink: 0;
 }
 
+/* ============================================================
+   BORDERLESS FLOATING DOCK HEADER & PROFILE ACCENT
+   ============================================================ */
+
+/* Hide sidebar and mobile menu button */
+.sidebar, #sidebar {
+  display: none !important;
+}
+
+.mobile-menu-btn, #mobile-menu-btn {
+  display: none !important;
+}
+
+/* Remove bottom borders and shadow lines from headers */
+.top-navbar,
+[data-theme="light"] .top-navbar,
+.landing-nav,
+[data-theme="light"] .landing-nav {
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+/* Hide brand logo on landing page to place horizontal navbar */
+.landing-nav .nav-brand {
+  display: none !important;
+}
+
+/* Center-aligned floating navigation pill styles */
+.nav-links-center,
+.landing-nav .nav-links {
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(11, 15, 25, 0.45) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 5px 10px !important;
+  border-radius: var(--radius-full) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  transition: all var(--t-med) !important;
+  z-index: 1000 !important;
+}
+
+[data-theme="light"] .nav-links-center,
+[data-theme="light"] .landing-nav .nav-links {
+  background: rgba(255, 255, 255, 0.65) !important;
+  border-color: rgba(15, 23, 42, 0.09) !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05), 0 0 1px rgba(0, 0, 0, 0.05) !important;
+}
+
+.nav-links-center:hover,
+.landing-nav .nav-links:hover {
+  transform: translate(-50%, 1.5px) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(59, 130, 246, 0.1) !important;
+}
+
+[data-theme="light"] .nav-links-center:hover,
+[data-theme="light"] .landing-nav .nav-links:hover {
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Nav Item styling inside floating dock */
+.nav-link-item,
+.landing-nav .nav-link-item {
+  color: var(--text-secondary) !important;
+  font-weight: 600 !important;
+  font-size: 12.5px !important;
+  padding: 6px 14px !important;
+  border-radius: var(--radius-full) !important;
+  transition: all var(--t-fast) !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.nav-link-item:hover,
+.landing-nav .nav-link-item:hover {
+  color: var(--text-primary) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  transform: translateY(-0.5px) !important;
+}
+
+[data-theme="light"] .nav-link-item:hover,
+[data-theme="light"] .landing-nav .nav-link-item:hover {
+  background: rgba(15, 23, 42, 0.05) !important;
+}
+
+.nav-link-item.active,
+.landing-nav .nav-link-item.active {
+  color: #ffffff !important;
+  background: var(--accent) !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35) !important;
+}
+
+[data-theme="light"] .nav-link-item.active,
+[data-theme="light"] .landing-nav .nav-link-item.active {
+  color: #ffffff !important;
+  background: var(--accent) !important;
+}
+
+/* Profile initials avatar circle in the top right navbar */
+.nav-profile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--accent-border);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all var(--t-fast);
+  user-select: none;
+  font-family: var(--font-body);
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.nav-profile-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+}
+
+[data-theme="light"] .nav-profile-avatar {
+  color: #ffffff;
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
