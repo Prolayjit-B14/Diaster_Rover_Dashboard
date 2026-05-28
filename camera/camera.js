@@ -232,6 +232,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.exitFullscreen();
             }
         });
+
+        document.addEventListener('fullscreenchange', () => {
+            const icon = btnFullscreen.querySelector('i') || btnFullscreen.querySelector('svg');
+            if (icon) {
+                const iconName = document.fullscreenElement ? 'minimize' : 'maximize';
+                icon.setAttribute('data-lucide', iconName);
+                if (window.lucide) window.lucide.createIcons({ nodes: [btnFullscreen] });
+            }
+            btnFullscreen.title = document.fullscreenElement ? 'Exit Fullscreen' : 'Expand View';
+        });
     }
 
     // ── Aspect Ratio Fit Toggle ────────────────────────────────
