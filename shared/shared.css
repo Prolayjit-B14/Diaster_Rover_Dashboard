@@ -1309,3 +1309,7 @@ html, body {
   .top-navbar { padding: 0 var(--space-4); }
   .nav-breadcrumb { display: none !important; }
 }
+
+#theme-toggle, #landing-theme-toggle, .theme-toggle-btn, .nav-theme-btn {
+  display: none !important;
+}

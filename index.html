@@ -616,20 +616,15 @@
         // ── THEME TOGGLE ─────────────────────────────────────────
         const themeBtn = document.getElementById('landing-theme-toggle');
         function applyTheme(t) {
-            document.documentElement.setAttribute('data-theme', t);
-            localStorage.setItem('rescuebot-theme', t);
-            const icon = themeBtn.querySelector('i') || themeBtn.querySelector('svg');
-            if (icon) {
-                icon.setAttribute('data-lucide', t === 'dark' ? 'sun' : 'moon');
-                if (window.lucide) lucide.createIcons();
-            }
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('rescuebot-theme', 'dark');
         }
-        const saved = localStorage.getItem('rescuebot-theme') || 'dark';
-        applyTheme(saved);
-        themeBtn.addEventListener('click', () => {
-            const current = document.documentElement.getAttribute('data-theme');
-            applyTheme(current === 'dark' ? 'light' : 'dark');
-        });
+        applyTheme('dark');
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                applyTheme('dark');
+            });
+        }
     </script>
 </body>
 </html>

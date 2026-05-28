@@ -9,27 +9,25 @@
  */
 
 /* ── THEME INIT (run immediately, before DOMContentLoaded)
-       Prevents flash-of-unstyled-content on page load      ── */
+       Enforces dark theme and disables light mode          ── */
 ;(function applyThemeEarly() {
-    const saved = localStorage.getItem('rescuebot-theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', saved);
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('rescuebot-theme', 'dark');
 })();
 
 /* ── HELPERS ─────────────────────────────────────────────────── */
 
 function getCurrentTheme() {
-    return document.documentElement.getAttribute('data-theme') || 'dark';
+    return 'dark';
 }
 
 function setTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('rescuebot-theme', theme);
-    updateThemeIcons(theme);
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('rescuebot-theme', 'dark');
 }
 
 function toggleTheme() {
-    const current = getCurrentTheme();
-    setTheme(current === 'dark' ? 'light' : 'dark');
+    // Disabled - dark theme only
 }
 
 function updateThemeIcons(theme) {
