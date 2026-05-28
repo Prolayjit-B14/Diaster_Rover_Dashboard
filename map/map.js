@@ -277,9 +277,9 @@ class MapDashboard {
         // Right panel: recenter
         document.getElementById('btn-recenter')?.addEventListener('click', () => {
             if (this.currentPos) {
-                this.map.setView(this.currentPos, Math.max(this.map.getZoom(), 15), { animate: true });
+                this.map.setView(this.currentPos, 20, { animate: true });
             } else {
-            window.RESCUEBOT_UI?.toast('No GPS fix yet', 'warning');
+                window.RESCUEBOT_UI?.toast('No GPS fix yet', 'warning');
             }
         });
 
@@ -319,7 +319,7 @@ class MapDashboard {
         // Move rover marker, instantiating on first real coordinate to avoid fake initial position
         if (!this.roverMarker) {
             this.roverMarker = L.marker(latlng, { icon: this.roverIcon, zIndexOffset: 1000 }).addTo(this.map);
-            this.map.setView(latlng, 16);
+            this.map.setView(latlng, 20);
         } else {
             this.roverMarker.setLatLng(latlng);
         }
