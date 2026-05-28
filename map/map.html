@@ -76,7 +76,7 @@
             font-family: var(--font-body);
         }
 
-        /* ── DUSTY RED EMERGENCY ALERT FLASH OVERLAY ────────────────────────── */
+        /* ── EMERGENCY ALERT RED FLASH OVERLAY ──────────────────────────────── */
         .emergency-overlay {
             position: fixed;
             inset: 0;
@@ -129,6 +129,41 @@
         @keyframes pulseIcon {
             from { transform: scale(1); }
             to { transform: scale(1.2); }
+        }
+
+        /* GPS Status overlay waiting message */
+        .gps-loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(8, 12, 22, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-body);
+            transition: opacity 0.5s ease;
+        }
+        .gps-loading-card {
+            background: #151C2C;
+            border: 1px solid var(--border-default);
+            padding: 20px 32px;
+            border-radius: var(--radius-md);
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+        }
+        .gps-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(59, 130, 246, 0.15);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* ── MAP OVERLAYS & SCI-FI TELEMETRY BOX ────────────────────────────── */
@@ -365,12 +400,8 @@
         .token-input-box:focus {
             border-color: var(--accent);
         }
-        .btn-row {
-            display: flex;
-            gap: 12px;
-        }
         .btn-primary {
-            flex: 1;
+            width: 100%;
             padding: 10px 16px;
             background: var(--accent);
             border: 1px solid var(--accent);
@@ -383,75 +414,6 @@
         }
         .btn-primary:hover {
             background: #2563EB;
-        }
-        .btn-secondary {
-            flex: 1;
-            padding: 10px 16px;
-            background: #1E293B;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: var(--radius-sm);
-            color: #E2E8F0;
-            font-weight: 500;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .btn-secondary:hover {
-            background: #334155;
-            color: #ffffff;
-        }
-
-        /* ── MOCK OFFLINE GRID STYLING ────────────────────────────────────────── */
-        .offline-grid-container {
-            position: absolute;
-            inset: 0;
-            background: #060913;
-            display: none; /* Shown only in offline mock map mode */
-            z-index: 1;
-            overflow: hidden;
-        }
-        .offline-radar-canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-        .offline-banner {
-            position: absolute;
-            bottom: 24px;
-            right: 24px;
-            background: rgba(245, 158, 11, 0.15);
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            color: #F59E0B;
-            font-family: var(--font-mono);
-            font-size: 9px;
-            padding: 6px 14px;
-            border-radius: 4px;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            pointer-events: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* Simulation Card Controls */
-        .simulation-card {
-            background: rgba(11, 15, 25, 0.92);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-md);
-            padding: 10px 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: var(--shadow-sm);
-        }
-        [data-theme="light"] .simulation-card {
-            background: rgba(255, 255, 255, 0.94);
-        }
-        .sim-btn-active {
-            background: #EF4444 !important;
-            border-color: #EF4444 !important;
         }
         
         /* Mobile adjustment for HUD overlays */
@@ -532,9 +494,9 @@
             </div>
             <div class="nav-right">
                 <div class="status-pill">
-                    <div class="status-dot" id="gps-dot"></div>
-                    <i data-lucide="satellite" id="gps-icon" style="width:12px;height:12px;color:#00FF88;margin-right:2px;"></i>
-                    <span id="gps-status" style="font-family:var(--font-mono);font-size:10px;">3D GPS Fix</span>
+                    <div class="status-dot offline" id="gps-dot"></div>
+                    <i data-lucide="satellite" id="gps-icon" style="width:12px;height:12px;color:#EF4444;margin-right:2px;"></i>
+                    <span id="gps-status" style="font-family:var(--font-mono);font-size:10px;">Waiting for GPS...</span>
                 </div>
                 <div class="status-pill">
                     <i data-lucide="clock" style="width:10px;height:10px;"></i>
@@ -549,7 +511,7 @@
         <!-- MAP CANVAS CONTAINER -->
         <div class="map-shell" style="position:relative; width:100%; height:100%;">
 
-            <!-- ── MAP ACCESSTOKEN CONFIG WIZARD (Show overlay if placeholder used) ── -->
+            <!-- ── MAP ACCESSTOKEN CONFIG WIZARD ── -->
             <div id="token-config-wizard" class="token-wizard-overlay" style="display: none;">
                 <div class="token-card">
                     <h3>
@@ -561,24 +523,21 @@
                         <a href="https://account.mapbox.com/" target="_blank">mapbox.com</a>.
                     </p>
                     <input type="password" id="token-input" class="token-input-box" placeholder="Paste your Mapbox access token here">
-                    <div class="btn-row">
-                        <button id="btn-save-token" class="btn-primary">Initialize Mapbox</button>
-                        <button id="btn-mock-map" class="btn-secondary">Launch Offline Tactical Radar</button>
-                    </div>
+                    <button id="btn-save-token" class="btn-primary">Initialize Mapbox</button>
+                </div>
+            </div>
+
+            <!-- ── WAITING FOR GPS SIGNAL SCREEN ── -->
+            <div id="gps-loading-overlay" class="gps-loading-overlay">
+                <div class="gps-loading-card">
+                    <div class="gps-spinner"></div>
+                    <h3 style="color: var(--text-primary); font-size: 13px; font-weight: 600; margin-bottom: 6px;">Waiting for Rover telemetry...</h3>
+                    <p style="color: var(--text-secondary); font-size: 11px; margin: 0;">Connect hardware to send real-time coordinates over MQTT.</p>
                 </div>
             </div>
 
             <!-- ── INTERACTIVE MAP CANVAS (MAPBOX) ─────────────────────────── -->
             <div id="map-canvas" style="position: absolute; inset:0; width:100%; height:100%;"></div>
-
-            <!-- ── MOCK OFFLINE GRID COMPASS VIEW (Fallback Radar) ─────────── -->
-            <div id="offline-grid-view" class="offline-grid-container">
-                <canvas id="radar-grid-canvas" class="offline-radar-canvas"></canvas>
-                <div class="offline-banner">
-                    <i data-lucide="radar" style="width:12px; height:12px; color:#F59E0B; animation: pulseIcon 1.5s infinite alternate;"></i>
-                    <span>Tactical Offline Compass Scan Active</span>
-                </div>
-            </div>
 
             <!-- ── FLOATING TELEMETRY BOX HUD ──────────────────────────────── -->
             <div class="map-hud-overlay telemetry-box" style="top: 14px; left: 86px; pointer-events: auto;">
@@ -589,24 +548,24 @@
                     </div>
                     <div class="telemetry-grid">
                         <div class="telemetry-item">
-                            <i data-lucide="battery" class="tel-icon" id="tel-battery-icon" style="color: #00FF88;"></i>
+                            <i data-lucide="battery" class="tel-icon" id="tel-battery-icon" style="color: var(--text-muted);"></i>
                             <div class="tel-details">
                                 <span class="tel-label">Battery</span>
-                                <span class="tel-value" id="tel-battery">85%</span>
+                                <span class="tel-value" id="tel-battery">--</span>
                             </div>
                         </div>
                         <div class="telemetry-item">
-                            <i data-lucide="gauge" class="tel-icon" style="color: #00D4FF;"></i>
+                            <i data-lucide="gauge" class="tel-icon" style="color: var(--text-muted);"></i>
                             <div class="tel-details">
                                 <span class="tel-label">Speed</span>
-                                <span class="tel-value" id="tel-speed">2 m/s</span>
+                                <span class="tel-value" id="tel-speed">--</span>
                             </div>
                         </div>
                         <div class="telemetry-item">
-                            <i data-lucide="wifi" class="tel-icon" id="tel-wifi-icon" style="color: #00FF88;"></i>
+                            <i data-lucide="wifi" class="tel-icon" id="tel-wifi-icon" style="color: var(--text-muted);"></i>
                             <div class="tel-details">
                                 <span class="tel-label">Signal</span>
-                                <span class="tel-value" id="tel-signal">Strong</span>
+                                <span class="tel-value" id="tel-signal">--</span>
                             </div>
                         </div>
                     </div>
@@ -653,20 +612,11 @@
                 </div>
             </div>
 
-            <!-- ── FLOATING STYLE SELECTOR SWITCH & SIMULATION CONTROLS ─────── -->
-            <div class="map-hud-overlay" style="top: 14px; right: 14px; pointer-events: auto; display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
-                <!-- Layer switches -->
+            <!-- ── FLOATING STYLE SELECTOR SWITCH ─────── -->
+            <div class="map-hud-overlay" style="top: 14px; right: 14px; pointer-events: auto;">
                 <div class="style-pill-selector">
                     <button class="style-pill active" id="style-btn-streets">Vector</button>
                     <button class="style-pill" id="style-btn-satellite">Satellite</button>
-                </div>
-                
-                <!-- GPS simulation control -->
-                <div class="simulation-card">
-                    <button class="btn-primary" id="btn-toggle-sim" style="padding: 6px 12px; font-size: 10px; display: flex; align-items: center; gap: 6px; border-radius: 12px;">
-                        <i data-lucide="play" id="sim-icon" style="width:12px; height:12px;"></i>
-                        <span id="sim-text">Simulate Mission</span>
-                    </button>
                 </div>
             </div>
 
@@ -725,7 +675,6 @@
     
     // Core state management
     let map = null;
-    let isMapboxMode = true;
     let roverMarker = null;
     let isFollowing = true;
     let activeTool = null;
@@ -736,15 +685,10 @@
     // Breadcrumbs path
     let breadcrumbCoords = [];
     
-    // Danger Geofence Zone coordinates (Nagpur defaults centered near 78.9629, 20.5937)
-    let geofencePolygon = [
-        [78.9620, 20.5925],
-        [78.9645, 20.5925],
-        [78.9645, 20.5948],
-        [78.9620, 20.5948],
-        [78.9620, 20.5925]
-    ];
+    // Danger Geofence Zone coordinates (initialized dynamically around first received coordinates)
+    let geofencePolygon = [];
     let isInsideGeofence = false;
+    let geofenceInitialized = false;
     
     // Custom landmarks array
     let landmarks = [];
@@ -753,13 +697,9 @@
     let missionSecs = 0;
     let missionInterval = null;
     
-    // Simulation state
-    let simInterval = null;
-    let simIndex = 0;
-    let mockPath = [];
-    
     // ── GEOFENCE ENTRY DETECTION (RAY CASTING ALGORITHM) ────────────────────
     function isPointInPolygon(point, polygon) {
+        if (!polygon || polygon.length < 3) return false;
         const x = point[0], y = point[1];
         let inside = false;
         for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
@@ -776,7 +716,6 @@
     document.addEventListener('DOMContentLoaded', () => {
         if (window.lucide) window.lucide.createIcons();
         startMissionTimer();
-        setupTelemetryDefaults();
         setupSidebarThemeEvents();
         
         // Check for local storage Mapbox token
@@ -809,11 +748,6 @@
                 alert('Please enter a valid Mapbox token.');
             }
         });
-        
-        document.getElementById('btn-mock-map').addEventListener('click', () => {
-            document.getElementById('token-config-wizard').style.display = 'none';
-            initializeOfflineGridMode();
-        });
     });
 
     // ── INITIALIZE MAPBOX MAP ────────────────────────────────────────────────
@@ -824,14 +758,16 @@
             map = new mapboxgl.Map({
                 container: 'map-canvas',
                 style: 'mapbox://styles/mapbox/streets-v12',
-                center: [78.9629, 20.5937],
+                center: [78.9629, 20.5937], // Centered at Nagoya / India before GPS arrives
                 zoom: 16,
                 attributionControl: false
             });
             
             // Re-setup vector & satellite layers on load
             map.on('style.load', () => {
-                setupMapLayers();
+                if (geofenceInitialized) {
+                    setupMapLayers();
+                }
             });
             
             // Map Click listener for target display & landmarks placing
@@ -861,13 +797,34 @@
             
         } catch (err) {
             console.error('Mapbox initialization failed:', err);
-            initializeOfflineGridMode();
+            alert('Error loading Mapbox. Please check your token or browser console.');
         }
     }
 
-    // ── STYLE SWITCHER: LOAD program layers on style change ──────────────────
+    // ── DEFINE DYNAMIC GEOFENCE AROUND Rover's first actual fix coordinate ──
+    function initializeDynamicGeofence(lng, lat) {
+        // Create an 80m x 80m hazard geofence offset slightly to the North-East of starting coordinates
+        const size = 0.0004; // roughly 40m half-width
+        const offset = 0.0003; // offset center North-East by 30m
+        
+        const centerLng = lng + offset;
+        const centerLat = lat + offset;
+
+        geofencePolygon = [
+            [centerLng - size, centerLat - size],
+            [centerLng + size, centerLat - size],
+            [centerLng + size, centerLat + size],
+            [centerLng - size, centerLat + size],
+            [centerLng - size, centerLat - size] // Close polygon
+        ];
+        
+        geofenceInitialized = true;
+        setupMapLayers();
+    }
+
+    // ── STYLE SWITCHER: Load program layers on style change ──────────────────
     function setupMapLayers() {
-        if (!map) return;
+        if (!map || !geofenceInitialized) return;
         
         // Add Geofence Source & Layers
         if (!map.getSource('geofence')) {
@@ -917,7 +874,7 @@
                     type: 'Feature',
                     geometry: {
                         type: 'LineString',
-                        coordinates: breadcrumbCoords.length > 0 ? breadcrumbCoords : [[78.9629, 20.5937]]
+                        coordinates: breadcrumbCoords.length > 0 ? breadcrumbCoords : [currentPos]
                     }
                 }
             });
@@ -960,6 +917,18 @@
 
     // ── CORE FUNCTION: updateRoverLocation (as required) ───────────────────
     window.updateRoverLocation = function(lng, lat) {
+        // Remove loading screen on first active telemetry coordinate packet
+        const loadOverlay = document.getElementById('gps-loading-overlay');
+        if (loadOverlay && loadOverlay.style.display !== 'none') {
+            loadOverlay.style.opacity = '0';
+            setTimeout(() => { loadOverlay.style.display = 'none'; }, 500);
+        }
+
+        // Initialize geofence relative to actual GPS location on the first packet
+        if (!geofenceInitialized) {
+            initializeDynamicGeofence(lng, lat);
+        }
+
         currentPos = [lng, lat];
         
         // Update Bottom Coordinates display
@@ -968,7 +937,7 @@
         
         // Append path coordinate to breadcrumbs
         breadcrumbCoords.push(currentPos);
-        if (breadcrumbCoords.length > 600) {
+        if (breadcrumbCoords.length > 1000) {
             breadcrumbCoords.shift();
         }
         
@@ -995,8 +964,7 @@
             }
         }
 
-        // Draw updates based on mode (Mapbox vs Offline grid)
-        if (isMapboxMode && map) {
+        if (map) {
             // Update breadcrumb geojson source
             const source = map.getSource('breadcrumb');
             if (source) {
@@ -1037,14 +1005,12 @@
             if (isFollowing) {
                 map.panTo(currentPos, { duration: 800 });
             }
-        } else {
-            // Offline Radar Canvas rendering updates triggered below in the radar rendering loop
         }
     }
 
     // ── GPS SATELLITE/TERRAIN LAYERS SWITCH PILLS ────────────────────────────
     function switchMapStyle(styleName) {
-        if (!isMapboxMode || !map) return;
+        if (!map) return;
         
         const styleUrl = styleName === 'satellite' 
             ? 'mapbox://styles/mapbox/satellite-streets-v12'
@@ -1078,7 +1044,7 @@
         const idx = landmarks.length + 1;
         const name = `${cfg.label} #${idx}`;
 
-        if (isMapboxMode && map) {
+        if (map) {
             const el = document.createElement('div');
             el.className = 'landmark-marker';
             el.style.cssText = `
@@ -1113,9 +1079,6 @@
                 .addTo(map);
 
             landmarks.push({ lng, lat, type, name, marker, color: cfg.color });
-        } else {
-            // Add landmark mock coordinates for offline view rendering
-            landmarks.push({ lng, lat, type, name, marker: null, color: cfg.color, emoji: cfg.emoji });
         }
 
         // Reset placing tools button active states
@@ -1138,10 +1101,10 @@
     function setupInteractiveHUDControls() {
         // Zoom triggers
         document.getElementById('btn-zoom-in')?.addEventListener('click', () => {
-            if (isMapboxMode && map) map.zoomIn();
+            if (map) map.zoomIn();
         });
         document.getElementById('btn-zoom-out')?.addEventListener('click', () => {
-            if (isMapboxMode && map) map.zoomOut();
+            if (map) map.zoomOut();
         });
         
         // Recenter click
@@ -1149,12 +1112,12 @@
             if (currentPos) {
                 isFollowing = true;
                 document.getElementById('btn-follow').classList.add('active');
-                if (isMapboxMode && map) {
+                if (map) {
                     map.easeTo({ center: currentPos, zoom: 17 });
                 }
                 window.RESCUEBOT_UI?.toast('Recentered & camera follow active', 'success');
             } else {
-                window.RESCUEBOT_UI?.toast('No coordinates received yet', 'warning');
+                window.RESCUEBOT_UI?.toast('Waiting for GPS lock coordinates...', 'warning');
             }
         });
 
@@ -1163,7 +1126,7 @@
             isFollowing = !isFollowing;
             document.getElementById('btn-follow').classList.toggle('active', isFollowing);
             if (isFollowing && currentPos) {
-                if (isMapboxMode && map) map.panTo(currentPos);
+                if (map) map.panTo(currentPos);
             }
             window.RESCUEBOT_UI?.toast(isFollowing ? 'Follow camera enabled' : 'Follow camera disabled', isFollowing ? 'success' : 'info');
         });
@@ -1174,7 +1137,7 @@
             if (currentPos) {
                 breadcrumbCoords.push(currentPos);
             }
-            if (isMapboxMode && map) {
+            if (map) {
                 const source = map.getSource('breadcrumb');
                 if (source) {
                     source.setData({
@@ -1221,9 +1184,6 @@
                 }
             });
         });
-
-        // Simulation toggle
-        document.getElementById('btn-toggle-sim').addEventListener('click', toggleMissionSimulation);
     }
 
     // ── MQTT SUBSCRIBER AND PARSING BINDINGS ───────────────────────────────
@@ -1232,12 +1192,6 @@
         if (mqttCtrl) {
             // Subscribing to telemetry data streams
             mqttCtrl.on('gps', (d) => {
-                // If real GPS received, turn off mock simulation to prioritize active feed
-                if (simInterval) {
-                    toggleMissionSimulation();
-                    window.RESCUEBOT_UI?.toast('Active hardware GPS detected. Ending simulation.', 'warning');
-                }
-                
                 const lat = parseFloat(d.lat);
                 const lng = parseFloat(d.lng);
                 roverHeading = parseFloat(d.heading) || 0;
@@ -1247,7 +1201,7 @@
                     
                     // Update speed display card
                     const rawSpd = parseFloat(d.speed) || 0; 
-                    // Assume speed is either km/h or m/s. Let's show as m/s
+                    // Assume speed is either km/h or m/s. Show as m/s
                     const spdMeters = (rawSpd > 10) ? (rawSpd / 3.6).toFixed(1) : rawSpd.toFixed(1);
                     document.getElementById('tel-speed').textContent = `${spdMeters} m/s`;
                 }
@@ -1308,237 +1262,7 @@
         }
     }
 
-    // ── OFFLINE SCAN GRID Fallback Mode ────────────────────────────────────
-    function initializeOfflineGridMode() {
-        isMapboxMode = false;
-        document.getElementById('map-canvas').style.display = 'none';
-        document.getElementById('offline-grid-view').style.display = 'block';
-        
-        setupInteractiveHUDControls();
-        setupMqttConnector();
-        
-        // Start Canvas drawing render loops
-        const canvas = document.getElementById('radar-grid-canvas');
-        const ctx = canvas.getContext('2d');
-        let sweepAngle = 0;
-        
-        function resizeCanvas() {
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-        
-        // Force mock coordinates if user starts offline
-        if (!currentPos) {
-            currentPos = [78.9629, 20.5937];
-            breadcrumbCoords.push(currentPos);
-        }
-        
-        // Core Animation Loop for Tactical Radar Screen
-        function renderRadar() {
-            if (isMapboxMode) return; // Exit loop if style changes
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            
-            // Draw grid background
-            ctx.strokeStyle = 'rgba(59, 130, 246, 0.08)';
-            ctx.lineWidth = 1;
-            const gridSz = 40;
-            
-            for (let x = 0; x < canvas.width; x += gridSz) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height);
-                ctx.stroke();
-            }
-            for (let y = 0; y < canvas.height; y += gridSz) {
-                ctx.beginPath();
-                ctx.moveTo(0, y); ctx.lineTo(canvas.width, y);
-                ctx.stroke();
-            }
-            
-            // Radar sweeping visual circles
-            ctx.strokeStyle = 'rgba(0, 212, 255, 0.12)';
-            ctx.lineWidth = 1.5;
-            const maxR = Math.max(canvas.width, canvas.height);
-            for (let r = 80; r < maxR; r += 120) {
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
-                ctx.stroke();
-            }
-            
-            // Drawing the geofence warning zone boundary relative to viewport (offset for mock illustration)
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.08)';
-            ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([4, 4]);
-            
-            const gfCenterX = centerX + 80;
-            const gfCenterY = centerY - 80;
-            const gfSize = 100;
-            
-            ctx.fillRect(gfCenterX - gfSize/2, gfCenterY - gfSize/2, gfSize, gfSize);
-            ctx.strokeRect(gfCenterX - gfSize/2, gfCenterY - gfSize/2, gfSize, gfSize);
-            ctx.setLineDash([]);
-            
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.4)';
-            ctx.font = '9px monospace';
-            ctx.fillText('WARNING GEOFENCE ZONE', gfCenterX - 50, gfCenterY);
-
-            // Radar Sweep line
-            sweepAngle += 0.015;
-            const lineX = centerX + Math.cos(sweepAngle) * maxR;
-            const lineY = centerY + Math.sin(sweepAngle) * maxR;
-            
-            ctx.beginPath();
-            ctx.strokeStyle = 'rgba(0, 212, 255, 0.25)';
-            ctx.lineWidth = 2;
-            ctx.moveTo(centerX, centerY);
-            ctx.lineTo(lineX, lineY);
-            ctx.stroke();
-            
-            // Draw Breadcrumb trail
-            if (breadcrumbCoords.length > 1) {
-                ctx.strokeStyle = '#00D4FF';
-                ctx.lineWidth = 3;
-                ctx.shadowColor = '#00D4FF';
-                ctx.shadowBlur = 8;
-                ctx.beginPath();
-                
-                // Map GPS breadcrumbs to screen coordinate offsets from central point
-                const scale = 250000; 
-                const startPt = breadcrumbCoords[0];
-                
-                ctx.moveTo(
-                    centerX + (startPt[0] - currentPos[0]) * scale,
-                    centerY - (startPt[1] - currentPos[1]) * scale
-                );
-                
-                for (let i = 1; i < breadcrumbCoords.length; i++) {
-                    const pt = breadcrumbCoords[i];
-                    ctx.lineTo(
-                        centerX + (pt[0] - currentPos[0]) * scale,
-                        centerY - (pt[1] - currentPos[1]) * scale
-                    );
-                }
-                ctx.stroke();
-                ctx.shadowBlur = 0; // reset glow
-            }
-            
-            // Draw Custom Placed Landmarks
-            landmarks.forEach(lm => {
-                const scale = 250000;
-                const lmX = centerX + (lm.lng - currentPos[0]) * scale;
-                const lmY = centerY - (lm.lat - currentPos[1]) * scale;
-                
-                ctx.fillStyle = lm.color;
-                ctx.beginPath();
-                ctx.arc(lmX, lmY, 6, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.font = '10px sans-serif';
-                ctx.fillText(lm.emoji || '📍', lmX - 6, lmY - 10);
-            });
-            
-            // Draw Rover Marker node at center
-            ctx.fillStyle = '#00D4FF';
-            ctx.shadowColor = '#00D4FF';
-            ctx.shadowBlur = 12;
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Rover Heading Arrow overlay
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            const angleRad = (roverHeading - 90) * Math.PI / 180;
-            ctx.moveTo(centerX, centerY);
-            ctx.lineTo(centerX + Math.cos(angleRad) * 16, centerY + Math.sin(angleRad) * 16);
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-
-            requestAnimationFrame(renderRadar);
-        }
-        
-        requestAnimationFrame(renderRadar);
-        window.RESCUEBOT_UI?.toast('Radar scanning initialized successfully.', 'success');
-    }
-
-    // ── DYNAMIC GPS SIMULATION FOR PREVIEWS AND TESTS ──────────────────────
-    function generateSimulationPath() {
-        const startLng = 78.9629;
-        const startLat = 20.5937;
-        const steps = 70;
-        const generated = [];
-        
-        for (let i = 0; i < steps; i++) {
-            const angle = (i / steps) * Math.PI * 2;
-            // Elliptical route designed to cross geofence coordinates
-            const lng = startLng + Math.cos(angle) * 0.0016 + Math.sin(angle * 1.5) * 0.0004;
-            const lat = startLat + Math.sin(angle) * 0.0016;
-            generated.push([lng, lat]);
-        }
-        return generated;
-    }
-
-    function toggleMissionSimulation() {
-        const btn = document.getElementById('btn-toggle-sim');
-        const icon = document.getElementById('sim-icon');
-        const text = document.getElementById('sim-text');
-        
-        if (simInterval) {
-            clearInterval(simInterval);
-            simInterval = null;
-            btn.classList.remove('sim-btn-active');
-            text.textContent = 'Simulate Mission';
-            if (icon) icon.setAttribute('data-lucide', 'play');
-            if (window.lucide) window.lucide.createIcons({ nodes: [icon] });
-            window.RESCUEBOT_UI?.toast('GPS simulation suspended', 'info');
-        } else {
-            mockPath = generateSimulationPath();
-            simIndex = 0;
-            
-            // Clear prior trail history
-            breadcrumbCoords = [];
-            
-            btn.classList.add('sim-btn-active');
-            text.textContent = 'Terminate Sim';
-            if (icon) icon.setAttribute('data-lucide', 'square');
-            if (window.lucide) window.lucide.createIcons({ nodes: [icon] });
-            window.RESCUEBOT_UI?.toast('Rover GPS simulation initialized', 'success');
-            
-            simInterval = setInterval(() => {
-                const coord = mockPath[simIndex];
-                
-                // Add simulated headings variation
-                roverHeading = (simIndex * 360 / mockPath.length) % 360;
-                
-                // Simulate slight speed variances (e.g. 1.2 to 2.4 m/s)
-                const mockSpeed = (1.5 + Math.sin(simIndex * 0.2) * 0.7).toFixed(1);
-                document.getElementById('tel-speed').textContent = `${mockSpeed} m/s`;
-                
-                // Simulate battery steady discharge
-                const mockBatt = Math.max(12, 85 - Math.floor(simIndex * 0.2));
-                document.getElementById('tel-battery').textContent = `${mockBatt}%`;
-                
-                updateRoverLocation(coord[0], coord[1]);
-                
-                simIndex = (simIndex + 1) % mockPath.length;
-            }, 600);
-        }
-    }
-
     // ── HELPER: DEFAULTS & MISSION CLOCKS ──────────────────────────────────
-    function setupTelemetryDefaults() {
-        document.getElementById('tel-battery').textContent = "85%";
-        document.getElementById('tel-speed').textContent = "2 m/s";
-        document.getElementById('tel-signal').textContent = "Strong";
-    }
-
     function startMissionTimer() {
         missionSecs = 0;
         missionInterval = setInterval(() => {
