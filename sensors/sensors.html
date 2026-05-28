@@ -82,6 +82,11 @@
                 <span class="nav-breadcrumb">/ Real-time Monitoring</span>
             </div>
             <div class="nav-right">
+                <span class="badge badge-blue" style="font-size:10px; padding:3px 8px;">12 Modules Active</span>
+                <div class="live-indicator" style="display:flex; align-items:center; gap:6px; font-size:10px; color:var(--text-secondary); font-weight:500; background:var(--bg-elevated); border:1px solid var(--border-subtle); padding:3px 8px; border-radius:99px; height:22px;">
+                    <div class="live-dot" style="width:6px; height:6px; border-radius:50%; background:var(--status-ok); animation:pulseOnline 2.5s ease-in-out infinite;"></div>
+                    <span>Live</span>
+                </div>
                 <div class="status-pill">
                     <div class="status-dot"></div>
                     <span style="font-family:var(--font-mono);font-size:10px;">Unit ARES-1</span>
@@ -98,21 +103,6 @@
 
         <!-- PAGE CONTENT -->
         <main class="page-content page-enter">
-
-            <!-- SECTION HEADER -->
-            <div class="section-header">
-                <div>
-                    <div class="section-title">Field Sensor Array</div>
-                    <div class="section-subtitle">Real-time telemetry from all deployed sensor modules — updated continuously via MQTT</div>
-                </div>
-                <div class="section-header-right">
-                    <span class="badge badge-blue">12 Modules Active</span>
-                    <div class="live-indicator">
-                        <div class="live-dot"></div>
-                        <span>Live</span>
-                    </div>
-                </div>
-            </div>
 
             <!-- SENSOR GRID -->
             <div class="sensor-grid">

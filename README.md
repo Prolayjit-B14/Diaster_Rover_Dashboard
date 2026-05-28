@@ -125,7 +125,7 @@ python ai_server/inference_server.py
 ├── sensors/         # High-density Telemetry module (sensors.html, css, js)
 ├── shared/          # Centralized Design System & MQTT Client config
 ├── assets/          # Mission-critical UI images
-├── firmware/        # Arduino/C++ source code for ESP32 (tets.ino)
+├── firmware/        # Arduino/C++ source code for ESP32 (production.ino)
 └── index.html       # RescueBOT Entry Point (High-Tech Diagnostic Sequence)
 ```
 

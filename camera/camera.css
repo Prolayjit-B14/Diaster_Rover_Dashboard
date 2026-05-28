@@ -1248,3 +1248,15 @@ details[open] summary .chevron-icon {
     font-weight: 700;
 }
 
+/* ── DETECTIONS ARRAY SIDEBAR STYLING ────────────────────────── */
+.detection-tiles-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.detection-tiles-sidebar .detection-tile {
+    width: 100%;
+}
+
+

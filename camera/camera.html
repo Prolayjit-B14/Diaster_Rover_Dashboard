@@ -155,7 +155,6 @@
                 <div class="monitoring-card">
                     <div class="monitoring-card-header">
                         <div class="header-title-block">
-                            <span class="monitoring-subtitle">Live Monitoring</span>
                             <h2 class="monitoring-title">Camera Feed</h2>
                         </div>
                         <div class="monitoring-meta-bar">
@@ -197,30 +196,6 @@
                             <div class="bbox-label">SMOKE &middot; <span id="bbox-smoke-conf">0%</span></div>
                         </div>
 
-                        <!-- HUD Telemetry Strip -->
-                        <div class="hud-tele-strip">
-                            <div class="hud-tele-item">
-                                <span class="hud-tele-label">LAT</span>
-                                <span class="hud-tele-value" id="hud-lat">--</span>
-                            </div>
-                            <div class="hud-tele-item">
-                                <span class="hud-tele-label">LNG</span>
-                                <span class="hud-tele-value" id="hud-lng">--</span>
-                            </div>
-                            <div class="hud-tele-item">
-                                <span class="hud-tele-label">SPD</span>
-                                <span class="hud-tele-value" id="hud-speed">-- m/s</span>
-                            </div>
-                            <div class="hud-tele-item">
-                                <span class="hud-tele-label">HDG</span>
-                                <span class="hud-tele-value" id="hud-heading">--°</span>
-                            </div>
-                            <div class="hud-tele-item">
-                                <span class="hud-tele-label">ALT</span>
-                                <span class="hud-tele-value" id="hud-alt">-- m</span>
-                            </div>
-                        </div>
-
                         <!-- Feed Controls -->
                         <div class="monitoring-card-footer">
                             <button class="feed-btn" id="btn-stream-toggle" title="Start / Stop Monitoring">
@@ -232,95 +207,6 @@
                             <button class="feed-btn" id="btn-fullscreen" title="Expand View">
                                 <i data-lucide="maximize"></i>
                             </button>
-                        </div>
-                    </div>
-
-                    <!-- Detection Tiles Grid (below feed) -->
-                    <div class="detection-tiles-row">
-                        <!-- Human -->
-                        <div class="detection-tile" id="tile-human">
-                            <div class="tile-icon-wrap human-icon">
-                                <i data-lucide="user"></i>
-                            </div>
-                            <div class="tile-info">
-                                <div class="tile-label">Human</div>
-                                <div class="tile-status" id="status-human">CLEAR</div>
-                            </div>
-                            <div class="tile-right">
-                                <span class="tile-count" id="count-human">0</span>
-                                <div class="tile-conf-bar">
-                                    <div class="tile-conf-fill human-fill" id="conf-human" style="width:0%"></div>
-                                </div>
-                                <span class="tile-conf-val" id="conf-val-human">0%</span>
-                            </div>
-                        </div>
-                        <!-- Fire -->
-                        <div class="detection-tile" id="tile-fire">
-                            <div class="tile-icon-wrap fire-icon">
-                                <i data-lucide="flame"></i>
-                            </div>
-                            <div class="tile-info">
-                                <div class="tile-label">Fire</div>
-                                <div class="tile-status" id="status-fire">CLEAR</div>
-                            </div>
-                            <div class="tile-right">
-                                <span class="tile-count" id="count-fire">0</span>
-                                <div class="tile-conf-bar">
-                                    <div class="tile-conf-fill fire-fill" id="conf-fire" style="width:0%"></div>
-                                </div>
-                                <span class="tile-conf-val" id="conf-val-fire">0%</span>
-                            </div>
-                        </div>
-                        <!-- Smoke -->
-                        <div class="detection-tile" id="tile-smoke">
-                            <div class="tile-icon-wrap smoke-icon">
-                                <i data-lucide="wind"></i>
-                            </div>
-                            <div class="tile-info">
-                                <div class="tile-label">Smoke</div>
-                                <div class="tile-status" id="status-smoke">CLEAR</div>
-                            </div>
-                            <div class="tile-right">
-                                <span class="tile-count" id="count-smoke">0</span>
-                                <div class="tile-conf-bar">
-                                    <div class="tile-conf-fill smoke-fill" id="conf-smoke" style="width:0%"></div>
-                                </div>
-                                <span class="tile-conf-val" id="conf-val-smoke">0%</span>
-                            </div>
-                        </div>
-                        <!-- Pose -->
-                        <div class="detection-tile" id="tile-pose">
-                            <div class="tile-icon-wrap pose-icon">
-                                <i data-lucide="person-standing"></i>
-                            </div>
-                            <div class="tile-info">
-                                <div class="tile-label">Posture</div>
-                                <div class="tile-status" id="status-pose">--</div>
-                            </div>
-                            <div class="tile-right">
-                                <span class="tile-count" id="count-pose">0</span>
-                                <div class="tile-conf-bar">
-                                    <div class="tile-conf-fill pose-fill" id="conf-pose" style="width:0%"></div>
-                                </div>
-                                <span class="tile-conf-val" id="conf-val-pose">0%</span>
-                            </div>
-                        </div>
-                        <!-- Motion -->
-                        <div class="detection-tile" id="tile-motion">
-                            <div class="tile-icon-wrap motion-icon">
-                                <i data-lucide="activity"></i>
-                            </div>
-                            <div class="tile-info">
-                                <div class="tile-label">Motion</div>
-                                <div class="tile-status" id="status-motion">NONE</div>
-                            </div>
-                            <div class="tile-right">
-                                <span class="tile-count" id="count-motion">0</span>
-                                <div class="tile-conf-bar">
-                                    <div class="tile-conf-fill motion-fill" id="conf-motion" style="width:0%"></div>
-                                </div>
-                                <span class="tile-conf-val" id="conf-val-motion">0%</span>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -408,6 +294,139 @@
                             </div>
                         </div>
                     </details>
+
+                    <!-- Rover Telemetry -->
+                    <div class="cam-sidebar-section">
+                        <div class="section-title-row">
+                            <h3><i data-lucide="navigation" style="width:14px;height:14px;color:var(--accent);"></i> Rover Telemetry</h3>
+                        </div>
+                        <div class="env-risk-grid">
+                            <div class="env-risk-card">
+                                <div class="env-risk-label">Latitude</div>
+                                <div class="env-risk-value" id="hud-lat">--</div>
+                            </div>
+                            <div class="env-risk-card">
+                                <div class="env-risk-label">Longitude</div>
+                                <div class="env-risk-value" id="hud-lng">--</div>
+                            </div>
+                            <div class="env-risk-card">
+                                <div class="env-risk-label">Speed</div>
+                                <div class="env-risk-value" id="hud-speed">-- m/s</div>
+                            </div>
+                            <div class="env-risk-card">
+                                <div class="env-risk-label">Heading</div>
+                                <div class="env-risk-value" id="hud-heading">--°</div>
+                            </div>
+                            <div class="env-risk-card" style="grid-column: span 2;">
+                                <div class="env-risk-label">Altitude</div>
+                                <div class="env-risk-value" id="hud-alt">-- m</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Detection Array -->
+                    <div class="cam-sidebar-section">
+                        <div class="section-title-row">
+                            <h3><i data-lucide="scan" style="width:14px;height:14px;color:var(--accent);"></i> AI Detection Array</h3>
+                        </div>
+                        <div class="detection-tiles-sidebar">
+                            <!-- Human -->
+                            <div class="detection-tile" id="tile-human">
+                                <div class="tile-left">
+                                    <div class="tile-icon-wrap human-icon">
+                                        <i data-lucide="user"></i>
+                                    </div>
+                                    <div class="tile-info">
+                                        <div class="tile-label">Human</div>
+                                        <div class="tile-status" id="status-human">CLEAR</div>
+                                    </div>
+                                </div>
+                                <div class="tile-right">
+                                    <span class="tile-count" id="count-human">0</span>
+                                    <div class="tile-conf-bar">
+                                        <div class="tile-conf-fill human-fill" id="conf-human" style="width:0%"></div>
+                                    </div>
+                                    <span class="tile-conf-val" id="conf-val-human">0%</span>
+                                </div>
+                            </div>
+                            <!-- Fire -->
+                            <div class="detection-tile" id="tile-fire">
+                                <div class="tile-left">
+                                    <div class="tile-icon-wrap fire-icon">
+                                        <i data-lucide="flame"></i>
+                                    </div>
+                                    <div class="tile-info">
+                                        <div class="tile-label">Fire</div>
+                                        <div class="tile-status" id="status-fire">CLEAR</div>
+                                    </div>
+                                </div>
+                                <div class="tile-right">
+                                    <span class="tile-count" id="count-fire">0</span>
+                                    <div class="tile-conf-bar">
+                                        <div class="tile-conf-fill fire-fill" id="conf-fire" style="width:0%"></div>
+                                    </div>
+                                    <span class="tile-conf-val" id="conf-val-fire">0%</span>
+                                </div>
+                            </div>
+                            <!-- Smoke -->
+                            <div class="detection-tile" id="tile-smoke">
+                                <div class="tile-left">
+                                    <div class="tile-icon-wrap smoke-icon">
+                                        <i data-lucide="wind"></i>
+                                    </div>
+                                    <div class="tile-info">
+                                        <div class="tile-label">Smoke</div>
+                                        <div class="tile-status" id="status-smoke">CLEAR</div>
+                                    </div>
+                                </div>
+                                <div class="tile-right">
+                                    <span class="tile-count" id="count-smoke">0</span>
+                                    <div class="tile-conf-bar">
+                                        <div class="tile-conf-fill smoke-fill" id="conf-smoke" style="width:0%"></div>
+                                    </div>
+                                    <span class="tile-conf-val" id="conf-val-smoke">0%</span>
+                                </div>
+                            </div>
+                            <!-- Posture -->
+                            <div class="detection-tile" id="tile-pose">
+                                <div class="tile-left">
+                                    <div class="tile-icon-wrap pose-icon">
+                                        <i data-lucide="person-standing"></i>
+                                    </div>
+                                    <div class="tile-info">
+                                        <div class="tile-label">Posture</div>
+                                        <div class="tile-status" id="status-pose">--</div>
+                                    </div>
+                                </div>
+                                <div class="tile-right">
+                                    <span class="tile-count" id="count-pose">0</span>
+                                    <div class="tile-conf-bar">
+                                        <div class="tile-conf-fill pose-fill" id="conf-pose" style="width:0%"></div>
+                                    </div>
+                                    <span class="tile-conf-val" id="conf-val-pose">0%</span>
+                                </div>
+                            </div>
+                            <!-- Motion -->
+                            <div class="detection-tile" id="tile-motion">
+                                <div class="tile-left">
+                                    <div class="tile-icon-wrap motion-icon">
+                                        <i data-lucide="activity"></i>
+                                    </div>
+                                    <div class="tile-info">
+                                        <div class="tile-label">Motion</div>
+                                        <div class="tile-status" id="status-motion">NONE</div>
+                                    </div>
+                                </div>
+                                <div class="tile-right">
+                                    <span class="tile-count" id="count-motion">0</span>
+                                    <div class="tile-conf-bar">
+                                        <div class="tile-conf-fill motion-fill" id="conf-motion" style="width:0%"></div>
+                                    </div>
+                                    <span class="tile-conf-val" id="conf-val-motion">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Environmental Risk -->
                     <div class="cam-sidebar-section">
