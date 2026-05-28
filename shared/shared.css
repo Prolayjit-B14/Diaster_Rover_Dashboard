@@ -564,6 +564,42 @@ html, body {
   flex-shrink: 0;
 }
 
+/* ── SIDEBAR NAV ICON COLORFUL CONFIG ────────────────────────── */
+.nav-item[data-tooltip="Overview"] i,
+.nav-item[data-tooltip="Overview"] svg {
+  color: #00D4FF;
+}
+
+.nav-item[data-tooltip="Live Monitoring"] i,
+.nav-item[data-tooltip="Live Monitoring"] svg {
+  color: #FF5722;
+}
+
+.nav-item[data-tooltip="Incident Map"] i,
+.nav-item[data-tooltip="Incident Map"] svg {
+  color: #00FF88;
+}
+
+.nav-item[data-tooltip="Field Sensors"] i,
+.nav-item[data-tooltip="Field Sensors"] svg {
+  color: #A066FF;
+}
+
+.nav-item[data-tooltip="Alert Center"] i,
+.nav-item[data-tooltip="Alert Center"] svg {
+  color: #FFB800;
+}
+
+.nav-item[data-tooltip="Home"] i,
+.nav-item[data-tooltip="Home"] svg {
+  color: #8BA4C0;
+}
+
+.nav-item[data-tooltip="Settings"] i,
+.nav-item[data-tooltip="Settings"] svg {
+  color: #8BA4C0;
+}
+
 .nav-label  { display: none; }
 .nav-badge  { display: none; }
 
