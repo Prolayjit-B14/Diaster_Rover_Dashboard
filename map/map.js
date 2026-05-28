@@ -9,19 +9,16 @@ const TILE_SATELLITE = 'https://server.arcgisonline.com/ArcGIS/rest/services/Wor
 
 // ── TOOL TYPES ───────────────────────────────────────────────────────────────
 const TOOLS = {
-    FOLLOW:    'follow',
-    WAYPOINT:  'waypoint',
-    HAZARD:    'hazard',
-    SAFE:      'safe',
-    EMERGENCY: 'emergency',
+    SAFE:         'safe',
+    DANGER:       'danger',
+    BASESTATION:  'basestation',
 };
 
 // ── LANDMARK CONFIG ──────────────────────────────────────────────────────────
 const LANDMARK_CONFIG = {
-    [TOOLS.WAYPOINT]:  { color: '#00D4FF', label: 'Waypoint',  emoji: '📍' },
-    [TOOLS.HAZARD]:    { color: '#FF2D55', label: 'Hazard',    emoji: '⚠️' },
-    [TOOLS.SAFE]:      { color: '#00FF88', label: 'Safe Zone', emoji: '🛡️' },
-    [TOOLS.EMERGENCY]: { color: '#FFB800', label: 'Emerg.',    emoji: '🚨' },
+    [TOOLS.SAFE]:        { color: '#00FF88', label: 'Safe Zone',    emoji: '🛡️' },
+    [TOOLS.DANGER]:      { color: '#FF2D55', label: 'Danger Zone',  emoji: '⚠️' },
+    [TOOLS.BASESTATION]: { color: '#00D4FF', label: 'Base Station', emoji: '📡' },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -178,10 +175,9 @@ class MapDashboard {
         // Tool buttons
         const toolBtns = [
             { id: 'btn-follow',          tool: null,            followToggle: true },
-            { id: 'btn-waypoint',        tool: TOOLS.WAYPOINT                      },
-            { id: 'btn-hazard',          tool: TOOLS.HAZARD                        },
-            { id: 'btn-clear-zone',      tool: TOOLS.SAFE                          },
-            { id: 'btn-emergency-route', tool: TOOLS.EMERGENCY                     },
+            { id: 'btn-safe',            tool: TOOLS.SAFE                          },
+            { id: 'btn-danger',          tool: TOOLS.DANGER                        },
+            { id: 'btn-base-station',    tool: TOOLS.BASESTATION                   },
         ];
 
         toolBtns.forEach(({ id, tool, followToggle }) => {
@@ -267,6 +263,15 @@ class MapDashboard {
         // Right panel: layers quick toggle
         document.getElementById('btn-layers')?.addEventListener('click', () => {
             setLayer(this.activeLayer === 'street' ? 'satellite' : 'street');
+        });
+
+        // Clear path button
+        document.getElementById('btn-clear-path')?.addEventListener('click', () => {
+            this.pathCoords = [];
+            this.pathLine.setLatLngs([]);
+            this.totalDistance = 0;
+            this._setText('dist-display', '0 m');
+            window.RESCUEBOT_UI?.toast('Tracking path cleared', 'info');
         });
     }
 
@@ -400,10 +405,9 @@ class MapDashboard {
 
         // Deactivate tool after placing
         const toolBtnIds = {
-            [TOOLS.WAYPOINT]:  'btn-waypoint',
-            [TOOLS.HAZARD]:    'btn-hazard',
-            [TOOLS.SAFE]:      'btn-clear-zone',
-            [TOOLS.EMERGENCY]: 'btn-emergency-route',
+            [TOOLS.SAFE]:        'btn-safe',
+            [TOOLS.DANGER]:      'btn-danger',
+            [TOOLS.BASESTATION]: 'btn-base-station',
         };
         const activeBtnId = toolBtnIds[this.activeTool];
         if (activeBtnId) {
