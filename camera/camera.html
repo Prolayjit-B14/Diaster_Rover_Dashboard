@@ -130,7 +130,7 @@
                     <div class="main-feed-panel" id="main-feed-panel">
                         <!-- Video -->
                         <div class="feed-video-wrap">
-                            <img id="esp32-stream" class="feed-img" src="" alt="ESP32 Camera Stream" crossorigin="anonymous" style="display:none;">
+                            <img id="esp32-stream" class="feed-img immersive" src="" alt="ESP32 Camera Stream" crossorigin="anonymous" style="display:none;">
                             <div class="feed-placeholder" id="feed-placeholder">
                                 <i data-lucide="video-off"></i>
                                 <span>Awaiting field signal</span>
@@ -158,6 +158,9 @@
                             </button>
                             <button class="feed-btn" id="btn-snapshot" title="Capture Snapshot">
                                 <i data-lucide="camera"></i>
+                            </button>
+                            <button class="feed-btn" id="btn-fit-toggle" title="Toggle Immersive View (Fill / Fit)">
+                                <i data-lucide="shrink"></i>
                             </button>
                             <button class="feed-btn" id="btn-fullscreen" title="Expand View">
                                 <i data-lucide="maximize"></i>

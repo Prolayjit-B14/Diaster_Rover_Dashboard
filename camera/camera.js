@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnStreamToggle  = document.getElementById('btn-stream-toggle');
     const btnSnapshot      = document.getElementById('btn-snapshot');
     const btnFullscreen    = document.getElementById('btn-fullscreen');
+    const btnFitToggle     = document.getElementById('btn-fit-toggle');
 
     // Navbar
     const camRecDot        = document.getElementById('cam-rec-dot');
@@ -233,6 +234,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ── Aspect Ratio Fit Toggle ────────────────────────────────
+    if (btnFitToggle && streamImg) {
+        btnFitToggle.addEventListener('click', () => {
+            const isImmersive = streamImg.classList.toggle('immersive');
+            
+            // Update icon
+            const icon = btnFitToggle.querySelector('i') || btnFitToggle.querySelector('svg');
+            if (icon) {
+                const iconName = isImmersive ? 'shrink' : 'expand';
+                icon.setAttribute('data-lucide', iconName);
+                if (window.lucide) window.lucide.createIcons({ nodes: [btnFitToggle] });
+            }
+            
+            // Re-render dynamic bounding boxes instantly
+            if (lastScene) {
+                const survivors = lastScene.survivors || [];
+                const fire      = lastScene.fire      || {};
+                const smoke     = lastScene.smoke     || {};
+                renderBoundingBoxes(survivors, fire, smoke);
+            }
+        });
+    }
+
     // ── Clear Buttons ─────────────────────────────────────────
     if (btnClearSurvivors) {
         btnClearSurvivors.addEventListener('click', () => {
@@ -298,18 +322,38 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let renderWidth, renderHeight, offsetX, offsetY;
         
-        if (panelRatio > streamRatio) {
-            // Height-constrained (letterbox columns on left/right)
-            renderHeight = panelHeight;
-            renderWidth = renderHeight * streamRatio;
-            offsetX = (panelWidth - renderWidth) / 2;
-            offsetY = 0;
+        // Dynamically compute layout boundaries based on current object-fit class
+        const objectFit = streamImg.classList.contains('immersive') ? 'cover' : 'contain';
+        
+        if (objectFit === 'cover') {
+            if (panelRatio > streamRatio) {
+                // Width-filled, height cropped
+                renderWidth = panelWidth;
+                renderHeight = renderWidth / streamRatio;
+                offsetX = 0;
+                offsetY = (panelHeight - renderHeight) / 2;
+            } else {
+                // Height-filled, width cropped
+                renderHeight = panelHeight;
+                renderWidth = renderHeight * streamRatio;
+                offsetX = (panelWidth - renderWidth) / 2;
+                offsetY = 0;
+            }
         } else {
-            // Width-constrained (letterbox rows on top/bottom)
-            renderWidth = panelWidth;
-            renderHeight = renderWidth / streamRatio;
-            offsetX = 0;
-            offsetY = (panelHeight - renderHeight) / 2;
+            // Default contain mode
+            if (panelRatio > streamRatio) {
+                // Height-constrained (letterbox columns on left/right)
+                renderHeight = panelHeight;
+                renderWidth = renderHeight * streamRatio;
+                offsetX = (panelWidth - renderWidth) / 2;
+                offsetY = 0;
+            } else {
+                // Width-constrained (letterbox rows on top/bottom)
+                renderWidth = panelWidth;
+                renderHeight = renderWidth / streamRatio;
+                offsetX = 0;
+                offsetY = (panelHeight - renderHeight) / 2;
+            }
         }
         
         return {
