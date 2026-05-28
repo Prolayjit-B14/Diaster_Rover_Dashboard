@@ -12,6 +12,9 @@ const TOOLS = {
     SAFE:         'safe',
     DANGER:       'danger',
     BASESTATION:  'basestation',
+    SURVIVOR:     'survivor',
+    OBSTACLE:     'obstacle',
+    SUPPLIES:     'supplies',
 };
 
 // ── LANDMARK CONFIG ──────────────────────────────────────────────────────────
@@ -19,6 +22,9 @@ const LANDMARK_CONFIG = {
     [TOOLS.SAFE]:        { color: '#00FF88', label: 'Safe Zone',    emoji: '🛡️' },
     [TOOLS.DANGER]:      { color: '#FF2D55', label: 'Danger Zone',  emoji: '⚠️' },
     [TOOLS.BASESTATION]: { color: '#00D4FF', label: 'Base Station', emoji: '📡' },
+    [TOOLS.SURVIVOR]:    { color: '#FF007F', label: 'Survivor SOS', emoji: '🆘' },
+    [TOOLS.OBSTACLE]:    { color: '#FFB800', label: 'Obstacle',     emoji: '🚧' },
+    [TOOLS.SUPPLIES]:    { color: '#A066FF', label: 'Supplies',     emoji: '📦' },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -101,15 +107,14 @@ class MapDashboard {
             </div>
         `;
 
-        const RoverIcon = L.divIcon({
+        this.roverIcon = L.divIcon({
             html: roverIconHtml,
             className: '',
             iconSize: [20, 20],
             iconAnchor: [10, 10],
         });
 
-        this.roverMarker = L.marker([20.5937, 78.9629], { icon: RoverIcon, zIndexOffset: 1000 })
-            .addTo(this.map);
+        this.roverMarker = null;
 
         // Path polyline
         this.pathLine = L.polyline([], {
@@ -178,6 +183,9 @@ class MapDashboard {
             { id: 'btn-safe',            tool: TOOLS.SAFE                          },
             { id: 'btn-danger',          tool: TOOLS.DANGER                        },
             { id: 'btn-base-station',    tool: TOOLS.BASESTATION                   },
+            { id: 'btn-survivor',        tool: TOOLS.SURVIVOR                      },
+            { id: 'btn-obstacle',        tool: TOOLS.OBSTACLE                      },
+            { id: 'btn-supplies',        tool: TOOLS.SUPPLIES                      },
         ];
 
         toolBtns.forEach(({ id, tool, followToggle }) => {
@@ -293,8 +301,13 @@ class MapDashboard {
         this.currentPos = latlng;
         this._roverHeading = heading;
 
-        // Move rover marker
-        this.roverMarker.setLatLng(latlng);
+        // Move rover marker, instantiating on first real coordinate to avoid fake initial position
+        if (!this.roverMarker) {
+            this.roverMarker = L.marker(latlng, { icon: this.roverIcon, zIndexOffset: 1000 }).addTo(this.map);
+            this.map.setView(latlng, 16);
+        } else {
+            this.roverMarker.setLatLng(latlng);
+        }
 
         // Rotate heading needle
         this._updateRoverHeading(heading);
@@ -311,22 +324,13 @@ class MapDashboard {
             this.map.panTo(latlng, { animate: true, duration: 0.5 });
         }
 
-        // ── Update sidebar telemetry panel
+        // ── Update sidebar telemetry panel (Speed, Distance, Satellites displays removed)
         this._setText('lat-display', lat.toFixed(6) + '°');
         this._setText('lng-display', lng.toFixed(6) + '°');
-        this._setText('speed-display', speed.toFixed(1) + ' km/h');
-        this._setText('dist-display', this.totalDistance >= 1000
-            ? (this.totalDistance / 1000).toFixed(2) + ' km'
-            : Math.round(this.totalDistance) + ' m'
-        );
-        this._setText('sats-display', sats + ' sats');
 
-        // ── Update HUD cards
+        // ── Update HUD cards (Altitude card removed)
         this._setText('lat-hud', lat.toFixed(5));
         this._setText('lng-hud', lng.toFixed(5));
-        if (altitude !== null) {
-            this._setText('alt-hud', altitude.toFixed(1) + ' m');
-        }
 
         // Update GPS pill status
         const gpsStatus = document.getElementById('gps-status');
@@ -408,6 +412,9 @@ class MapDashboard {
             [TOOLS.SAFE]:        'btn-safe',
             [TOOLS.DANGER]:      'btn-danger',
             [TOOLS.BASESTATION]: 'btn-base-station',
+            [TOOLS.SURVIVOR]:    'btn-survivor',
+            [TOOLS.OBSTACLE]:    'btn-obstacle',
+            [TOOLS.SUPPLIES]:    'btn-supplies',
         };
         const activeBtnId = toolBtnIds[this.activeTool];
         if (activeBtnId) {

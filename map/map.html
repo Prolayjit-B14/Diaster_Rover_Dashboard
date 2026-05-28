@@ -124,6 +124,18 @@
                             <i data-lucide="radio"></i>
                             Base Station
                         </button>
+                        <button class="map-tool-btn" id="btn-survivor">
+                            <i data-lucide="heart"></i>
+                            Survivor (SOS)
+                        </button>
+                        <button class="map-tool-btn" id="btn-obstacle">
+                            <i data-lucide="construction"></i>
+                            Obstacle
+                        </button>
+                        <button class="map-tool-btn" id="btn-supplies">
+                            <i data-lucide="package"></i>
+                            Supplies
+                        </button>
                         <button class="map-tool-btn" id="btn-clear-path">
                             <i data-lucide="trash-2"></i>
                             Clear Path
@@ -156,21 +168,6 @@
                         <div class="coord-row">
                             <span class="coord-key">Lng</span>
                             <span class="coord-value" id="lng-display">0.000000°</span>
-                        </div>
-                        <div class="coord-sep"></div>
-                        <div class="coord-row">
-                            <span class="coord-key">Speed</span>
-                            <span class="coord-value" id="speed-display">0.0 km/h</span>
-                        </div>
-                        <div class="coord-sep"></div>
-                        <div class="coord-row">
-                            <span class="coord-key">Distance</span>
-                            <span class="coord-value" id="dist-display">0 m</span>
-                        </div>
-                        <div class="coord-sep"></div>
-                        <div class="coord-row">
-                            <span class="coord-key">Satellites</span>
-                            <span class="coord-value" id="sats-display">0</span>
                         </div>
                     </div>
                 </div>
@@ -208,10 +205,6 @@
                     <div class="map-hud-card">
                         <div class="hud-card-val" id="lng-hud">--</div>
                         <div class="hud-card-lbl">Longitude</div>
-                    </div>
-                    <div class="map-hud-card">
-                        <div class="hud-card-val" id="alt-hud">-- m</div>
-                        <div class="hud-card-lbl">Altitude</div>
                     </div>
                     <div class="map-hud-card">
                         <div class="hud-card-val" id="mission-timer-hud">00:00:00</div>
