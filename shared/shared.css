@@ -1440,14 +1440,20 @@ html, body {
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08) !important;
 }
 
+/* Hide left-side page title/breadcrumbs in top navbar globally */
+.top-navbar .nav-left .nav-title-group {
+  display: none !important;
+}
+
 /* Nav Item styling inside floating dock */
 .nav-link-item,
 .landing-nav .nav-link-item {
   color: var(--text-secondary) !important;
-  font-weight: 600 !important;
-  font-size: 12.5px !important;
-  padding: 6px 14px !important;
-  border-radius: var(--radius-full) !important;
+  width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  border-radius: 50% !important; /* Perfect circular buttons */
   transition: all var(--t-fast) !important;
   text-decoration: none !important;
   display: inline-flex !important;
@@ -1455,13 +1461,25 @@ html, body {
   white-space: nowrap !important;
   background: transparent !important;
   border: none !important;
+  position: relative !important;
+}
+
+.nav-link-item i,
+.nav-link-item svg {
+  width: 16px !important;
+  height: 16px !important;
+  transition: transform var(--t-fast) ease !important;
+}
+
+.nav-link-item:hover i,
+.nav-link-item:hover svg {
+  transform: scale(1.1) !important;
 }
 
 .nav-link-item:hover,
 .landing-nav .nav-link-item:hover {
   color: var(--text-primary) !important;
   background: rgba(255, 255, 255, 0.06) !important;
-  transform: translateY(-0.5px) !important;
 }
 
 [data-theme="light"] .nav-link-item:hover,
@@ -1480,6 +1498,61 @@ html, body {
 [data-theme="light"] .landing-nav .nav-link-item.active {
   color: #ffffff !important;
   background: var(--accent) !important;
+}
+
+/* Tooltips for center-aligned floating nav items (opening downwards) */
+.nav-link-item::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  background: rgba(11, 15, 25, 0.95) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid var(--border-default) !important;
+  color: var(--text-primary) !important;
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  border-radius: var(--radius-sm) !important;
+  white-space: nowrap !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.15s ease, transform 0.15s ease !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+  z-index: 9999 !important;
+}
+
+[data-theme="light"] .nav-link-item::after {
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: var(--text-primary) !important;
+  border-color: rgba(15, 23, 42, 0.09) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08) !important;
+}
+
+.nav-link-item::before {
+  content: '';
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent var(--border-default) transparent;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.15s ease, transform 0.15s ease !important;
+  z-index: 9999 !important;
+}
+
+[data-theme="light"] .nav-link-item::before {
+  border-bottom-color: rgba(15, 23, 42, 0.09) !important;
+}
+
+.nav-link-item:hover::after,
+.nav-link-item:hover::before {
+  opacity: 1 !important;
+  transform: translateX(-50%) scale(1) !important;
 }
 
 /* Profile initials avatar circle in the top right navbar */

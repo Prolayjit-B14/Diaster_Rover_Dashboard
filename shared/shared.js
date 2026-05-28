@@ -77,12 +77,12 @@ document.addEventListener('DOMContentLoaded', () => {
         navContainer.className = 'nav-links-center';
 
         const items = [
-            { label: 'Overview', path: 'dashboard/dashboard.html' },
-            { label: 'Live Monitoring', path: 'camera/camera.html' },
-            { label: 'Incident Map', path: 'map/map.html' },
-            { label: 'Field Sensors', path: 'sensors/sensors.html' },
-            { label: 'Alerts', path: 'alerts/alerts.html' },
-            { label: 'Home', path: '' }
+            { label: 'Overview', path: 'dashboard/dashboard.html', icon: 'layout-dashboard' },
+            { label: 'Live Monitoring', path: 'camera/camera.html', icon: 'video' },
+            { label: 'Incident Map', path: 'map/map.html', icon: 'map-pin' },
+            { label: 'Field Sensors', path: 'sensors/sensors.html', icon: 'activity' },
+            { label: 'Alerts', path: 'alerts/alerts.html', icon: 'bell-ring' },
+            { label: 'Home', path: '', icon: 'home' }
         ];
 
         navContainer.innerHTML = items.map(item => {
@@ -97,11 +97,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const activeClass = isActive ? 'active' : '';
-            return `<a href="${fullPath}" class="nav-link-item ${activeClass}">${item.label}</a>`;
+            return `<a href="${fullPath}" class="nav-link-item ${activeClass}" data-tooltip="${item.label}"><i data-lucide="${item.icon}"></i></a>`;
         }).join('');
 
         const rightSection = topNavbar.querySelector('.nav-right');
         topNavbar.insertBefore(navContainer, rightSection);
+
+        // Render dynamic Lucide icons inside the injected navbar
+        if (window.lucide) {
+            window.lucide.createIcons({
+                nodes: navContainer.querySelectorAll('[data-lucide]')
+            });
+        }
     }
 
     // Inject profile avatar in top right
