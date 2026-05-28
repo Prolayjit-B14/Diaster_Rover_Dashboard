@@ -179,8 +179,11 @@ class MapDashboard {
 
     // ── MAP & TOOL LISTENERS ─────────────────────────────────────────────────
     setupListeners() {
-        // Map click → add landmark based on active tool
+        // Map click → add landmark based on active tool & update target HUD coordinates
         this.map.on('click', (e) => {
+            this._setText('target-lat-hud', e.latlng.lat.toFixed(5));
+            this._setText('target-lng-hud', e.latlng.lng.toFixed(5));
+
             if (!this.activeTool || this.activeTool === TOOLS.FOLLOW) return;
             this.addLandmark(e.latlng.lat, e.latlng.lng, this.activeTool);
         });
@@ -335,10 +338,6 @@ class MapDashboard {
         if (this.isFollowing) {
             this.map.panTo(latlng, { animate: true, duration: 0.5 });
         }
-
-        // ── Update sidebar telemetry panel (Speed, Distance, Satellites displays removed)
-        this._setText('lat-display', lat.toFixed(6) + '°');
-        this._setText('lng-display', lng.toFixed(6) + '°');
 
         // ── Update HUD cards (Altitude card removed)
         this._setText('lat-hud', lat.toFixed(5));

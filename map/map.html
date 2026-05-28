@@ -111,68 +111,62 @@
                 <div class="map-hud-overlay map-floating-tools">
                     <div class="map-tools-title" style="margin-bottom: 8px; font-size: 10px; font-weight: 600; text-align: center; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase;">Tools</div>
                     <div class="map-tools-grid">
-                        <button class="map-tool-btn active" id="btn-follow" title="Follow Rover">
+                        <button class="map-tool-btn active" id="btn-follow" style="--btn-color: #00D4FF;" data-tooltip="Follow Rover">
                             <i data-lucide="crosshair"></i>
                         </button>
-                        <button class="map-tool-btn" id="btn-safe" title="Safe Zone">
+                        <button class="map-tool-btn" id="btn-safe" style="--btn-color: #00FF88;" data-tooltip="Safe Zone">
                             <i data-lucide="shield"></i>
                         </button>
-                        <button class="map-tool-btn" id="btn-danger" title="Danger Zone">
+                        <button class="map-tool-btn" id="btn-danger" style="--btn-color: #FF2D55;" data-tooltip="Danger Zone">
                             <i data-lucide="alert-triangle"></i>
                         </button>
-                        <button class="map-tool-btn" id="btn-base-station" title="Base Station">
+                        <button class="map-tool-btn" id="btn-base-station" style="--btn-color: #00D4FF;" data-tooltip="Base Station">
                             <i data-lucide="radio"></i>
                         </button>
-                        <button class="map-tool-btn" id="btn-survivor" title="Survivor (SOS)">
+                        <button class="map-tool-btn" id="btn-survivor" style="--btn-color: #FF007F;" data-tooltip="Survivor (SOS)">
                             <i data-lucide="heart"></i>
                         </button>
-                        <button class="map-tool-btn" id="btn-obstacle" title="Obstacle">
+                        <button class="map-tool-btn" id="btn-obstacle" style="--btn-color: #FFB800;" data-tooltip="Obstacle">
                             <i data-lucide="construction"></i>
                         </button>
-                        <button class="map-tool-btn" id="btn-supplies" title="Supplies">
+                        <button class="map-tool-btn" id="btn-supplies" style="--btn-color: #A066FF;" data-tooltip="Supplies">
                             <i data-lucide="package"></i>
                         </button>
-                        <button class="map-tool-btn" id="btn-fire" title="Fire Source">
+                        <button class="map-tool-btn" id="btn-fire" style="--btn-color: #FF5722;" data-tooltip="Fire Source">
                             <i data-lucide="flame"></i>
                         </button>
-                        <button class="map-tool-btn" id="btn-gas" title="Gas Hazard">
+                        <button class="map-tool-btn" id="btn-gas" style="--btn-color: #E040FB;" data-tooltip="Gas Hazard">
                             <i data-lucide="skull"></i>
                         </button>
-                        <button class="map-tool-btn" id="btn-water" title="Water Hazard">
+                        <button class="map-tool-btn" id="btn-water" style="--btn-color: #2196F3;" data-tooltip="Water Hazard">
                             <i data-lucide="droplet"></i>
                         </button>
-                        <button class="map-tool-btn" id="btn-camera" title="Photo Point">
+                        <button class="map-tool-btn" id="btn-camera" style="--btn-color: #00E676;" data-tooltip="Photo Point">
                             <i data-lucide="camera"></i>
                         </button>
-                        <button class="map-tool-btn" id="btn-clear-path" title="Clear Path">
+                        <button class="map-tool-btn" id="btn-clear-path" style="--btn-color: #8BA4C0;" data-tooltip="Clear Path">
                             <i data-lucide="trash-2"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Floating GPS Telemetry Box (Top Center) -->
-                <div class="map-hud-overlay map-hud-top map-floating-coords">
-                    <span class="gps-pulse-dot"></span>
-                    <span class="coord-group">
-                        <span class="coord-label">LAT</span>
-                        <span id="lat-display" class="coord-value">0.000000°</span>
-                    </span>
-                    <span class="coord-divider">|</span>
-                    <span class="coord-group">
-                        <span class="coord-label">LNG</span>
-                        <span id="lng-display" class="coord-value">0.000000°</span>
-                    </span>
-                </div>
-
-                <!-- HUD Bottom: Stats Cards -->
+                <!-- HUD Bottom: Stats Cards (Rover & Target Coordinates) -->
                 <div class="map-hud-overlay map-hud-bottom">
                     <div class="map-hud-card">
                         <div class="hud-card-val" id="lat-hud">--</div>
-                        <div class="hud-card-lbl">Latitude</div>
+                        <div class="hud-card-lbl">Rover Lat</div>
                     </div>
                     <div class="map-hud-card">
                         <div class="hud-card-val" id="lng-hud">--</div>
-                        <div class="hud-card-lbl">Longitude</div>
+                        <div class="hud-card-lbl">Rover Lng</div>
+                    </div>
+                    <div class="map-hud-card">
+                        <div class="hud-card-val" id="target-lat-hud">--</div>
+                        <div class="hud-card-lbl">Target Lat</div>
+                    </div>
+                    <div class="map-hud-card">
+                        <div class="hud-card-val" id="target-lng-hud">--</div>
+                        <div class="hud-card-lbl">Target Lng</div>
                     </div>
                     <div class="map-hud-card">
                         <div class="hud-card-val" id="mission-timer-hud">00:00:00</div>

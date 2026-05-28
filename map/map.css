@@ -41,9 +41,9 @@
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
-    color: var(--text-secondary);
+    color: var(--btn-color, var(--text-secondary));
     cursor: pointer;
-    transition: background-color var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+    transition: background-color var(--t-fast), border-color var(--t-fast), color var(--t-fast), box-shadow var(--t-fast);
     font-family: var(--font-body);
     box-shadow: var(--shadow-inset);
 }
@@ -56,21 +56,16 @@
 }
 
 .map-tool-btn:hover {
-    border-color: var(--border-accent);
-    color: var(--accent);
-    background: var(--accent-muted);
+    border-color: var(--btn-color, var(--border-accent));
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 0 10px var(--btn-color);
 }
 
 .map-tool-btn.active {
-    border-color: var(--border-accent);
-    color: var(--accent);
-    background: var(--accent-muted);
-}
-
-.map-tool-btn.danger:hover {
-    border-color: var(--status-danger-bd);
-    color: var(--status-danger);
-    background: var(--status-danger-bg);
+    border-color: var(--btn-color, var(--border-accent));
+    color: #0B0F19 !important; /* Dark high contrast text color for bright background */
+    background: var(--btn-color, var(--accent)) !important;
+    box-shadow: 0 0 14px var(--btn-color);
 }
 
 /* ── LAYER TOGGLE ROW ────────────────────────────────────────── */
@@ -386,7 +381,7 @@
 
 .map-tools-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: 1fr;
     gap: var(--space-2);
 }
 
@@ -418,7 +413,7 @@
     border: 1px solid var(--border-default);
     border-radius: var(--radius-md);
     padding: 12px;
-    width: 196px;
+    width: 62px;
     pointer-events: auto;
     z-index: 1000;
 }
@@ -463,4 +458,53 @@
     border-radius: 50%;
     background: var(--status-ok);
     animation: pulseOnline 2.5s ease-in-out infinite;
+}
+
+/* ── CUSTOM TACTICAL TOOLTIPS ────────────────────────────────── */
+.map-tool-btn {
+    position: relative;
+}
+
+.map-tool-btn::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%) scale(0.9);
+    background: rgba(11, 15, 25, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--btn-color, var(--border-default));
+    color: var(--text-primary);
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 4px var(--btn-color);
+    z-index: 9999;
+}
+
+.map-tool-btn::before {
+    content: '';
+    position: absolute;
+    left: calc(100% + 2px);
+    top: 50%;
+    transform: translateY(-50%) scale(0.9);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent var(--btn-color, var(--border-default)) transparent transparent;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 9999;
+}
+
+.map-tool-btn:hover::after,
+.map-tool-btn:hover::before {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
 }
