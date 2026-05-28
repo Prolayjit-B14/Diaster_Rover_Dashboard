@@ -3,28 +3,483 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rescue Intel | Incident Map</title>
-    <meta name="description" content="Live GPS tracking and incident mapping with waypoints, hazard zones and mission telemetry.">
+    <title>Rescue Intel | Tactical GIS Map</title>
+    <meta name="description" content="Live Mapbox-based GPS tracking and hazard geofencing dashboard for RescueBOT disaster command center.">
     <link rel="icon" type="image/png" href="../assets/favicon.png">
-    <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('rescuebot-theme') || 'dark');</script>
+    
+    <!-- Theme setup (runs immediately to prevent flash) -->
+    <script>
+        document.documentElement.setAttribute('data-theme', localStorage.getItem('rescuebot-theme') || 'dark');
+    </script>
+    
+    <!-- Stylesheets: Fallback links + Embedded self-contained styling -->
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./map.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Mapbox GL JS v3 CDN -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+    
+    <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* ── EMBEDDED COMPACT DESIGN SYSTEM & LAYOUT OVERRIDES ──────────────── */
+        :root {
+            --bg-base: #090D17;
+            --bg-deep: #0C1120;
+            --bg-surface: #101624;
+            --bg-card: #151C2C;
+            --bg-elevated: #1A2236;
+            --accent: #3B82F6;
+            --accent-muted: rgba(59, 130, 246, 0.1);
+            --border-subtle: rgba(255, 255, 255, 0.045);
+            --border-default: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(59, 130, 246, 0.28);
+            --text-primary: #EFF2F7;
+            --text-secondary: #8E9BB5;
+            --text-muted: #4B5570;
+            --radius-sm: 5px;
+            --radius-md: 7px;
+            --radius-lg: 10px;
+            --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+            --shadow-md: 0 4px 14px rgba(0,0,0,0.5);
+            --shadow-lg: 0 8px 28px rgba(0,0,0,0.6);
+            --sidebar-w: 52px;
+            --nav-h: 52px;
+        }
+
+        [data-theme="light"] {
+            --bg-base: #F5F7FA;
+            --bg-deep: #EEF1F7;
+            --bg-surface: #FFFFFF;
+            --bg-card: #FFFFFF;
+            --bg-elevated: #F0F4FA;
+            --accent: #2563EB;
+            --accent-muted: rgba(37, 99, 235, 0.07);
+            --border-subtle: rgba(0, 0, 0, 0.05);
+            --border-default: rgba(0, 0, 0, 0.09);
+            --border-accent: rgba(37, 99, 235, 0.22);
+            --text-primary: #0F172A;
+            --text-secondary: #374151;
+            --text-muted: #9CA3AF;
+        }
+
+        /* Full screen layout resets */
+        html, body {
+            margin: 0; padding: 0;
+            height: 100%; width: 100%;
+            overflow: hidden;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+        }
+
+        /* ── DUSTY RED EMERGENCY ALERT FLASH OVERLAY ────────────────────────── */
+        .emergency-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            pointer-events: none;
+            opacity: 0;
+            box-shadow: inset 0 0 100px rgba(239, 68, 68, 0);
+            transition: opacity 0.5s ease;
+        }
+        .emergency-overlay.active {
+            opacity: 1;
+            animation: pulseRedFlash 1.8s infinite;
+        }
+        @keyframes pulseRedFlash {
+            0%, 100% { box-shadow: inset 0 0 80px rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.03); }
+            50% { box-shadow: inset 0 0 140px rgba(239, 68, 68, 0.7); background: rgba(239, 68, 68, 0.12); }
+        }
+
+        /* Flashing warning banner */
+        .geofence-alert-banner {
+            position: absolute;
+            top: 66px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: rgba(239, 68, 68, 0.95);
+            color: #ffffff;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            padding: 8px 24px;
+            border-radius: 4px;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+            z-index: 99998;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+        }
+        .geofence-alert-banner.active {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .geofence-alert-banner i {
+            animation: pulseIcon 1s infinite alternate;
+        }
+        @keyframes pulseIcon {
+            from { transform: scale(1); }
+            to { transform: scale(1.2); }
+        }
+
+        /* ── MAP OVERLAYS & SCI-FI TELEMETRY BOX ────────────────────────────── */
+        .telemetry-card {
+            background: rgba(11, 15, 25, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            width: 210px;
+            box-shadow: var(--shadow-md);
+            transition: border-color 0.2s;
+        }
+        [data-theme="light"] .telemetry-card {
+            background: rgba(255, 255, 255, 0.94);
+        }
+        .telemetry-card:hover {
+            border-color: var(--accent);
+        }
+        .telemetry-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 6px;
+        }
+        .telemetry-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .telemetry-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .tel-icon {
+            width: 15px;
+            height: 15px;
+            color: var(--text-muted);
+        }
+        .tel-details {
+            display: flex;
+            flex-direction: column;
+        }
+        .tel-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            line-height: 1;
+        }
+        .tel-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            margin-top: 2px;
+        }
+
+        /* ── CUSTOM STYLE TOGGLE PILL ───────────────────────────────────────── */
+        .style-pill-selector {
+            display: flex;
+            background: rgba(11, 15, 25, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-full);
+            padding: 3px;
+            gap: 2px;
+            box-shadow: var(--shadow-sm);
+        }
+        [data-theme="light"] .style-pill-selector {
+            background: rgba(255, 255, 255, 0.94);
+        }
+        .style-pill {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-secondary);
+            font-family: var(--font-body);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.15s ease;
+        }
+        .style-pill:hover {
+            color: var(--text-primary);
+        }
+        .style-pill.active {
+            background: var(--accent);
+            color: #ffffff;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.45);
+        }
+
+        /* ── MAPBOX CUSTOM POPUPS ───────────────────────────────────────────── */
+        .mapboxgl-popup-content {
+            background: #151C2C !important;
+            color: #EFF2F7 !important;
+            border: 1px solid rgba(59, 130, 246, 0.25) !important;
+            border-radius: var(--radius-md) !important;
+            box-shadow: var(--shadow-lg) !important;
+            padding: 10px !important;
+        }
+        [data-theme="light"] .mapboxgl-popup-content {
+            background: #ffffff !important;
+            color: #0F172A !important;
+            border: 1px solid rgba(37, 99, 235, 0.15) !important;
+        }
+        .mapboxgl-popup-tip {
+            border-bottom-color: #151C2C !important;
+            border-top-color: #151C2C !important;
+        }
+        [data-theme="light"] .mapboxgl-popup-tip {
+            border-bottom-color: #ffffff !important;
+            border-top-color: #ffffff !important;
+        }
+        .mapboxgl-popup-close-button {
+            color: var(--text-muted) !important;
+            font-size: 12px !important;
+            top: 2px !important;
+            right: 4px !important;
+        }
+        .mapboxgl-popup-close-button:hover {
+            color: var(--accent) !important;
+            background: transparent !important;
+        }
+
+        /* ── COMPASS NEEDLE GLOW FOR ROVER ──────────────────────────────────── */
+        @keyframes pulseCompass {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.4), 0 0 10px rgba(0, 212, 255, 0.8); }
+            50%       { box-shadow: 0 0 0 10px rgba(0, 212, 255, 0), 0 0 18px rgba(0, 212, 255, 0.9); }
+        }
+        .rover-custom-marker {
+            width: 24px; height: 24px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .rover-pulse-ring {
+            width: 18px; height: 18px;
+            background: #00D4FF;
+            border-radius: 50%;
+            border: 2.5px solid #ffffff;
+            box-shadow: 0 0 10px rgba(0,212,255,0.8);
+            animation: pulseCompass 2s ease-in-out infinite;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2;
+        }
+        .rover-pulse-dot {
+            width: 5px; height: 5px;
+            background: #ffffff;
+            border-radius: 50%;
+        }
+        .rover-compass-heading {
+            position: absolute;
+            top: -6px; left: 50%;
+            transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 8px solid #00D4FF;
+            z-index: 3;
+        }
+
+        /* ── FLOATING CONFIG WIZARD FOR ACCESSTOKEN ───────────────────────────── */
+        .token-wizard-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(8, 12, 22, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            transition: opacity 0.3s ease;
+        }
+        .token-card {
+            background: #151C2C;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            max-width: 440px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            font-family: var(--font-body);
+        }
+        .token-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #EFF2F7;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .token-card p {
+            font-size: 12.5px;
+            line-height: 1.6;
+            color: #8E9BB5;
+            margin-bottom: 20px;
+        }
+        .token-card a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .token-card a:hover {
+            text-decoration: underline;
+        }
+        .token-input-box {
+            width: 100%;
+            padding: 10px 14px;
+            background: #090D17;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+            color: #ffffff;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            outline: none;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .token-input-box:focus {
+            border-color: var(--accent);
+        }
+        .btn-row {
+            display: flex;
+            gap: 12px;
+        }
+        .btn-primary {
+            flex: 1;
+            padding: 10px 16px;
+            background: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: var(--radius-sm);
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-primary:hover {
+            background: #2563EB;
+        }
+        .btn-secondary {
+            flex: 1;
+            padding: 10px 16px;
+            background: #1E293B;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-sm);
+            color: #E2E8F0;
+            font-weight: 500;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-secondary:hover {
+            background: #334155;
+            color: #ffffff;
+        }
+
+        /* ── MOCK OFFLINE GRID STYLING ────────────────────────────────────────── */
+        .offline-grid-container {
+            position: absolute;
+            inset: 0;
+            background: #060913;
+            display: none; /* Shown only in offline mock map mode */
+            z-index: 1;
+            overflow: hidden;
+        }
+        .offline-radar-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .offline-banner {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #F59E0B;
+            font-family: var(--font-mono);
+            font-size: 9px;
+            padding: 6px 14px;
+            border-radius: 4px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Simulation Card Controls */
+        .simulation-card {
+            background: rgba(11, 15, 25, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow-sm);
+        }
+        [data-theme="light"] .simulation-card {
+            background: rgba(255, 255, 255, 0.94);
+        }
+        .sim-btn-active {
+            background: #EF4444 !important;
+            border-color: #EF4444 !important;
+        }
+        
+        /* Mobile adjustment for HUD overlays */
+        @media (max-width: 900px) {
+            .map-floating-tools { display: none !important; }
+            .telemetry-box { left: 14px !important; }
+        }
+    </style>
 </head>
 <body>
+
+<!-- GEOFENCE ALERT SYSTEM OVERLAYS -->
+<div class="emergency-overlay" id="emergency-flash-overlay"></div>
+<div class="geofence-alert-banner" id="geofence-alert-banner">
+    <i data-lucide="alert-triangle"></i>
+    <span>Geofence Alert: Entering Hazard Zone!</span>
+</div>
+
 <div class="app-shell">
 
-    <!-- ══ SIDEBAR ══════════════════════════════════════════════ -->
+    <!-- ══ SIDEBAR (LEFT) ══════════════════════════════════════════════ -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo-mark">
-                <img src="../assets/logo.png" alt="Rescue Intel">
+                <i data-lucide="shield-alert" style="color: var(--accent); width:18px; height:18px;"></i>
             </div>
             <div class="logo-text">
                 <span class="logo-name">Rescue Intel</span>
-                <span class="logo-ver">Emergency Monitoring</span>
             </div>
         </div>
 
@@ -49,29 +504,21 @@
             <a href="../alerts/alerts.html" class="nav-item" data-tooltip="Alert Center">
                 <i data-lucide="bell-ring"></i>
                 <span class="nav-label">Alert Center</span>
-                <span class="nav-badge" id="sidebar-alert-count">0</span>
             </a>
-
             <div class="nav-section-label" style="margin-top:8px;">System</div>
             <a href="../" class="nav-item" data-tooltip="Home">
                 <i data-lucide="home"></i>
-                <span class="nav-label">Home</span>
-            </a>
-            <a href="#" class="nav-item" aria-disabled="true" data-tooltip="Settings" style="opacity:0.3;cursor:not-allowed;pointer-events:none;">
-                <i data-lucide="settings"></i>
-                <span class="nav-label">Settings</span>
             </a>
         </nav>
 
         <div class="sidebar-footer">
-            <div class="status-pill" style="width:100%; justify-content:center;">
-                <div class="status-dot mqtt-status-dot standby" id="mqtt-dot"></div>
-                <span class="mqtt-status-text" id="mqtt-status-text" style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.04em;">CONNECTING</span>
+            <div class="status-pill" style="width:100%; justify-content:center; padding: 4px 0;">
+                <div class="status-dot mqtt-status-dot standby" id="mqtt-dot" style="width: 5px; height: 5px;"></div>
             </div>
         </div>
     </aside>
 
-    <!-- ══ MAIN COLUMN ══════════════════════════════════════════ -->
+    <!-- ══ MAIN DASHBOARD COLUMN ══════════════════════════════════════════ -->
     <div class="main-column">
 
         <!-- TOP NAVBAR -->
@@ -99,111 +546,1058 @@
             </div>
         </header>
 
-        <!-- MAP SHELL -->
-        <div class="map-shell">
+        <!-- MAP CANVAS CONTAINER -->
+        <div class="map-shell" style="position:relative; width:100%; height:100%;">
 
-            <!-- ── MAP AREA (FULL SCREEN) ────────────────────────────── -->
-            <div class="map-main-area">
-
-                <!-- Leaflet Map -->
-                <div id="map-canvas"></div>
-
-                <!-- Floating Tactical Tools HUD -->
-                <div class="map-hud-overlay map-floating-tools">
-                    <div class="map-tools-title" style="margin-bottom: 8px; font-size: 10px; font-weight: 600; text-align: center; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase;">Tools</div>
-                    <div class="map-tools-grid">
-                        <button class="map-tool-btn active" id="btn-follow" style="--btn-color: #00D4FF;" data-tooltip="Follow Rover">
-                            <i data-lucide="crosshair"></i>
-                        </button>
-                        <button class="map-tool-btn" id="btn-safe" style="--btn-color: #00FF88;" data-tooltip="Safe Zone">
-                            <i data-lucide="shield"></i>
-                        </button>
-                        <button class="map-tool-btn" id="btn-danger" style="--btn-color: #FF2D55;" data-tooltip="Danger Zone">
-                            <i data-lucide="alert-triangle"></i>
-                        </button>
-                        <button class="map-tool-btn" id="btn-base-station" style="--btn-color: #00D4FF;" data-tooltip="Base Station">
-                            <i data-lucide="radio"></i>
-                        </button>
-                        <button class="map-tool-btn" id="btn-survivor" style="--btn-color: #FF007F;" data-tooltip="Survivor (SOS)">
-                            <i data-lucide="heart"></i>
-                        </button>
-                        <button class="map-tool-btn" id="btn-obstacle" style="--btn-color: #FFB800;" data-tooltip="Obstacle">
-                            <i data-lucide="construction"></i>
-                        </button>
-                        <button class="map-tool-btn" id="btn-supplies" style="--btn-color: #A066FF;" data-tooltip="Supplies">
-                            <i data-lucide="package"></i>
-                        </button>
-                        <button class="map-tool-btn" id="btn-fire" style="--btn-color: #FF5722;" data-tooltip="Fire Source">
-                            <i data-lucide="flame"></i>
-                        </button>
-                        <button class="map-tool-btn" id="btn-gas" style="--btn-color: #E040FB;" data-tooltip="Gas Hazard">
-                            <i data-lucide="skull"></i>
-                        </button>
-                        <button class="map-tool-btn" id="btn-water" style="--btn-color: #2196F3;" data-tooltip="Water Hazard">
-                            <i data-lucide="droplet"></i>
-                        </button>
-                        <button class="map-tool-btn" id="btn-clear-path" style="--btn-color: #8BA4C0;" data-tooltip="Clear Path">
-                            <i data-lucide="trash-2"></i>
-                        </button>
+            <!-- ── MAP ACCESSTOKEN CONFIG WIZARD (Show overlay if placeholder used) ── -->
+            <div id="token-config-wizard" class="token-wizard-overlay" style="display: none;">
+                <div class="token-card">
+                    <h3>
+                        <i data-lucide="shield-alert" style="color: var(--accent); width:20px; height:20px;"></i>
+                        Mapbox Integration Config
+                    </h3>
+                    <p>
+                        Rescue Intel requires a Mapbox API token to render premium GIS satellite maps. Get yours at
+                        <a href="https://account.mapbox.com/" target="_blank">mapbox.com</a>.
+                    </p>
+                    <input type="password" id="token-input" class="token-input-box" placeholder="Paste your Mapbox access token here">
+                    <div class="btn-row">
+                        <button id="btn-save-token" class="btn-primary">Initialize Mapbox</button>
+                        <button id="btn-mock-map" class="btn-secondary">Launch Offline Tactical Radar</button>
                     </div>
                 </div>
+            </div>
 
-                <!-- HUD Bottom: Stats Cards (Rover & Target Coordinates) -->
-                <div class="map-hud-overlay map-hud-bottom">
-                    <div class="map-hud-card">
-                        <div class="hud-card-val" id="lat-hud">--</div>
-                        <div class="hud-card-lbl">Rover Lat</div>
+            <!-- ── INTERACTIVE MAP CANVAS (MAPBOX) ─────────────────────────── -->
+            <div id="map-canvas" style="position: absolute; inset:0; width:100%; height:100%;"></div>
+
+            <!-- ── MOCK OFFLINE GRID COMPASS VIEW (Fallback Radar) ─────────── -->
+            <div id="offline-grid-view" class="offline-grid-container">
+                <canvas id="radar-grid-canvas" class="offline-radar-canvas"></canvas>
+                <div class="offline-banner">
+                    <i data-lucide="radar" style="width:12px; height:12px; color:#F59E0B; animation: pulseIcon 1.5s infinite alternate;"></i>
+                    <span>Tactical Offline Compass Scan Active</span>
+                </div>
+            </div>
+
+            <!-- ── FLOATING TELEMETRY BOX HUD ──────────────────────────────── -->
+            <div class="map-hud-overlay telemetry-box" style="top: 14px; left: 86px; pointer-events: auto;">
+                <div class="telemetry-card">
+                    <div class="telemetry-header">
+                        <i data-lucide="cpu" style="color: var(--accent); width:13px; height:13px;"></i>
+                        <span>Rover Telemetry</span>
                     </div>
-                    <div class="map-hud-card">
-                        <div class="hud-card-val" id="lng-hud">--</div>
-                        <div class="hud-card-lbl">Rover Lng</div>
-                    </div>
-                    <div class="map-hud-card">
-                        <div class="hud-card-val" id="target-lat-hud">--</div>
-                        <div class="hud-card-lbl">Target Lat</div>
-                    </div>
-                    <div class="map-hud-card">
-                        <div class="hud-card-val" id="target-lng-hud">--</div>
-                        <div class="hud-card-lbl">Target Lng</div>
-                    </div>
-                    <div class="map-hud-card">
-                        <div class="hud-card-val" id="mission-timer-hud">00:00:00</div>
-                        <div class="hud-card-lbl">Mission Time</div>
+                    <div class="telemetry-grid">
+                        <div class="telemetry-item">
+                            <i data-lucide="battery" class="tel-icon" id="tel-battery-icon" style="color: #00FF88;"></i>
+                            <div class="tel-details">
+                                <span class="tel-label">Battery</span>
+                                <span class="tel-value" id="tel-battery">85%</span>
+                            </div>
+                        </div>
+                        <div class="telemetry-item">
+                            <i data-lucide="gauge" class="tel-icon" style="color: #00D4FF;"></i>
+                            <div class="tel-details">
+                                <span class="tel-label">Speed</span>
+                                <span class="tel-value" id="tel-speed">2 m/s</span>
+                            </div>
+                        </div>
+                        <div class="telemetry-item">
+                            <i data-lucide="wifi" class="tel-icon" id="tel-wifi-icon" style="color: #00FF88;"></i>
+                            <div class="tel-details">
+                                <span class="tel-label">Signal</span>
+                                <span class="tel-value" id="tel-signal">Strong</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Right Controls: Zoom / Recenter -->
-                <div class="map-tools-right">
-                    <button class="map-zoom-btn" id="btn-zoom-in" style="--btn-color: #00FF88;" title="Zoom In">
-                        <i data-lucide="plus"></i>
-                    </button>
-                    <button class="map-zoom-btn" id="btn-zoom-out" style="--btn-color: #FF2D55;" title="Zoom Out">
-                        <i data-lucide="minus"></i>
-                    </button>
-                    <div class="map-zoom-divider"></div>
-                    <button class="map-zoom-btn" id="btn-recenter" style="--btn-color: #FFB800;" title="Recenter on Rover">
+            <!-- ── FLOATING TACTICAL TOOLBAR (LEFT SIDEBAR HUD) ──────────────── -->
+            <div class="map-hud-overlay map-floating-tools" style="top: 14px; left: 14px; pointer-events: auto;">
+                <div class="map-tools-title">Tools</div>
+                <div class="map-tools-grid">
+                    <button class="map-tool-btn active" id="btn-follow" style="--btn-color: #00D4FF;" data-tooltip="Follow Rover">
                         <i data-lucide="crosshair"></i>
                     </button>
-                    <button class="map-zoom-btn" id="btn-layers" style="--btn-color: #A066FF;" title="Toggle Layer">
-                        <i data-lucide="layers"></i>
+                    <button class="map-tool-btn" id="btn-safe" style="--btn-color: #00FF88;" data-tooltip="Safe Zone">
+                        <i data-lucide="shield"></i>
+                    </button>
+                    <button class="map-tool-btn" id="btn-danger" style="--btn-color: #FF2D55;" data-tooltip="Danger Zone">
+                        <i data-lucide="alert-triangle"></i>
+                    </button>
+                    <button class="map-tool-btn" id="btn-base-station" style="--btn-color: #00D4FF;" data-tooltip="Base Station">
+                        <i data-lucide="radio"></i>
+                    </button>
+                    <button class="map-tool-btn" id="btn-survivor" style="--btn-color: #FF007F;" data-tooltip="Survivor (SOS)">
+                        <i data-lucide="heart"></i>
+                    </button>
+                    <button class="map-tool-btn" id="btn-obstacle" style="--btn-color: #FFB800;" data-tooltip="Obstacle">
+                        <i data-lucide="construction"></i>
+                    </button>
+                    <button class="map-tool-btn" id="btn-supplies" style="--btn-color: #A066FF;" data-tooltip="Supplies">
+                        <i data-lucide="package"></i>
+                    </button>
+                    <button class="map-tool-btn" id="btn-fire" style="--btn-color: #FF5722;" data-tooltip="Fire Source">
+                        <i data-lucide="flame"></i>
+                    </button>
+                    <button class="map-tool-btn" id="btn-gas" style="--btn-color: #E040FB;" data-tooltip="Gas Hazard">
+                        <i data-lucide="skull"></i>
+                    </button>
+                    <button class="map-tool-btn" id="btn-water" style="--btn-color: #2196F3;" data-tooltip="Water Hazard">
+                        <i data-lucide="droplet"></i>
+                    </button>
+                    <button class="map-tool-btn" id="btn-clear-path" style="--btn-color: #8BA4C0;" data-tooltip="Clear Trail">
+                        <i data-lucide="trash-2"></i>
                     </button>
                 </div>
+            </div>
 
+            <!-- ── FLOATING STYLE SELECTOR SWITCH & SIMULATION CONTROLS ─────── -->
+            <div class="map-hud-overlay" style="top: 14px; right: 14px; pointer-events: auto; display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+                <!-- Layer switches -->
+                <div class="style-pill-selector">
+                    <button class="style-pill active" id="style-btn-streets">Vector</button>
+                    <button class="style-pill" id="style-btn-satellite">Satellite</button>
+                </div>
+                
+                <!-- GPS simulation control -->
+                <div class="simulation-card">
+                    <button class="btn-primary" id="btn-toggle-sim" style="padding: 6px 12px; font-size: 10px; display: flex; align-items: center; gap: 6px; border-radius: 12px;">
+                        <i data-lucide="play" id="sim-icon" style="width:12px; height:12px;"></i>
+                        <span id="sim-text">Simulate Mission</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── HUD BOTTOM STATS CARDS (COORDINATES READOUTS) ─────────────── -->
+            <div class="map-hud-overlay map-hud-bottom">
+                <div class="map-hud-card">
+                    <div class="hud-card-val" id="lat-hud">--</div>
+                    <div class="hud-card-lbl">Rover Lat</div>
+                </div>
+                <div class="map-hud-card">
+                    <div class="hud-card-val" id="lng-hud">--</div>
+                    <div class="hud-card-lbl">Rover Lng</div>
+                </div>
+                <div class="map-hud-card">
+                    <div class="hud-card-val" id="target-lat-hud">--</div>
+                    <div class="hud-card-lbl">Target Lat</div>
+                </div>
+                <div class="map-hud-card">
+                    <div class="hud-card-val" id="target-lng-hud">--</div>
+                    <div class="hud-card-lbl">Target Lng</div>
+                </div>
+                <div class="map-hud-card">
+                    <div class="hud-card-val" id="mission-timer-hud">00:00:00</div>
+                    <div class="hud-card-lbl">Mission Time</div>
+                </div>
+            </div>
+
+            <!-- ── FLOATING ZOOM & QUICK RECENTER MAP CONTROL PILLS ─────────── -->
+            <div class="map-tools-right">
+                <button class="map-zoom-btn" id="btn-zoom-in" style="--btn-color: #00FF88;" title="Zoom In">
+                    <i data-lucide="plus"></i>
+                </button>
+                <button class="map-zoom-btn" id="btn-zoom-out" style="--btn-color: #FF2D55;" title="Zoom Out">
+                    <i data-lucide="minus"></i>
+                </button>
+                <div class="map-zoom-divider"></div>
+                <button class="map-zoom-btn" id="btn-recenter" style="--btn-color: #FFB800;" title="Recenter on Rover">
+                    <i data-lucide="crosshair"></i>
+                </button>
             </div>
 
         </div>
-
     </div>
-    <!-- end .main-column -->
-
 </div>
 
 <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
+<!-- External scripts logic fallback -->
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 <script type="module" src="../shared/mqtt-client.js"></script>
 <script type="module" src="../shared/shared.js"></script>
-<script type="module" src="./map.js"></script>
-<script>lucide.createIcons();</script>
+
+<script>
+    // Placeholder Mapbox token string - replaced by saved localStorage token if present
+    let mapboxglAccessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
+    
+    // Core state management
+    let map = null;
+    let isMapboxMode = true;
+    let roverMarker = null;
+    let isFollowing = true;
+    let activeTool = null;
+    
+    let currentPos = null; // [lng, lat]
+    let roverHeading = 0;
+    
+    // Breadcrumbs path
+    let breadcrumbCoords = [];
+    
+    // Danger Geofence Zone coordinates (Nagpur defaults centered near 78.9629, 20.5937)
+    let geofencePolygon = [
+        [78.9620, 20.5925],
+        [78.9645, 20.5925],
+        [78.9645, 20.5948],
+        [78.9620, 20.5948],
+        [78.9620, 20.5925]
+    ];
+    let isInsideGeofence = false;
+    
+    // Custom landmarks array
+    let landmarks = [];
+    
+    // Mission Timer variables
+    let missionSecs = 0;
+    let missionInterval = null;
+    
+    // Simulation state
+    let simInterval = null;
+    let simIndex = 0;
+    let mockPath = [];
+    
+    // ── GEOFENCE ENTRY DETECTION (RAY CASTING ALGORITHM) ────────────────────
+    function isPointInPolygon(point, polygon) {
+        const x = point[0], y = point[1];
+        let inside = false;
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            const xi = polygon[i][0], yi = polygon[i][1];
+            const xj = polygon[j][0], yj = polygon[j][1];
+            const intersect = ((yi > y) !== (yj > y))
+                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    }
+
+    // ── INITIALIZATION OR OVERLAY LOGIC ──────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.lucide) window.lucide.createIcons();
+        startMissionTimer();
+        setupTelemetryDefaults();
+        setupSidebarThemeEvents();
+        
+        // Check for local storage Mapbox token
+        const storedToken = localStorage.getItem('mapbox_access_token');
+        if (storedToken && storedToken.trim() !== '') {
+            mapboxglAccessToken = storedToken;
+        }
+        
+        const isDefaultPlaceholder = (
+            !mapboxglAccessToken ||
+            mapboxglAccessToken === 'YOUR_MAPBOX_ACCESS_TOKEN' ||
+            mapboxglAccessToken.trim() === ''
+        );
+        
+        if (isDefaultPlaceholder) {
+            document.getElementById('token-config-wizard').style.display = 'flex';
+        } else {
+            initializeMap(mapboxglAccessToken);
+        }
+        
+        // Bind Token Wizard events
+        document.getElementById('btn-save-token').addEventListener('click', () => {
+            const tokInput = document.getElementById('token-input').value.trim();
+            if (tokInput) {
+                localStorage.setItem('mapbox_access_token', tokInput);
+                mapboxglAccessToken = tokInput;
+                document.getElementById('token-config-wizard').style.display = 'none';
+                initializeMap(tokInput);
+            } else {
+                alert('Please enter a valid Mapbox token.');
+            }
+        });
+        
+        document.getElementById('btn-mock-map').addEventListener('click', () => {
+            document.getElementById('token-config-wizard').style.display = 'none';
+            initializeOfflineGridMode();
+        });
+    });
+
+    // ── INITIALIZE MAPBOX MAP ────────────────────────────────────────────────
+    function initializeMap(token) {
+        try {
+            mapboxgl.accessToken = token;
+            
+            map = new mapboxgl.Map({
+                container: 'map-canvas',
+                style: 'mapbox://styles/mapbox/streets-v12',
+                center: [78.9629, 20.5937],
+                zoom: 16,
+                attributionControl: false
+            });
+            
+            // Re-setup vector & satellite layers on load
+            map.on('style.load', () => {
+                setupMapLayers();
+            });
+            
+            // Map Click listener for target display & landmarks placing
+            map.on('click', (e) => {
+                const lng = e.lngLat.lng;
+                const lat = e.lngLat.lat;
+                
+                document.getElementById('target-lat-hud').textContent = lat.toFixed(5);
+                document.getElementById('target-lng-hud').textContent = lng.toFixed(5);
+                
+                if (activeTool) {
+                    addLandmark(lng, lat, activeTool);
+                }
+            });
+            
+            // Turn off follow mode if user starts dragging map
+            map.on('dragstart', () => {
+                if (isFollowing) {
+                    isFollowing = false;
+                    document.getElementById('btn-follow').classList.remove('active');
+                    window.RESCUEBOT_UI?.toast('Camera follow deactivated', 'info');
+                }
+            });
+
+            setupInteractiveHUDControls();
+            setupMqttConnector();
+            
+        } catch (err) {
+            console.error('Mapbox initialization failed:', err);
+            initializeOfflineGridMode();
+        }
+    }
+
+    // ── STYLE SWITCHER: LOAD program layers on style change ──────────────────
+    function setupMapLayers() {
+        if (!map) return;
+        
+        // Add Geofence Source & Layers
+        if (!map.getSource('geofence')) {
+            map.addSource('geofence', {
+                type: 'geojson',
+                data: {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [geofencePolygon]
+                    }
+                }
+            });
+        }
+        
+        if (!map.getLayer('geofence-fill')) {
+            map.addLayer({
+                id: 'geofence-fill',
+                type: 'fill',
+                source: 'geofence',
+                paint: {
+                    'fill-color': '#EF4444',
+                    'fill-opacity': 0.16
+                }
+            });
+        }
+        
+        if (!map.getLayer('geofence-outline')) {
+            map.addLayer({
+                id: 'geofence-outline',
+                type: 'line',
+                source: 'geofence',
+                paint: {
+                    'line-color': '#EF4444',
+                    'line-width': 2.5,
+                    'line-dasharray': [2, 2],
+                    'line-opacity': 0.8
+                }
+            });
+        }
+        
+        // Add Breadcrumbs Source & Layers
+        if (!map.getSource('breadcrumb')) {
+            map.addSource('breadcrumb', {
+                type: 'geojson',
+                data: {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: breadcrumbCoords.length > 0 ? breadcrumbCoords : [[78.9629, 20.5937]]
+                    }
+                }
+            });
+        }
+        
+        if (!map.getLayer('breadcrumb-glow')) {
+            map.addLayer({
+                id: 'breadcrumb-glow',
+                type: 'line',
+                source: 'breadcrumb',
+                layout: {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                paint: {
+                    'line-color': '#00D4FF',
+                    'line-width': 8,
+                    'line-opacity': 0.3
+                }
+            });
+        }
+        
+        if (!map.getLayer('breadcrumb-line')) {
+            map.addLayer({
+                id: 'breadcrumb-line',
+                type: 'line',
+                source: 'breadcrumb',
+                layout: {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                paint: {
+                    'line-color': '#00D4FF',
+                    'line-width': 3.5,
+                    'line-opacity': 0.95
+                }
+            });
+        }
+    }
+
+    // ── CORE FUNCTION: updateRoverLocation (as required) ───────────────────
+    window.updateRoverLocation = function(lng, lat) {
+        currentPos = [lng, lat];
+        
+        // Update Bottom Coordinates display
+        document.getElementById('lat-hud').textContent = lat.toFixed(5);
+        document.getElementById('lng-hud').textContent = lng.toFixed(5);
+        
+        // Append path coordinate to breadcrumbs
+        breadcrumbCoords.push(currentPos);
+        if (breadcrumbCoords.length > 600) {
+            breadcrumbCoords.shift();
+        }
+        
+        // GEOFENCE ALERT ENTRY DETECTION
+        const inside = isPointInPolygon(currentPos, geofencePolygon);
+        const flashOverlay = document.getElementById('emergency-flash-overlay');
+        const alertBanner = document.getElementById('geofence-alert-banner');
+        
+        if (inside) {
+            if (!isInsideGeofence) {
+                isInsideGeofence = true;
+                console.log("🚨 GEOFENCE ALERT: Rover entered dangerous hot zone!");
+                if (flashOverlay) flashOverlay.classList.add('active');
+                if (alertBanner) alertBanner.classList.add('active');
+                window.RESCUEBOT_UI?.toast('⚠️ CRITICAL: Rover crossed Danger Geofence!', 'error');
+            }
+        } else {
+            if (isInsideGeofence) {
+                isInsideGeofence = false;
+                console.log("ℹ️ Rover cleared geofence area.");
+                if (flashOverlay) flashOverlay.classList.remove('active');
+                if (alertBanner) alertBanner.classList.remove('active');
+                window.RESCUEBOT_UI?.toast('Rover returned to safe path', 'success');
+            }
+        }
+
+        // Draw updates based on mode (Mapbox vs Offline grid)
+        if (isMapboxMode && map) {
+            // Update breadcrumb geojson source
+            const source = map.getSource('breadcrumb');
+            if (source) {
+                source.setData({
+                    type: 'Feature',
+                    geometry: {
+                        type: 'LineString',
+                        coordinates: breadcrumbCoords
+                    }
+                });
+            }
+            
+            // Create or move Marker
+            if (!roverMarker) {
+                const el = document.createElement('div');
+                el.className = 'rover-custom-marker';
+                el.innerHTML = `
+                    <div class="rover-pulse-ring">
+                        <div class="rover-pulse-dot"></div>
+                    </div>
+                    <div class="rover-compass-heading" id="heading-needle"></div>
+                `;
+                roverMarker = new mapboxgl.Marker({ element: el })
+                    .setLngLat(currentPos)
+                    .addTo(map);
+                map.jumpTo({ center: currentPos });
+            } else {
+                roverMarker.setLngLat(currentPos);
+            }
+            
+            // Rotate heading needle directly
+            const needle = document.getElementById('heading-needle');
+            if (needle) {
+                needle.style.transform = `translateX(-50%) rotate(${roverHeading}deg)`;
+            }
+            
+            // Optionally auto-pan to new coordinates if follow camera toggled
+            if (isFollowing) {
+                map.panTo(currentPos, { duration: 800 });
+            }
+        } else {
+            // Offline Radar Canvas rendering updates triggered below in the radar rendering loop
+        }
+    }
+
+    // ── GPS SATELLITE/TERRAIN LAYERS SWITCH PILLS ────────────────────────────
+    function switchMapStyle(styleName) {
+        if (!isMapboxMode || !map) return;
+        
+        const styleUrl = styleName === 'satellite' 
+            ? 'mapbox://styles/mapbox/satellite-streets-v12'
+            : 'mapbox://styles/mapbox/streets-v12';
+            
+        map.setStyle(styleUrl);
+        
+        document.getElementById('style-btn-streets').classList.toggle('active', styleName === 'streets');
+        document.getElementById('style-btn-satellite').classList.toggle('active', styleName === 'satellite');
+        
+        window.RESCUEBOT_UI?.toast(`Style toggled to ${styleName === 'satellite' ? 'Satellite' : 'Vector'} Map`, 'success');
+    }
+
+    // ── PLACING LANDMARKS (Custom Markers) ───────────────────────────────
+    function addLandmark(lng, lat, type) {
+        const LANDMARK_CONFIG = {
+            safe:        { color: '#00FF88', label: 'Safe Zone',    emoji: '🛡️' },
+            danger:      { color: '#FF2D55', label: 'Danger Zone',  emoji: '⚠️' },
+            basestation: { color: '#00D4FF', label: 'Base Station', emoji: '📡' },
+            survivor:    { color: '#FF007F', label: 'Survivor SOS', emoji: '🆘' },
+            obstacle:    { color: '#FFB800', label: 'Obstacle',     emoji: '🚧' },
+            supplies:    { color: '#A066FF', label: 'Supplies',     emoji: '📦' },
+            fire:        { color: '#FF5722', label: 'Fire Source',  emoji: '🔥' },
+            gas:         { color: '#E040FB', label: 'Gas Hazard',   emoji: '💀' },
+            water:       { color: '#2196F3', label: 'Water Hazard', emoji: '💧' },
+        };
+        
+        const cfg = LANDMARK_CONFIG[type];
+        if (!cfg) return;
+
+        const idx = landmarks.length + 1;
+        const name = `${cfg.label} #${idx}`;
+
+        if (isMapboxMode && map) {
+            const el = document.createElement('div');
+            el.className = 'landmark-marker';
+            el.style.cssText = `
+                width: 24px; height: 24px;
+                background: ${cfg.color};
+                border-radius: 50% 50% 50% 0;
+                transform: rotate(-45deg);
+                border: 2px solid rgba(255,255,255,0.7);
+                box-shadow: 0 0 10px ${cfg.color}80;
+                display: flex; align-items: center; justify-content: center;
+                cursor: pointer;
+            `;
+            el.innerHTML = `<span style="transform: rotate(45deg); font-size: 10px; line-height: 1;">${cfg.emoji}</span>`;
+
+            const popupContent = `
+                <div style="font-family:'Inter',sans-serif; color:#EFF2F7; background:#151C2C; padding:4px 8px; border-radius:6px;">
+                    <strong style="color:${cfg.color}; display:flex; align-items:center; gap:4px;">
+                        <span>${cfg.emoji}</span> ${name}
+                    </strong>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:#8E9BB5; margin-top:2px;">
+                        ${lat.toFixed(6)}°, ${lng.toFixed(6)}°
+                    </div>
+                </div>
+            `;
+
+            const popup = new mapboxgl.Popup({ offset: 15, className: 'mapbox-custom-popup' })
+                .setHTML(popupContent);
+
+            const marker = new mapboxgl.Marker({ element: el })
+                .setLngLat([lng, lat])
+                .setPopup(popup)
+                .addTo(map);
+
+            landmarks.push({ lng, lat, type, name, marker, color: cfg.color });
+        } else {
+            // Add landmark mock coordinates for offline view rendering
+            landmarks.push({ lng, lat, type, name, marker: null, color: cfg.color, emoji: cfg.emoji });
+        }
+
+        // Reset placing tools button active states
+        const toolBtnIds = {
+            safe: 'btn-safe', danger: 'btn-danger', basestation: 'btn-base-station',
+            survivor: 'btn-survivor', obstacle: 'btn-obstacle', supplies: 'btn-supplies',
+            fire: 'btn-fire', gas: 'btn-gas', water: 'btn-water'
+        };
+        const activeBtnId = toolBtnIds[activeTool];
+        if (activeBtnId) {
+            document.getElementById(activeBtnId)?.classList.remove('active');
+        }
+        activeTool = null;
+        if (map) map.getCanvas().style.cursor = '';
+        
+        window.RESCUEBOT_UI?.toast(`${name} deployed`, 'success');
+    }
+
+    // ── SETUP MAP OVERLAY / ZOOM / HOVER HANDLERS ─────────────────────────
+    function setupInteractiveHUDControls() {
+        // Zoom triggers
+        document.getElementById('btn-zoom-in')?.addEventListener('click', () => {
+            if (isMapboxMode && map) map.zoomIn();
+        });
+        document.getElementById('btn-zoom-out')?.addEventListener('click', () => {
+            if (isMapboxMode && map) map.zoomOut();
+        });
+        
+        // Recenter click
+        document.getElementById('btn-recenter')?.addEventListener('click', () => {
+            if (currentPos) {
+                isFollowing = true;
+                document.getElementById('btn-follow').classList.add('active');
+                if (isMapboxMode && map) {
+                    map.easeTo({ center: currentPos, zoom: 17 });
+                }
+                window.RESCUEBOT_UI?.toast('Recentered & camera follow active', 'success');
+            } else {
+                window.RESCUEBOT_UI?.toast('No coordinates received yet', 'warning');
+            }
+        });
+
+        // Follow Toggle
+        document.getElementById('btn-follow')?.addEventListener('click', () => {
+            isFollowing = !isFollowing;
+            document.getElementById('btn-follow').classList.toggle('active', isFollowing);
+            if (isFollowing && currentPos) {
+                if (isMapboxMode && map) map.panTo(currentPos);
+            }
+            window.RESCUEBOT_UI?.toast(isFollowing ? 'Follow camera enabled' : 'Follow camera disabled', isFollowing ? 'success' : 'info');
+        });
+
+        // Clear Path
+        document.getElementById('btn-clear-path')?.addEventListener('click', () => {
+            breadcrumbCoords = [];
+            if (currentPos) {
+                breadcrumbCoords.push(currentPos);
+            }
+            if (isMapboxMode && map) {
+                const source = map.getSource('breadcrumb');
+                if (source) {
+                    source.setData({
+                        type: 'Feature',
+                        geometry: { type: 'LineString', coordinates: breadcrumbCoords }
+                    });
+                }
+            }
+            window.RESCUEBOT_UI?.toast('Rover breadcrumb trail cleared', 'info');
+        });
+
+        // Layer selection switch
+        document.getElementById('style-btn-streets')?.addEventListener('click', () => switchMapStyle('streets'));
+        document.getElementById('style-btn-satellite')?.addEventListener('click', () => switchMapStyle('satellite'));
+
+        // Toggle placing tools active state
+        const tacticalTools = [
+            { id: 'btn-safe',            tool: 'safe' },
+            { id: 'btn-danger',          tool: 'danger' },
+            { id: 'btn-base-station',    tool: 'basestation' },
+            { id: 'btn-survivor',        tool: 'survivor' },
+            { id: 'btn-obstacle',        tool: 'obstacle' },
+            { id: 'btn-supplies',        tool: 'supplies' },
+            { id: 'btn-fire',            tool: 'fire' },
+            { id: 'btn-gas',             tool: 'gas' },
+            { id: 'btn-water',           tool: 'water' }
+        ];
+
+        tacticalTools.forEach(({ id, tool }) => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            
+            btn.addEventListener('click', () => {
+                if (activeTool === tool) {
+                    activeTool = null;
+                    btn.classList.remove('active');
+                    if (map) map.getCanvas().style.cursor = '';
+                } else {
+                    tacticalTools.forEach(b => document.getElementById(b.id)?.classList.remove('active'));
+                    activeTool = tool;
+                    btn.classList.add('active');
+                    if (map) map.getCanvas().style.cursor = 'crosshair';
+                    window.RESCUEBOT_UI?.toast(`Active placing tool: ${tool.toUpperCase()}. Click on map.`, 'info');
+                }
+            });
+        });
+
+        // Simulation toggle
+        document.getElementById('btn-toggle-sim').addEventListener('click', toggleMissionSimulation);
+    }
+
+    // ── MQTT SUBSCRIBER AND PARSING BINDINGS ───────────────────────────────
+    function setupMqttConnector() {
+        const mqttCtrl = window.mqttController;
+        if (mqttCtrl) {
+            // Subscribing to telemetry data streams
+            mqttCtrl.on('gps', (d) => {
+                // If real GPS received, turn off mock simulation to prioritize active feed
+                if (simInterval) {
+                    toggleMissionSimulation();
+                    window.RESCUEBOT_UI?.toast('Active hardware GPS detected. Ending simulation.', 'warning');
+                }
+                
+                const lat = parseFloat(d.lat);
+                const lng = parseFloat(d.lng);
+                roverHeading = parseFloat(d.heading) || 0;
+                
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    updateRoverLocation(lng, lat);
+                    
+                    // Update speed display card
+                    const rawSpd = parseFloat(d.speed) || 0; 
+                    // Assume speed is either km/h or m/s. Let's show as m/s
+                    const spdMeters = (rawSpd > 10) ? (rawSpd / 3.6).toFixed(1) : rawSpd.toFixed(1);
+                    document.getElementById('tel-speed').textContent = `${spdMeters} m/s`;
+                }
+            });
+            
+            mqttCtrl.on('telemetry', (d) => {
+                if (!d || !d.sensor) return;
+                const sensor = d.sensor;
+                const val = d.value;
+                
+                // Read and update Floating Telemetry Box components
+                if (sensor === 'batt') {
+                    const volt = parseFloat(val);
+                    const pct = Math.round(Math.min(100, Math.max(0, (volt / 12.6) * 100)));
+                    document.getElementById('tel-battery').textContent = `${pct}%`;
+                    
+                    const battIcon = document.getElementById('tel-battery-icon');
+                    if (battIcon) {
+                        battIcon.style.color = pct > 50 ? '#00FF88' : pct > 20 ? '#FFB800' : '#FF2D55';
+                    }
+                }
+                
+                if (sensor === 'wifi') {
+                    const rssi = parseFloat(val);
+                    let signal = 'Strong';
+                    let color = '#00FF88';
+                    
+                    if (rssi < -82) { signal = 'Weak'; color = '#FF2D55'; }
+                    else if (rssi < -62) { signal = 'Medium'; color = '#FFB800'; }
+                    
+                    document.getElementById('tel-signal').textContent = signal;
+                    const wifiIcon = document.getElementById('tel-wifi-icon');
+                    if (wifiIcon) wifiIcon.style.color = color;
+                }
+            });
+
+            mqttCtrl.on('statusChanged', (status) => {
+                const dot = document.getElementById('mqtt-dot');
+                if (dot) {
+                    dot.className = 'status-dot mqtt-status-dot ' + status.toLowerCase();
+                }
+                
+                const gpsDot = document.getElementById('gps-dot');
+                const gpsTxt = document.getElementById('gps-status');
+                if (gpsDot && gpsTxt) {
+                    if (status === 'CONNECTED') {
+                        gpsDot.className = 'status-dot';
+                        gpsTxt.textContent = '3D GPS FIX';
+                    } else if (status === 'CONNECTING') {
+                        gpsDot.className = 'status-dot warning';
+                        gpsTxt.textContent = 'ACQUIRING...';
+                    } else {
+                        gpsDot.className = 'status-dot offline';
+                        gpsTxt.textContent = 'GPS OFFLINE';
+                    }
+                }
+            });
+        }
+    }
+
+    // ── OFFLINE SCAN GRID Fallback Mode ────────────────────────────────────
+    function initializeOfflineGridMode() {
+        isMapboxMode = false;
+        document.getElementById('map-canvas').style.display = 'none';
+        document.getElementById('offline-grid-view').style.display = 'block';
+        
+        setupInteractiveHUDControls();
+        setupMqttConnector();
+        
+        // Start Canvas drawing render loops
+        const canvas = document.getElementById('radar-grid-canvas');
+        const ctx = canvas.getContext('2d');
+        let sweepAngle = 0;
+        
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        // Force mock coordinates if user starts offline
+        if (!currentPos) {
+            currentPos = [78.9629, 20.5937];
+            breadcrumbCoords.push(currentPos);
+        }
+        
+        // Core Animation Loop for Tactical Radar Screen
+        function renderRadar() {
+            if (isMapboxMode) return; // Exit loop if style changes
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Draw grid background
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.08)';
+            ctx.lineWidth = 1;
+            const gridSz = 40;
+            
+            for (let x = 0; x < canvas.width; x += gridSz) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSz) {
+                ctx.beginPath();
+                ctx.moveTo(0, y); ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Radar sweeping visual circles
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.12)';
+            ctx.lineWidth = 1.5;
+            const maxR = Math.max(canvas.width, canvas.height);
+            for (let r = 80; r < maxR; r += 120) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            // Drawing the geofence warning zone boundary relative to viewport (offset for mock illustration)
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.08)';
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            
+            const gfCenterX = centerX + 80;
+            const gfCenterY = centerY - 80;
+            const gfSize = 100;
+            
+            ctx.fillRect(gfCenterX - gfSize/2, gfCenterY - gfSize/2, gfSize, gfSize);
+            ctx.strokeRect(gfCenterX - gfSize/2, gfCenterY - gfSize/2, gfSize, gfSize);
+            ctx.setLineDash([]);
+            
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.4)';
+            ctx.font = '9px monospace';
+            ctx.fillText('WARNING GEOFENCE ZONE', gfCenterX - 50, gfCenterY);
+
+            // Radar Sweep line
+            sweepAngle += 0.015;
+            const lineX = centerX + Math.cos(sweepAngle) * maxR;
+            const lineY = centerY + Math.sin(sweepAngle) * maxR;
+            
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.25)';
+            ctx.lineWidth = 2;
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(lineX, lineY);
+            ctx.stroke();
+            
+            // Draw Breadcrumb trail
+            if (breadcrumbCoords.length > 1) {
+                ctx.strokeStyle = '#00D4FF';
+                ctx.lineWidth = 3;
+                ctx.shadowColor = '#00D4FF';
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                
+                // Map GPS breadcrumbs to screen coordinate offsets from central point
+                const scale = 250000; 
+                const startPt = breadcrumbCoords[0];
+                
+                ctx.moveTo(
+                    centerX + (startPt[0] - currentPos[0]) * scale,
+                    centerY - (startPt[1] - currentPos[1]) * scale
+                );
+                
+                for (let i = 1; i < breadcrumbCoords.length; i++) {
+                    const pt = breadcrumbCoords[i];
+                    ctx.lineTo(
+                        centerX + (pt[0] - currentPos[0]) * scale,
+                        centerY - (pt[1] - currentPos[1]) * scale
+                    );
+                }
+                ctx.stroke();
+                ctx.shadowBlur = 0; // reset glow
+            }
+            
+            // Draw Custom Placed Landmarks
+            landmarks.forEach(lm => {
+                const scale = 250000;
+                const lmX = centerX + (lm.lng - currentPos[0]) * scale;
+                const lmY = centerY - (lm.lat - currentPos[1]) * scale;
+                
+                ctx.fillStyle = lm.color;
+                ctx.beginPath();
+                ctx.arc(lmX, lmY, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.font = '10px sans-serif';
+                ctx.fillText(lm.emoji || '📍', lmX - 6, lmY - 10);
+            });
+            
+            // Draw Rover Marker node at center
+            ctx.fillStyle = '#00D4FF';
+            ctx.shadowColor = '#00D4FF';
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Rover Heading Arrow overlay
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            const angleRad = (roverHeading - 90) * Math.PI / 180;
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX + Math.cos(angleRad) * 16, centerY + Math.sin(angleRad) * 16);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            requestAnimationFrame(renderRadar);
+        }
+        
+        requestAnimationFrame(renderRadar);
+        window.RESCUEBOT_UI?.toast('Radar scanning initialized successfully.', 'success');
+    }
+
+    // ── DYNAMIC GPS SIMULATION FOR PREVIEWS AND TESTS ──────────────────────
+    function generateSimulationPath() {
+        const startLng = 78.9629;
+        const startLat = 20.5937;
+        const steps = 70;
+        const generated = [];
+        
+        for (let i = 0; i < steps; i++) {
+            const angle = (i / steps) * Math.PI * 2;
+            // Elliptical route designed to cross geofence coordinates
+            const lng = startLng + Math.cos(angle) * 0.0016 + Math.sin(angle * 1.5) * 0.0004;
+            const lat = startLat + Math.sin(angle) * 0.0016;
+            generated.push([lng, lat]);
+        }
+        return generated;
+    }
+
+    function toggleMissionSimulation() {
+        const btn = document.getElementById('btn-toggle-sim');
+        const icon = document.getElementById('sim-icon');
+        const text = document.getElementById('sim-text');
+        
+        if (simInterval) {
+            clearInterval(simInterval);
+            simInterval = null;
+            btn.classList.remove('sim-btn-active');
+            text.textContent = 'Simulate Mission';
+            if (icon) icon.setAttribute('data-lucide', 'play');
+            if (window.lucide) window.lucide.createIcons({ nodes: [icon] });
+            window.RESCUEBOT_UI?.toast('GPS simulation suspended', 'info');
+        } else {
+            mockPath = generateSimulationPath();
+            simIndex = 0;
+            
+            // Clear prior trail history
+            breadcrumbCoords = [];
+            
+            btn.classList.add('sim-btn-active');
+            text.textContent = 'Terminate Sim';
+            if (icon) icon.setAttribute('data-lucide', 'square');
+            if (window.lucide) window.lucide.createIcons({ nodes: [icon] });
+            window.RESCUEBOT_UI?.toast('Rover GPS simulation initialized', 'success');
+            
+            simInterval = setInterval(() => {
+                const coord = mockPath[simIndex];
+                
+                // Add simulated headings variation
+                roverHeading = (simIndex * 360 / mockPath.length) % 360;
+                
+                // Simulate slight speed variances (e.g. 1.2 to 2.4 m/s)
+                const mockSpeed = (1.5 + Math.sin(simIndex * 0.2) * 0.7).toFixed(1);
+                document.getElementById('tel-speed').textContent = `${mockSpeed} m/s`;
+                
+                // Simulate battery steady discharge
+                const mockBatt = Math.max(12, 85 - Math.floor(simIndex * 0.2));
+                document.getElementById('tel-battery').textContent = `${mockBatt}%`;
+                
+                updateRoverLocation(coord[0], coord[1]);
+                
+                simIndex = (simIndex + 1) % mockPath.length;
+            }, 600);
+        }
+    }
+
+    // ── HELPER: DEFAULTS & MISSION CLOCKS ──────────────────────────────────
+    function setupTelemetryDefaults() {
+        document.getElementById('tel-battery').textContent = "85%";
+        document.getElementById('tel-speed').textContent = "2 m/s";
+        document.getElementById('tel-signal').textContent = "Strong";
+    }
+
+    function startMissionTimer() {
+        missionSecs = 0;
+        missionInterval = setInterval(() => {
+            missionSecs++;
+            const h = String(Math.floor(missionSecs / 3600)).padStart(2, '0');
+            const m = String(Math.floor((missionSecs % 3600) / 60)).padStart(2, '0');
+            const s = String(missionSecs % 60).padStart(2, '0');
+            
+            const timerHUD = document.getElementById('mission-timer-hud');
+            if (timerHUD) timerHUD.textContent = `${h}:${m}:${s}`;
+        }, 1000);
+    }
+    
+    function setupSidebarThemeEvents() {
+        // Clock ticking
+        const clockEl = document.getElementById('mission-clock');
+        if (clockEl) {
+            const tick = () => {
+                clockEl.textContent = new Date().toLocaleTimeString('en-GB', { hour12: false });
+            };
+            setInterval(tick, 1000);
+            tick();
+        }
+        
+        // Mobile sidebar trigger
+        const sidebarEl = document.getElementById('sidebar');
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const backdrop  = document.getElementById('sidebar-backdrop');
+        
+        if (sidebarEl && mobileBtn && backdrop) {
+            mobileBtn.addEventListener('click', () => {
+                sidebarEl.classList.add('mobile-open');
+                backdrop.classList.add('visible');
+            });
+            backdrop.addEventListener('click', () => {
+                sidebarEl.classList.remove('mobile-open');
+                backdrop.classList.remove('visible');
+            });
+        }
+        
+        // Theme button click toggler
+        const themeBtn = document.getElementById('theme-toggle');
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                const curTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+                const nextTheme = curTheme === 'dark' ? 'light' : 'dark';
+                
+                document.documentElement.setAttribute('data-theme', nextTheme);
+                localStorage.setItem('rescuebot-theme', nextTheme);
+                
+                const icon = themeBtn.querySelector('i') || themeBtn.querySelector('svg');
+                if (icon) {
+                    icon.setAttribute('data-lucide', nextTheme === 'dark' ? 'sun' : 'moon');
+                    if (window.lucide) window.lucide.createIcons({ nodes: [icon] });
+                }
+            });
+        }
+    }
+</script>
+
 </body>
 </html>
