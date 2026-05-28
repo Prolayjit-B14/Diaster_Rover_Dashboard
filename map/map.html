@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rescue Intel | Tactical GIS Map</title>
-    <meta name="description" content="Live Mapbox-based GPS tracking and hazard geofencing dashboard for RescueBOT disaster command center.">
+    <meta name="description" content="Live Leaflet-based GPS tracking and hazard geofencing dashboard for RescueBOT disaster command center.">
     <link rel="icon" type="image/png" href="../assets/favicon.png">
     
     <!-- Theme setup (runs immediately to prevent flash) -->
@@ -16,9 +16,9 @@
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./map.css">
     
-    <!-- Mapbox GL JS v3 CDN -->
-    <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
-    <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+    <!-- Leaflet JS & CSS CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -268,47 +268,68 @@
             box-shadow: 0 0 8px rgba(59, 130, 246, 0.45);
         }
 
-        /* ── MAPBOX CUSTOM POPUPS ───────────────────────────────────────────── */
-        .mapboxgl-popup-content {
+        /* ── LEAFLET CUSTOM POPUPS & LAYER CONTROL OVERRIDES ────────────────── */
+        .leaflet-popup-content-wrapper {
             background: #151C2C !important;
             color: #EFF2F7 !important;
             border: 1px solid rgba(59, 130, 246, 0.25) !important;
             border-radius: var(--radius-md) !important;
             box-shadow: var(--shadow-lg) !important;
-            padding: 10px !important;
+            padding: 2px !important;
         }
-        [data-theme="light"] .mapboxgl-popup-content {
+        [data-theme="light"] .leaflet-popup-content-wrapper {
             background: #ffffff !important;
             color: #0F172A !important;
             border: 1px solid rgba(37, 99, 235, 0.15) !important;
         }
-        .mapboxgl-popup-tip {
-            border-bottom-color: #151C2C !important;
-            border-top-color: #151C2C !important;
+        .leaflet-popup-tip {
+            background: #151C2C !important;
         }
-        [data-theme="light"] .mapboxgl-popup-tip {
-            border-bottom-color: #ffffff !important;
-            border-top-color: #ffffff !important;
+        [data-theme="light"] .leaflet-popup-tip {
+            background: #ffffff !important;
         }
-        .mapboxgl-popup-close-button {
+        .leaflet-popup-close-button {
             color: var(--text-muted) !important;
-            font-size: 12px !important;
-            top: 2px !important;
-            right: 4px !important;
+            font-size: 14px !important;
+            padding: 4px 8px !important;
         }
-        .mapboxgl-popup-close-button:hover {
+        .leaflet-popup-close-button:hover {
             color: var(--accent) !important;
-            background: transparent !important;
+        }
+        
+        .leaflet-control-layers {
+            background: rgba(11, 15, 25, 0.92) !important;
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-default) !important;
+            border-radius: var(--radius-sm) !important;
+            color: var(--text-primary) !important;
+            font-family: var(--font-body) !important;
+            font-size: 11px !important;
+            box-shadow: var(--shadow-sm) !important;
+            padding: 6px 10px !important;
+        }
+        [data-theme="light"] .leaflet-control-layers {
+            background: rgba(255, 255, 255, 0.94) !important;
+            color: #0F172A !important;
+        }
+        .leaflet-control-layers-list {
+            color: var(--text-primary) !important;
+        }
+        [data-theme="light"] .leaflet-control-layers-list {
+            color: #0F172A !important;
+        }
+        .leaflet-control-layers label {
+            margin-bottom: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         /* ── COMPASS NEEDLE GLOW FOR ROVER ──────────────────────────────────── */
         @keyframes pulseCompass {
             0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.4), 0 0 10px rgba(0, 212, 255, 0.8); }
             50%       { box-shadow: 0 0 0 10px rgba(0, 212, 255, 0), 0 0 18px rgba(0, 212, 255, 0.9); }
-        }
-        .rover-custom-marker {
-            width: 24px; height: 24px;
-            display: flex; align-items: center; justify-content: center;
         }
         .rover-pulse-ring {
             width: 18px; height: 18px;
@@ -334,86 +355,7 @@
             border-right: 4px solid transparent;
             border-bottom: 8px solid #00D4FF;
             z-index: 3;
-        }
-
-        /* ── FLOATING CONFIG WIZARD FOR ACCESSTOKEN ───────────────────────────── */
-        .token-wizard-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(8, 12, 22, 0.85);
-            backdrop-filter: blur(8px);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            transition: opacity 0.3s ease;
-        }
-        .token-card {
-            background: #151C2C;
-            border: 1px solid rgba(59, 130, 246, 0.25);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            max-width: 440px;
-            width: 100%;
-            box-shadow: var(--shadow-lg);
-            text-align: center;
-            font-family: var(--font-body);
-        }
-        .token-card h3 {
-            font-size: 16px;
-            font-weight: 700;
-            color: #EFF2F7;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .token-card p {
-            font-size: 12.5px;
-            line-height: 1.6;
-            color: #8E9BB5;
-            margin-bottom: 20px;
-        }
-        .token-card a {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .token-card a:hover {
-            text-decoration: underline;
-        }
-        .token-input-box {
-            width: 100%;
-            padding: 10px 14px;
-            background: #090D17;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-sm);
-            color: #ffffff;
-            font-family: var(--font-mono);
-            font-size: 11px;
-            outline: none;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .token-input-box:focus {
-            border-color: var(--accent);
-        }
-        .btn-primary {
-            width: 100%;
-            padding: 10px 16px;
-            background: var(--accent);
-            border: 1px solid var(--accent);
-            border-radius: var(--radius-sm);
-            color: #ffffff;
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .btn-primary:hover {
-            background: #2563EB;
+            transition: transform 0.15s ease;
         }
         
         /* Mobile adjustment for HUD overlays */
@@ -511,22 +453,6 @@
         <!-- MAP CANVAS CONTAINER -->
         <div class="map-shell" style="position:relative; width:100%; height:100%;">
 
-            <!-- ── MAP ACCESSTOKEN CONFIG WIZARD ── -->
-            <div id="token-config-wizard" class="token-wizard-overlay" style="display: none;">
-                <div class="token-card">
-                    <h3>
-                        <i data-lucide="shield-alert" style="color: var(--accent); width:20px; height:20px;"></i>
-                        Mapbox Integration Config
-                    </h3>
-                    <p>
-                        Rescue Intel requires a Mapbox API token to render premium GIS satellite maps. Get yours at
-                        <a href="https://account.mapbox.com/" target="_blank">mapbox.com</a>.
-                    </p>
-                    <input type="password" id="token-input" class="token-input-box" placeholder="Paste your Mapbox access token here">
-                    <button id="btn-save-token" class="btn-primary">Initialize Mapbox</button>
-                </div>
-            </div>
-
             <!-- ── WAITING FOR GPS SIGNAL SCREEN ── -->
             <div id="gps-loading-overlay" class="gps-loading-overlay">
                 <div class="gps-loading-card">
@@ -536,11 +462,11 @@
                 </div>
             </div>
 
-            <!-- ── INTERACTIVE MAP CANVAS (MAPBOX) ─────────────────────────── -->
+            <!-- ── INTERACTIVE MAP CANVAS (LEAFLET) ─────────────────────────── -->
             <div id="map-canvas" style="position: absolute; inset:0; width:100%; height:100%;"></div>
 
             <!-- ── FLOATING TELEMETRY BOX HUD ──────────────────────────────── -->
-            <div class="map-hud-overlay telemetry-box" style="top: 14px; left: 86px; pointer-events: auto;">
+            <div class="map-hud-overlay telemetry-box" style="top: 14px; left: 86px; pointer-events: auto; z-index: 1000;">
                 <div class="telemetry-card">
                     <div class="telemetry-header">
                         <i data-lucide="cpu" style="color: var(--accent); width:13px; height:13px;"></i>
@@ -573,7 +499,7 @@
             </div>
 
             <!-- ── FLOATING TACTICAL TOOLBAR (LEFT SIDEBAR HUD) ──────────────── -->
-            <div class="map-hud-overlay map-floating-tools" style="top: 14px; left: 14px; pointer-events: auto;">
+            <div class="map-hud-overlay map-floating-tools" style="top: 14px; left: 14px; pointer-events: auto; z-index: 1000;">
                 <div class="map-tools-title">Tools</div>
                 <div class="map-tools-grid">
                     <button class="map-tool-btn active" id="btn-follow" style="--btn-color: #00D4FF;" data-tooltip="Follow Rover">
@@ -613,7 +539,7 @@
             </div>
 
             <!-- ── FLOATING STYLE SELECTOR SWITCH ─────── -->
-            <div class="map-hud-overlay" style="top: 14px; right: 14px; pointer-events: auto;">
+            <div class="map-hud-overlay" style="top: 14px; right: 60px; pointer-events: auto; z-index: 1000;">
                 <div class="style-pill-selector">
                     <button class="style-pill active" id="style-btn-streets">Vector</button>
                     <button class="style-pill" id="style-btn-satellite">Satellite</button>
@@ -621,7 +547,7 @@
             </div>
 
             <!-- ── HUD BOTTOM STATS CARDS (COORDINATES READOUTS) ─────────────── -->
-            <div class="map-hud-overlay map-hud-bottom">
+            <div class="map-hud-overlay map-hud-bottom" style="z-index: 1000;">
                 <div class="map-hud-card">
                     <div class="hud-card-val" id="lat-hud">--</div>
                     <div class="hud-card-lbl">Rover Lat</div>
@@ -645,7 +571,7 @@
             </div>
 
             <!-- ── FLOATING ZOOM & QUICK RECENTER MAP CONTROL PILLS ─────────── -->
-            <div class="map-tools-right">
+            <div class="map-tools-right" style="z-index: 1000;">
                 <button class="map-zoom-btn" id="btn-zoom-in" style="--btn-color: #00FF88;" title="Zoom In">
                     <i data-lucide="plus"></i>
                 </button>
@@ -670,23 +596,23 @@
 <script type="module" src="../shared/shared.js"></script>
 
 <script>
-    // Placeholder Mapbox token string - replaced by saved localStorage token if present
-    let mapboxglAccessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
-    
     // Core state management
     let map = null;
     let roverMarker = null;
     let isFollowing = true;
     let activeTool = null;
     
-    let currentPos = null; // [lng, lat]
+    let currentPos = null; // [lat, lng]
     let roverHeading = 0;
     
     // Breadcrumbs path
-    let breadcrumbCoords = [];
+    let breadcrumbCoords = []; // [[lat, lng], [lat, lng], ...]
+    let pathLine = null;
+    let pathGlow = null;
     
     // Danger Geofence Zone coordinates (initialized dynamically around first received coordinates)
     let geofencePolygon = [];
+    let geofenceLayer = null;
     let isInsideGeofence = false;
     let geofenceInitialized = false;
     
@@ -696,11 +622,15 @@
     // Mission Timer variables
     let missionSecs = 0;
     let missionInterval = null;
+
+    // Tile Layers
+    let osmLayer = null;
+    let esriLayer = null;
     
     // ── GEOFENCE ENTRY DETECTION (RAY CASTING ALGORITHM) ────────────────────
     function isPointInPolygon(point, polygon) {
         if (!polygon || polygon.length < 3) return false;
-        const x = point[0], y = point[1];
+        const x = point[0], y = point[1]; // lat, lng
         let inside = false;
         for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
             const xi = polygon[i][0], yi = polygon[i][1];
@@ -712,74 +642,62 @@
         return inside;
     }
 
-    // ── INITIALIZATION OR OVERLAY LOGIC ──────────────────────────────────────
+    // ── INITIALIZATION ───────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
         if (window.lucide) window.lucide.createIcons();
         startMissionTimer();
         setupSidebarThemeEvents();
-        
-        // Check for local storage Mapbox token
-        const storedToken = localStorage.getItem('mapbox_access_token');
-        if (storedToken && storedToken.trim() !== '') {
-            mapboxglAccessToken = storedToken;
-        }
-        
-        const isDefaultPlaceholder = (
-            !mapboxglAccessToken ||
-            mapboxglAccessToken === 'YOUR_MAPBOX_ACCESS_TOKEN' ||
-            mapboxglAccessToken.trim() === ''
-        );
-        
-        if (isDefaultPlaceholder) {
-            document.getElementById('token-config-wizard').style.display = 'flex';
-        } else {
-            initializeMap(mapboxglAccessToken);
-        }
-        
-        // Bind Token Wizard events
-        document.getElementById('btn-save-token').addEventListener('click', () => {
-            const tokInput = document.getElementById('token-input').value.trim();
-            if (tokInput) {
-                localStorage.setItem('mapbox_access_token', tokInput);
-                mapboxglAccessToken = tokInput;
-                document.getElementById('token-config-wizard').style.display = 'none';
-                initializeMap(tokInput);
-            } else {
-                alert('Please enter a valid Mapbox token.');
-            }
-        });
+        initializeMap();
     });
 
-    // ── INITIALIZE MAPBOX MAP ────────────────────────────────────────────────
-    function initializeMap(token) {
+    // ── INITIALIZE LEAFLET MAP ───────────────────────────────────────────────
+    function initializeMap() {
         try {
-            mapboxgl.accessToken = token;
-            
-            map = new mapboxgl.Map({
-                container: 'map-canvas',
-                style: 'mapbox://styles/mapbox/streets-v12',
-                center: [78.9629, 20.5937], // Centered at Nagoya / India before GPS arrives
-                zoom: 16,
+            map = L.map('map-canvas', {
+                zoomControl: false,
                 attributionControl: false
+            }).setView([20.5937, 78.9629], 16); // Center on Nagoya/India initially
+            
+            // Tile layers
+            osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19
             });
             
-            // Re-setup vector & satellite layers on load
-            map.on('style.load', () => {
-                if (geofenceInitialized) {
-                    setupMapLayers();
+            esriLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 19
+            });
+            
+            // Add default base layer
+            osmLayer.addTo(map);
+            
+            // Native Leaflet Layer Control
+            const baseMaps = {
+                "Vector Map": osmLayer,
+                "Satellite Map": esriLayer
+            };
+            L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
+            
+            // Sync style switcher status on layer switch via native control
+            map.on('baselayerchange', (e) => {
+                if (e.layer === esriLayer) {
+                    document.getElementById('style-btn-streets').classList.remove('active');
+                    document.getElementById('style-btn-satellite').classList.add('active');
+                } else {
+                    document.getElementById('style-btn-satellite').classList.remove('active');
+                    document.getElementById('style-btn-streets').classList.add('active');
                 }
             });
-            
+
             // Map Click listener for target display & landmarks placing
             map.on('click', (e) => {
-                const lng = e.lngLat.lng;
-                const lat = e.lngLat.lat;
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
                 
                 document.getElementById('target-lat-hud').textContent = lat.toFixed(5);
                 document.getElementById('target-lng-hud').textContent = lng.toFixed(5);
                 
                 if (activeTool) {
-                    addLandmark(lng, lat, activeTool);
+                    addLandmark(lat, lng, activeTool);
                 }
             });
             
@@ -796,127 +714,41 @@
             setupMqttConnector();
             
         } catch (err) {
-            console.error('Mapbox initialization failed:', err);
-            alert('Error loading Mapbox. Please check your token or browser console.');
+            console.error('Leaflet initialization failed:', err);
+            alert('Error loading Leaflet. Check console logs.');
         }
     }
 
     // ── DEFINE DYNAMIC GEOFENCE AROUND Rover's first actual fix coordinate ──
-    function initializeDynamicGeofence(lng, lat) {
+    function initializeDynamicGeofence(lat, lng) {
         // Create an 80m x 80m hazard geofence offset slightly to the North-East of starting coordinates
         const size = 0.0004; // roughly 40m half-width
         const offset = 0.0003; // offset center North-East by 30m
         
-        const centerLng = lng + offset;
         const centerLat = lat + offset;
+        const centerLng = lng + offset;
 
         geofencePolygon = [
-            [centerLng - size, centerLat - size],
-            [centerLng + size, centerLat - size],
-            [centerLng + size, centerLat + size],
-            [centerLng - size, centerLat + size],
-            [centerLng - size, centerLat - size] // Close polygon
+            [centerLat - size, centerLng - size],
+            [centerLat + size, centerLng - size],
+            [centerLat + size, centerLng + size],
+            [centerLat - size, centerLng + size]
         ];
         
+        // Draw Geofence on map
+        geofenceLayer = L.polygon(geofencePolygon, {
+            color: '#EF4444',
+            fillColor: '#EF4444',
+            fillOpacity: 0.16,
+            weight: 2.5,
+            dashArray: '4, 4'
+        }).addTo(map);
+        
         geofenceInitialized = true;
-        setupMapLayers();
     }
 
-    // ── STYLE SWITCHER: Load program layers on style change ──────────────────
-    function setupMapLayers() {
-        if (!map || !geofenceInitialized) return;
-        
-        // Add Geofence Source & Layers
-        if (!map.getSource('geofence')) {
-            map.addSource('geofence', {
-                type: 'geojson',
-                data: {
-                    type: 'Feature',
-                    geometry: {
-                        type: 'Polygon',
-                        coordinates: [geofencePolygon]
-                    }
-                }
-            });
-        }
-        
-        if (!map.getLayer('geofence-fill')) {
-            map.addLayer({
-                id: 'geofence-fill',
-                type: 'fill',
-                source: 'geofence',
-                paint: {
-                    'fill-color': '#EF4444',
-                    'fill-opacity': 0.16
-                }
-            });
-        }
-        
-        if (!map.getLayer('geofence-outline')) {
-            map.addLayer({
-                id: 'geofence-outline',
-                type: 'line',
-                source: 'geofence',
-                paint: {
-                    'line-color': '#EF4444',
-                    'line-width': 2.5,
-                    'line-dasharray': [2, 2],
-                    'line-opacity': 0.8
-                }
-            });
-        }
-        
-        // Add Breadcrumbs Source & Layers
-        if (!map.getSource('breadcrumb')) {
-            map.addSource('breadcrumb', {
-                type: 'geojson',
-                data: {
-                    type: 'Feature',
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: breadcrumbCoords.length > 0 ? breadcrumbCoords : [currentPos]
-                    }
-                }
-            });
-        }
-        
-        if (!map.getLayer('breadcrumb-glow')) {
-            map.addLayer({
-                id: 'breadcrumb-glow',
-                type: 'line',
-                source: 'breadcrumb',
-                layout: {
-                    'line-join': 'round',
-                    'line-cap': 'round'
-                },
-                paint: {
-                    'line-color': '#00D4FF',
-                    'line-width': 8,
-                    'line-opacity': 0.3
-                }
-            });
-        }
-        
-        if (!map.getLayer('breadcrumb-line')) {
-            map.addLayer({
-                id: 'breadcrumb-line',
-                type: 'line',
-                source: 'breadcrumb',
-                layout: {
-                    'line-join': 'round',
-                    'line-cap': 'round'
-                },
-                paint: {
-                    'line-color': '#00D4FF',
-                    'line-width': 3.5,
-                    'line-opacity': 0.95
-                }
-            });
-        }
-    }
-
-    // ── CORE FUNCTION: updateRoverLocation (as required) ───────────────────
-    window.updateRoverLocation = function(lng, lat) {
+    // ── CORE FUNCTION: updateRoverLocation (lat, lng parameter order) ──
+    window.updateRoverLocation = function(lat, lng) {
         // Remove loading screen on first active telemetry coordinate packet
         const loadOverlay = document.getElementById('gps-loading-overlay');
         if (loadOverlay && loadOverlay.style.display !== 'none') {
@@ -926,10 +758,10 @@
 
         // Initialize geofence relative to actual GPS location on the first packet
         if (!geofenceInitialized) {
-            initializeDynamicGeofence(lng, lat);
+            initializeDynamicGeofence(lat, lng);
         }
 
-        currentPos = [lng, lat];
+        currentPos = [lat, lng];
         
         // Update Bottom Coordinates display
         document.getElementById('lat-hud').textContent = lat.toFixed(5);
@@ -964,47 +796,60 @@
             }
         }
 
-        if (map) {
-            // Update breadcrumb geojson source
-            const source = map.getSource('breadcrumb');
-            if (source) {
-                source.setData({
-                    type: 'Feature',
-                    geometry: {
-                        type: 'LineString',
-                        coordinates: breadcrumbCoords
-                    }
-                });
-            }
-            
-            // Create or move Marker
-            if (!roverMarker) {
-                const el = document.createElement('div');
-                el.className = 'rover-custom-marker';
-                el.innerHTML = `
+        // Update breadcrumb trails on the Leaflet map
+        if (!pathLine) {
+            pathGlow = L.polyline(breadcrumbCoords, {
+                color: '#00D4FF',
+                weight: 8,
+                opacity: 0.25,
+                lineCap: 'round',
+                lineJoin: 'round'
+            }).addTo(map);
+
+            pathLine = L.polyline(breadcrumbCoords, {
+                color: '#00D4FF',
+                weight: 3.5,
+                opacity: 0.95,
+                lineCap: 'round',
+                lineJoin: 'round'
+            }).addTo(map);
+        } else {
+            pathLine.setLatLngs(breadcrumbCoords);
+            pathGlow.setLatLngs(breadcrumbCoords);
+        }
+        
+        // Create or move Marker
+        if (!roverMarker) {
+            const roverIconHtml = `
+                <div class="rover-custom-marker">
                     <div class="rover-pulse-ring">
                         <div class="rover-pulse-dot"></div>
                     </div>
                     <div class="rover-compass-heading" id="heading-needle"></div>
-                `;
-                roverMarker = new mapboxgl.Marker({ element: el })
-                    .setLngLat(currentPos)
-                    .addTo(map);
-                map.jumpTo({ center: currentPos });
-            } else {
-                roverMarker.setLngLat(currentPos);
-            }
+                </div>
+            `;
+            const roverIcon = L.divIcon({
+                html: roverIconHtml,
+                className: '',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
             
-            // Rotate heading needle directly
-            const needle = document.getElementById('heading-needle');
-            if (needle) {
-                needle.style.transform = `translateX(-50%) rotate(${roverHeading}deg)`;
-            }
-            
-            // Optionally auto-pan to new coordinates if follow camera toggled
-            if (isFollowing) {
-                map.panTo(currentPos, { duration: 800 });
-            }
+            roverMarker = L.marker(currentPos, { icon: roverIcon, zIndexOffset: 1000 }).addTo(map);
+            map.setView(currentPos, 18);
+        } else {
+            roverMarker.setLatLng(currentPos);
+        }
+        
+        // Rotate heading needle directly
+        const needle = document.getElementById('heading-needle');
+        if (needle) {
+            needle.style.transform = `translateX(-50%) rotate(${roverHeading}deg)`;
+        }
+        
+        // Optionally auto-pan to new coordinates if follow camera toggled
+        if (isFollowing) {
+            map.panTo(currentPos, { animate: true, duration: 0.8 });
         }
     }
 
@@ -1012,20 +857,19 @@
     function switchMapStyle(styleName) {
         if (!map) return;
         
-        const styleUrl = styleName === 'satellite' 
-            ? 'mapbox://styles/mapbox/satellite-streets-v12'
-            : 'mapbox://styles/mapbox/streets-v12';
-            
-        map.setStyle(styleUrl);
-        
-        document.getElementById('style-btn-streets').classList.toggle('active', styleName === 'streets');
-        document.getElementById('style-btn-satellite').classList.toggle('active', styleName === 'satellite');
+        if (styleName === 'satellite') {
+            if (map.hasLayer(osmLayer)) map.removeLayer(osmLayer);
+            if (!map.hasLayer(esriLayer)) esriLayer.addTo(map);
+        } else {
+            if (map.hasLayer(esriLayer)) map.removeLayer(esriLayer);
+            if (!map.hasLayer(osmLayer)) osmLayer.addTo(map);
+        }
         
         window.RESCUEBOT_UI?.toast(`Style toggled to ${styleName === 'satellite' ? 'Satellite' : 'Vector'} Map`, 'success');
     }
 
     // ── PLACING LANDMARKS (Custom Markers) ───────────────────────────────
-    function addLandmark(lng, lat, type) {
+    function addLandmark(lat, lng, type) {
         const LANDMARK_CONFIG = {
             safe:        { color: '#00FF88', label: 'Safe Zone',    emoji: '🛡️' },
             danger:      { color: '#FF2D55', label: 'Danger Zone',  emoji: '⚠️' },
@@ -1044,42 +888,45 @@
         const idx = landmarks.length + 1;
         const name = `${cfg.label} #${idx}`;
 
-        if (map) {
-            const el = document.createElement('div');
-            el.className = 'landmark-marker';
-            el.style.cssText = `
-                width: 24px; height: 24px;
-                background: ${cfg.color};
-                border-radius: 50% 50% 50% 0;
-                transform: rotate(-45deg);
-                border: 2px solid rgba(255,255,255,0.7);
-                box-shadow: 0 0 10px ${cfg.color}80;
-                display: flex; align-items: center; justify-content: center;
-                cursor: pointer;
-            `;
-            el.innerHTML = `<span style="transform: rotate(45deg); font-size: 10px; line-height: 1;">${cfg.emoji}</span>`;
+        const markerHtml = `
+            <div style="
+                width:24px; height:24px;
+                background:${cfg.color};
+                border-radius:50% 50% 50% 0;
+                transform:rotate(-45deg);
+                border:2px solid rgba(255,255,255,0.7);
+                box-shadow:0 0 10px ${cfg.color}80;
+                display:flex; align-items:center; justify-content:center;
+            ">
+                <span style="transform:rotate(45deg); font-size:10px; line-height:1;">${cfg.emoji}</span>
+            </div>
+        `;
 
-            const popupContent = `
-                <div style="font-family:'Inter',sans-serif; color:#EFF2F7; background:#151C2C; padding:4px 8px; border-radius:6px;">
-                    <strong style="color:${cfg.color}; display:flex; align-items:center; gap:4px;">
-                        <span>${cfg.emoji}</span> ${name}
-                    </strong>
-                    <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:#8E9BB5; margin-top:2px;">
-                        ${lat.toFixed(6)}°, ${lng.toFixed(6)}°
-                    </div>
+        const icon = L.divIcon({
+            html: markerHtml,
+            className: '',
+            iconSize: [24, 24],
+            iconAnchor: [12, 24],
+        });
+
+        const popupContent = `
+            <div style="font-family:'Inter',sans-serif; color:#EFF2F7; background:#151C2C; padding:4px 8px; border-radius:6px;">
+                <strong style="color:${cfg.color}; display:flex; align-items:center; gap:4px;">
+                    <span>${cfg.emoji}</span> ${name}
+                </strong>
+                <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:#8E9BB5; margin-top:2px;">
+                    ${lat.toFixed(6)}°, ${lng.toFixed(6)}°
                 </div>
-            `;
+            </div>
+        `;
 
-            const popup = new mapboxgl.Popup({ offset: 15, className: 'mapbox-custom-popup' })
-                .setHTML(popupContent);
+        const marker = L.marker([lat, lng], { icon })
+            .addTo(map)
+            .bindPopup(popupContent, {
+                className: 'rescuebot-popup'
+            });
 
-            const marker = new mapboxgl.Marker({ element: el })
-                .setLngLat([lng, lat])
-                .setPopup(popup)
-                .addTo(map);
-
-            landmarks.push({ lng, lat, type, name, marker, color: cfg.color });
-        }
+        landmarks.push({ lat, lng, type, name, marker, color: cfg.color });
 
         // Reset placing tools button active states
         const toolBtnIds = {
@@ -1092,7 +939,7 @@
             document.getElementById(activeBtnId)?.classList.remove('active');
         }
         activeTool = null;
-        if (map) map.getCanvas().style.cursor = '';
+        document.getElementById('map-canvas').style.cursor = '';
         
         window.RESCUEBOT_UI?.toast(`${name} deployed`, 'success');
     }
@@ -1113,7 +960,7 @@
                 isFollowing = true;
                 document.getElementById('btn-follow').classList.add('active');
                 if (map) {
-                    map.easeTo({ center: currentPos, zoom: 17 });
+                    map.setView(currentPos, 18, { animate: true });
                 }
                 window.RESCUEBOT_UI?.toast('Recentered & camera follow active', 'success');
             } else {
@@ -1137,14 +984,9 @@
             if (currentPos) {
                 breadcrumbCoords.push(currentPos);
             }
-            if (map) {
-                const source = map.getSource('breadcrumb');
-                if (source) {
-                    source.setData({
-                        type: 'Feature',
-                        geometry: { type: 'LineString', coordinates: breadcrumbCoords }
-                    });
-                }
+            if (pathLine) {
+                pathLine.setLatLngs(breadcrumbCoords);
+                pathGlow.setLatLngs(breadcrumbCoords);
             }
             window.RESCUEBOT_UI?.toast('Rover breadcrumb trail cleared', 'info');
         });
@@ -1174,12 +1016,12 @@
                 if (activeTool === tool) {
                     activeTool = null;
                     btn.classList.remove('active');
-                    if (map) map.getCanvas().style.cursor = '';
+                    document.getElementById('map-canvas').style.cursor = '';
                 } else {
                     tacticalTools.forEach(b => document.getElementById(b.id)?.classList.remove('active'));
                     activeTool = tool;
                     btn.classList.add('active');
-                    if (map) map.getCanvas().style.cursor = 'crosshair';
+                    document.getElementById('map-canvas').style.cursor = 'crosshair';
                     window.RESCUEBOT_UI?.toast(`Active placing tool: ${tool.toUpperCase()}. Click on map.`, 'info');
                 }
             });
@@ -1197,7 +1039,7 @@
                 roverHeading = parseFloat(d.heading) || 0;
                 
                 if (!isNaN(lat) && !isNaN(lng)) {
-                    updateRoverLocation(lng, lat);
+                    updateRoverLocation(lat, lng); // Latitude first parameter order
                     
                     // Update speed display card
                     const rawSpd = parseFloat(d.speed) || 0; 
