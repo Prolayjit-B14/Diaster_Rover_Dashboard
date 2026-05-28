@@ -39,12 +39,12 @@ document.addEventListener('DOMContentLoaded', () => {
         navContainer.className = 'nav-links-center';
 
         const items = [
+            { label: 'Home', path: '', icon: 'home' },
             { label: 'Overview', path: 'dashboard/dashboard.html', icon: 'layout-dashboard' },
             { label: 'Live Monitoring', path: 'camera/camera.html', icon: 'video' },
             { label: 'Incident Map', path: 'map/map.html', icon: 'map-pin' },
             { label: 'Field Sensors', path: 'sensors/sensors.html', icon: 'activity' },
-            { label: 'Alerts', path: 'alerts/alerts.html', icon: 'bell-ring' },
-            { label: 'Home', path: '', icon: 'home' }
+            { label: 'Alerts', path: 'alerts/alerts.html', icon: 'bell-ring' }
         ];
 
         navContainer.innerHTML = items.map(item => {
