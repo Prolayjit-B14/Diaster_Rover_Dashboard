@@ -817,6 +817,10 @@ details[open] summary .chevron-icon {
 .ss-warn { color: var(--status-warn); }
 .ss-ok { color: var(--status-ok); }
 .ss-hazard { color: #f97316; }
+.ss-hazard.priority-critical { color: var(--status-danger); }
+.ss-hazard.priority-high { color: #f97316; }
+.ss-hazard.priority-medium { color: var(--status-warn); }
+.ss-hazard.priority-low { color: var(--status-ok); }
 
 /* ── DETECTION TILES ROW ─────────────────────────────────────── */
 .detection-tiles-row {

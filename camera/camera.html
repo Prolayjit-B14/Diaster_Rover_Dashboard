@@ -115,38 +115,6 @@
                 </div>
             </div>
 
-            <!-- ── SCENE SUMMARY STRIP ──────────────────────────── -->
-            <div class="scene-summary-strip" id="scene-summary-strip">
-                <div class="ss-item">
-                    <span class="ss-label">Survivors</span>
-                    <span class="ss-value" id="ss-survivor-count">0</span>
-                </div>
-                <div class="ss-divider"></div>
-                <div class="ss-item">
-                    <span class="ss-label">Fire</span>
-                    <span class="ss-value ss-fire" id="ss-fire-state">CLEAR</span>
-                </div>
-                <div class="ss-divider"></div>
-                <div class="ss-item">
-                    <span class="ss-label">Smoke</span>
-                    <span class="ss-value" id="ss-smoke-state">CLEAR</span>
-                </div>
-                <div class="ss-divider"></div>
-                <div class="ss-item">
-                    <span class="ss-label">Visibility</span>
-                    <span class="ss-value" id="ss-visibility">HIGH</span>
-                </div>
-                <div class="ss-divider"></div>
-                <div class="ss-item">
-                    <span class="ss-label">Hazard</span>
-                    <span class="ss-value ss-hazard" id="ss-hazard-level">LOW</span>
-                </div>
-                <div class="ss-divider"></div>
-                <div class="ss-item">
-                    <span class="ss-label">Spread Risk</span>
-                    <span class="ss-value" id="ss-spread-risk">NONE</span>
-                </div>
-            </div>
 
             <!-- ── MAIN MONITORING CONTAINER ──────────────────── -->
             <div class="camera-monitoring-container">
@@ -320,6 +288,39 @@
                             <div class="env-risk-card" style="grid-column: span 2;">
                                 <div class="env-risk-label">Altitude</div>
                                 <div class="env-risk-value" id="hud-alt">-- m</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scene Summary -->
+                    <div class="cam-sidebar-section">
+                        <div class="section-title-row">
+                            <h3><i data-lucide="info" style="width:14px;height:14px;color:var(--accent);"></i> Scene Summary</h3>
+                        </div>
+                        <div class="env-risk-grid">
+                            <div class="env-risk-card">
+                                <div class="env-risk-label">Survivors</div>
+                                <div class="env-risk-value ss-value" id="ss-survivor-count">0</div>
+                            </div>
+                            <div class="env-risk-card">
+                                <div class="env-risk-label">Fire</div>
+                                <div class="env-risk-value ss-value ss-ok" id="ss-fire-state">CLEAR</div>
+                            </div>
+                            <div class="env-risk-card">
+                                <div class="env-risk-label">Smoke</div>
+                                <div class="env-risk-value ss-value ss-ok" id="ss-smoke-state">CLEAR</div>
+                            </div>
+                            <div class="env-risk-card">
+                                <div class="env-risk-label">Visibility</div>
+                                <div class="env-risk-value ss-value ss-ok" id="ss-visibility">HIGH</div>
+                            </div>
+                            <div class="env-risk-card">
+                                <div class="env-risk-label">Hazard Level</div>
+                                <div class="env-risk-value ss-value ss-hazard priority-low" id="ss-hazard-level">LOW</div>
+                            </div>
+                            <div class="env-risk-card">
+                                <div class="env-risk-label">Spread Risk</div>
+                                <div class="env-risk-value ss-value" id="ss-spread-risk">NONE</div>
                             </div>
                         </div>
                     </div>
