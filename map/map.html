@@ -311,108 +311,6 @@
             transform: translateY(-50%) scale(1);
         }
 
-        /* ── MAP OVERLAYS & SCI-FI TELEMETRY BOX ────────────────────────────── */
-        .telemetry-card {
-            background: rgba(11, 15, 25, 0.92);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-md);
-            padding: 12px 16px;
-            width: 210px;
-            box-shadow: var(--shadow-md);
-            transition: border-color 0.2s;
-        }
-        [data-theme="light"] .telemetry-card {
-            background: rgba(255, 255, 255, 0.94);
-        }
-        .telemetry-card:hover {
-            border-color: var(--accent);
-        }
-        .telemetry-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            border-bottom: 1px solid var(--border-subtle);
-            padding-bottom: 6px;
-        }
-        .telemetry-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .telemetry-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .tel-icon {
-            width: 15px;
-            height: 15px;
-            color: var(--text-muted);
-        }
-        .tel-details {
-            display: flex;
-            flex-direction: column;
-        }
-        .tel-label {
-            font-size: 9px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            line-height: 1;
-        }
-        .tel-value {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-primary);
-            font-family: var(--font-mono);
-            margin-top: 2px;
-        }
-
-        /* ── CUSTOM STYLE TOGGLE PILL ───────────────────────────────────────── */
-        .style-pill-selector {
-            display: flex;
-            background: rgba(11, 15, 25, 0.92);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-full);
-            padding: 3px;
-            gap: 2px;
-            box-shadow: var(--shadow-sm);
-        }
-        [data-theme="light"] .style-pill-selector {
-            background: rgba(255, 255, 255, 0.94);
-        }
-        .style-pill {
-            background: transparent;
-            border: none;
-            outline: none;
-            color: var(--text-secondary);
-            font-family: var(--font-body);
-            font-size: 10px;
-            font-weight: 600;
-            padding: 5px 12px;
-            border-radius: var(--radius-full);
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            transition: all 0.15s ease;
-        }
-        .style-pill:hover {
-            color: var(--text-primary);
-        }
-        .style-pill.active {
-            background: var(--accent);
-            color: #ffffff;
-            box-shadow: 0 0 8px rgba(59, 130, 246, 0.45);
-        }
-
         /* ── HUD BOTTOM COORDINATES PANELS ───────────────────────────────────── */
         .map-hud-bottom {
             position: absolute;
@@ -538,35 +436,6 @@
         .leaflet-popup-close-button:hover {
             color: var(--accent) !important;
         }
-        
-        .leaflet-control-layers {
-            background: rgba(11, 15, 25, 0.92) !important;
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border-default) !important;
-            border-radius: var(--radius-sm) !important;
-            color: var(--text-primary) !important;
-            font-family: var(--font-body) !important;
-            font-size: 11px !important;
-            box-shadow: var(--shadow-sm) !important;
-            padding: 6px 10px !important;
-        }
-        [data-theme="light"] .leaflet-control-layers {
-            background: rgba(255, 255, 255, 0.94) !important;
-            color: #0F172A !important;
-        }
-        .leaflet-control-layers-list {
-            color: var(--text-primary) !important;
-        }
-        [data-theme="light"] .leaflet-control-layers-list {
-            color: #0F172A !important;
-        }
-        .leaflet-control-layers label {
-            margin-bottom: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
 
         /* ── COMPASS NEEDLE GLOW FOR ROVER ──────────────────────────────────── */
         @keyframes pulseCompass {
@@ -603,7 +472,6 @@
         /* Mobile adjustment for HUD overlays */
         @media (max-width: 900px) {
             .map-floating-tools { display: none !important; }
-            .telemetry-box { left: 14px !important; }
         }
     </style>
 </head>
@@ -704,39 +572,6 @@
             <!-- ── INTERACTIVE MAP CANVAS (LEAFLET) ─────────────────────────── -->
             <div id="map-canvas"></div>
 
-            <!-- ── FLOATING TELEMETRY BOX HUD ──────────────────────────────── -->
-            <div class="map-hud-overlay telemetry-box" style="top: 14px; left: 86px; pointer-events: auto; z-index: 1000;">
-                <div class="telemetry-card">
-                    <div class="telemetry-header">
-                        <i data-lucide="cpu" style="color: var(--accent); width:13px; height:13px;"></i>
-                        <span>Rover Telemetry</span>
-                    </div>
-                    <div class="telemetry-grid">
-                        <div class="telemetry-item">
-                            <i data-lucide="battery" class="tel-icon" id="tel-battery-icon" style="color: var(--text-muted);"></i>
-                            <div class="tel-details">
-                                <span class="tel-label">Battery</span>
-                                <span class="tel-value" id="tel-battery">--</span>
-                            </div>
-                        </div>
-                        <div class="telemetry-item">
-                            <i data-lucide="gauge" class="tel-icon" style="color: var(--text-muted);"></i>
-                            <div class="tel-details">
-                                <span class="tel-label">Speed</span>
-                                <span class="tel-value" id="tel-speed">--</span>
-                            </div>
-                        </div>
-                        <div class="telemetry-item">
-                            <i data-lucide="wifi" class="tel-icon" id="tel-wifi-icon" style="color: var(--text-muted);"></i>
-                            <div class="tel-details">
-                                <span class="tel-label">Signal</span>
-                                <span class="tel-value" id="tel-signal">--</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- ── FLOATING TACTICAL TOOLBAR (LEFT SIDEBAR HUD) ──────────────── -->
             <div class="map-hud-overlay map-floating-tools">
                 <div class="map-tools-title">Tools</div>
@@ -777,14 +612,6 @@
                 </div>
             </div>
 
-            <!-- ── FLOATING STYLE SELECTOR SWITCH ─────── -->
-            <div class="map-hud-overlay" style="top: 14px; right: 60px; pointer-events: auto; z-index: 1000;">
-                <div class="style-pill-selector">
-                    <button class="style-pill active" id="style-btn-streets">Vector</button>
-                    <button class="style-pill" id="style-btn-satellite">Satellite</button>
-                </div>
-            </div>
-
             <!-- ── HUD BOTTOM STATS CARDS (COORDINATES READOUTS) ─────────────── -->
             <div class="map-hud-overlay map-hud-bottom">
                 <div class="map-hud-card">
@@ -820,6 +647,9 @@
                 <div class="map-zoom-divider"></div>
                 <button class="map-zoom-btn" id="btn-recenter" style="--btn-color: #FFB800;" title="Recenter on Rover">
                     <i data-lucide="crosshair"></i>
+                </button>
+                <button class="map-zoom-btn" id="btn-layers" style="--btn-color: #A066FF;" title="Toggle Layer">
+                    <i data-lucide="layers"></i>
                 </button>
             </div>
 
@@ -865,6 +695,7 @@
     // Tile Layers
     let osmLayer = null;
     let esriLayer = null;
+    let activeLayerName = 'streets'; // 'streets' or 'satellite'
     
     // ── GEOFENCE ENTRY DETECTION (RAY CASTING ALGORITHM) ────────────────────
     function isPointInPolygon(point, polygon) {
@@ -910,21 +741,14 @@
             // Add default base layer
             osmLayer.addTo(map);
             
-            // Native Leaflet Layer Control
-            const baseMaps = {
-                "Vector Map": osmLayer,
-                "Satellite Map": esriLayer
-            };
-            L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
-            
-            // Sync style switcher status on layer switch via native control
+            // Sync style switcher status on layer switch via native control (if added)
             map.on('baselayerchange', (e) => {
                 if (e.layer === esriLayer) {
-                    document.getElementById('style-btn-streets').classList.remove('active');
-                    document.getElementById('style-btn-satellite').classList.add('active');
+                    activeLayerName = 'satellite';
+                    document.getElementById('btn-layers')?.classList.add('active');
                 } else {
-                    document.getElementById('style-btn-satellite').classList.remove('active');
-                    document.getElementById('style-btn-streets').classList.add('active');
+                    activeLayerName = 'streets';
+                    document.getElementById('btn-layers')?.classList.remove('active');
                 }
             });
 
@@ -1094,19 +918,24 @@
         }
     }
 
-    // ── GPS SATELLITE/TERRAIN LAYERS SWITCH PILLS ────────────────────────────
-    function switchMapStyle(styleName) {
+    // ── GPS SATELLITE/VECTOR LAYERS QUICK TOGGLE BUTTON ───────────────────
+    function toggleMapStyle() {
         if (!map) return;
         
-        if (styleName === 'satellite') {
+        const btn = document.getElementById('btn-layers');
+        if (activeLayerName === 'streets') {
             if (map.hasLayer(osmLayer)) map.removeLayer(osmLayer);
             if (!map.hasLayer(esriLayer)) esriLayer.addTo(map);
+            activeLayerName = 'satellite';
+            if (btn) btn.classList.add('active');
+            window.RESCUEBOT_UI?.toast('Switched to Satellite Map', 'success');
         } else {
             if (map.hasLayer(esriLayer)) map.removeLayer(esriLayer);
             if (!map.hasLayer(osmLayer)) osmLayer.addTo(map);
+            activeLayerName = 'streets';
+            if (btn) btn.classList.remove('active');
+            window.RESCUEBOT_UI?.toast('Switched to Vector Map', 'success');
         }
-        
-        window.RESCUEBOT_UI?.toast(`Style toggled to ${styleName === 'satellite' ? 'Satellite' : 'Vector'} Map`, 'success');
     }
 
     // ── PLACING LANDMARKS (Custom Markers) ───────────────────────────────
@@ -1232,9 +1061,8 @@
             window.RESCUEBOT_UI?.toast('Rover breadcrumb trail cleared', 'info');
         });
 
-        // Layer selection switch
-        document.getElementById('style-btn-streets')?.addEventListener('click', () => switchMapStyle('streets'));
-        document.getElementById('style-btn-satellite')?.addEventListener('click', () => switchMapStyle('satellite'));
+        // Layers toggle click
+        document.getElementById('btn-layers')?.addEventListener('click', toggleMapStyle);
 
         // Toggle placing tools active state
         const tacticalTools = [
@@ -1281,43 +1109,6 @@
                 
                 if (!isNaN(lat) && !isNaN(lng)) {
                     updateRoverLocation(lat, lng); // Latitude first parameter order
-                    
-                    // Update speed display card
-                    const rawSpd = parseFloat(d.speed) || 0; 
-                    // Assume speed is either km/h or m/s. Show as m/s
-                    const spdMeters = (rawSpd > 10) ? (rawSpd / 3.6).toFixed(1) : rawSpd.toFixed(1);
-                    document.getElementById('tel-speed').textContent = `${spdMeters} m/s`;
-                }
-            });
-            
-            mqttCtrl.on('telemetry', (d) => {
-                if (!d || !d.sensor) return;
-                const sensor = d.sensor;
-                const val = d.value;
-                
-                // Read and update Floating Telemetry Box components
-                if (sensor === 'batt') {
-                    const volt = parseFloat(val);
-                    const pct = Math.round(Math.min(100, Math.max(0, (volt / 12.6) * 100)));
-                    document.getElementById('tel-battery').textContent = `${pct}%`;
-                    
-                    const battIcon = document.getElementById('tel-battery-icon');
-                    if (battIcon) {
-                        battIcon.style.color = pct > 50 ? '#00FF88' : pct > 20 ? '#FFB800' : '#FF2D55';
-                    }
-                }
-                
-                if (sensor === 'wifi') {
-                    const rssi = parseFloat(val);
-                    let signal = 'Strong';
-                    let color = '#00FF88';
-                    
-                    if (rssi < -82) { signal = 'Weak'; color = '#FF2D55'; }
-                    else if (rssi < -62) { signal = 'Medium'; color = '#FFB800'; }
-                    
-                    document.getElementById('tel-signal').textContent = signal;
-                    const wifiIcon = document.getElementById('tel-wifi-icon');
-                    if (wifiIcon) wifiIcon.style.color = color;
                 }
             });
 
