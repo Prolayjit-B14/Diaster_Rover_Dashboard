@@ -32,7 +32,7 @@ detection:
 inference:
   device: cpu
   half_precision: false
-  imgsz: 640
+  imgsz: 480
   max_detections: 20
   target_fps: 10
 logging:

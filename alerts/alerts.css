@@ -165,7 +165,28 @@
     flex-shrink: 0;
     align-self: flex-start;
     margin-top: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
 }
+
+.urgency-tag {
+    font-size: 8px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: var(--radius-xs);
+    text-transform: uppercase;
+    color: white;
+    letter-spacing: 0.03em;
+    display: inline-block;
+}
+
+.urgency-tag.urgency-immediate { background: #dc2626; }
+.urgency-tag.urgency-medium    { background: #d97706; }
+.urgency-tag.urgency-low       { background: #16a34a; }
+.urgency-tag.urgency-verify    { background: #6b7280; }
+
 
 /* ── EMPTY STATE ─────────────────────────────────────────────── */
 .empty-alerts {

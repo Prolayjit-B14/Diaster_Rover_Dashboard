@@ -249,6 +249,8 @@
 .hud-bbox.hazard { border-color: var(--status-warn); }
 .hud-bbox.fire   { border-color: var(--status-danger); }
 .hud-bbox.motion { border-color: var(--accent); }
+.hud-bbox.smoke-box { border-color: #f97316; }
+.hud-bbox.face-box  { border-color: #3b82f6; }
 
 .bbox-label {
     position: absolute;
@@ -268,6 +270,8 @@
 .hud-bbox.hazard .bbox-label { background: var(--status-warn); }
 .hud-bbox.fire   .bbox-label { background: var(--status-danger); }
 .hud-bbox.motion .bbox-label { background: var(--accent); }
+.hud-bbox.smoke-box .bbox-label { background: #f97316; }
+.hud-bbox.face-box  .bbox-label { background: #3b82f6; }
 
 /* ── FEED FOOTER CONTROLS ────────────────────────────────────── */
 .monitoring-card-footer {
@@ -661,3 +665,586 @@ details[open] summary .chevron-icon {
         border-top: 1px solid var(--border-subtle);
     }
 }
+
+/* ============================================================
+   7-STAGE AI PIPELINE COMPONENT STYLES
+   ============================================================ */
+
+/* ── HAZARD BANNER ─────────────────────────────────────────── */
+.scene-hazard-banner {
+    display: none; /* Shown dynamically via JS */
+    background: var(--status-danger-bg);
+    border-bottom: 1px solid var(--status-danger-bd);
+    padding: 10px var(--space-5);
+    animation: bannerPulse 3s ease-in-out infinite;
+    z-index: 10;
+}
+
+@keyframes bannerPulse {
+    0%, 100% { background-color: rgba(239, 68, 68, 0.12); }
+    50% { background-color: rgba(239, 68, 68, 0.22); }
+}
+
+.scene-hazard-banner.hazard-critical {
+    border-bottom: 2px solid var(--status-danger);
+}
+
+.scene-hazard-banner.hazard-high {
+    border-bottom: 2px solid #f97316;
+}
+
+.hazard-banner-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+
+.hazard-icon-wrap {
+    width: 32px;
+    height: 32px;
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid var(--status-danger);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--status-danger);
+    animation: flashIcon 1s step-end infinite;
+}
+
+@keyframes flashIcon {
+    50% { opacity: 0.5; }
+}
+
+.hazard-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.hazard-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.hazard-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.hazard-tags {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+}
+
+.hazard-level-chip,
+.hazard-survivors-chip {
+    padding: 3px 8px;
+    border-radius: var(--radius-xs);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.hazard-level-chip {
+    background: var(--status-danger);
+    color: white;
+}
+
+.hazard-survivors-chip {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+}
+
+.hazard-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: var(--space-1);
+    border-radius: var(--radius-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hazard-close:hover {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-primary);
+}
+
+/* ── SCENE SUMMARY STRIP ─────────────────────────────────────── */
+.scene-summary-strip {
+    display: flex;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 8px var(--space-5);
+    gap: var(--space-4);
+    align-items: center;
+    justify-content: space-between;
+    overflow-x: auto;
+}
+
+.ss-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.ss-label {
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+.ss-value {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.ss-danger { color: var(--status-danger); }
+.ss-warn { color: var(--status-warn); }
+.ss-ok { color: var(--status-ok); }
+.ss-hazard { color: #f97316; }
+
+/* ── DETECTION TILES ROW ─────────────────────────────────────── */
+.detection-tiles-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    padding: 10px var(--space-5);
+    background: var(--bg-deep);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.detection-tile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.detection-tile.triggered {
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(79, 70, 229, 0.25);
+    transform: translateY(-1px);
+}
+
+.detection-tile.danger-triggered {
+    border-color: var(--status-danger);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.25);
+    transform: translateY(-1px);
+}
+
+.tile-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.tile-icon-wrap {
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-elevated);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.detection-tile.triggered .tile-icon-wrap {
+    color: var(--text-primary);
+}
+
+.human-icon.triggered { background: rgba(34, 197, 94, 0.2); color: var(--status-ok); }
+.fire-icon.triggered { background: rgba(239, 68, 68, 0.2); color: var(--status-danger); }
+.smoke-icon.triggered { background: rgba(107, 114, 128, 0.2); color: var(--text-secondary); }
+.pose-icon.triggered { background: rgba(245, 158, 11, 0.2); color: var(--status-warn); }
+.motion-icon.triggered { background: rgba(79, 70, 229, 0.2); color: var(--accent); }
+
+.tile-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.tile-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.tile-status {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.detection-tile.triggered .tile-status {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.tile-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.tile-count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.detection-tile.triggered .tile-count {
+    color: var(--text-primary);
+}
+
+.tile-conf-bar {
+    width: 32px;
+    height: 3px;
+    background: var(--bg-elevated);
+    border-radius: 99px;
+    margin-top: 3px;
+    overflow: hidden;
+}
+
+.tile-conf-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.human-fill { background: var(--status-ok); }
+.fire-fill { background: var(--status-danger); }
+.smoke-fill { background: #9ca3af; }
+.pose-fill { background: var(--status-warn); }
+.motion-fill { background: var(--accent); }
+
+/* ── HUD COMPASS & METRICS ───────────────────────────────────── */
+.hud-tele-strip {
+    position: absolute;
+    bottom: var(--space-4);
+    left: var(--space-4);
+    right: var(--space-4);
+    background: rgba(11, 15, 25, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 6px var(--space-4);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.hud-tele-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.hud-tele-label {
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.hud-tele-value {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* ── Bounding Box Customizations ────────────────────────────── */
+.hud-bbox.smoke-box {
+    border-color: rgba(156, 163, 175, 0.85);
+    box-shadow: 0 0 8px rgba(156, 163, 175, 0.4);
+}
+
+.hud-bbox.smoke-box .bbox-label {
+    background: #6b7280;
+}
+
+.hud-bbox.fire {
+    animation: fireGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes fireGlow {
+    from { box-shadow: 0 0 4px rgba(239, 68, 68, 0.4); }
+    to { box-shadow: 0 0 16px rgba(239, 68, 68, 0.8); }
+}
+
+/* ── ENVIRONMENTAL RISK PANEL ────────────────────────────────── */
+.env-risk-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.env-risk-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.env-risk-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.env-risk-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.env-risk-value.safe { color: var(--status-ok); }
+.env-risk-value.warn { color: var(--status-warn); }
+.env-risk-value.danger { color: var(--status-danger); }
+.env-risk-value.ok { color: var(--status-ok); }
+
+/* ── SURVIVOR PANEL ──────────────────────────────────────────── */
+.survivor-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.survivor-empty {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 11px;
+    border: 1px dashed var(--border-subtle);
+    border-radius: var(--radius-md);
+}
+
+.survivor-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-left: 3px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    transition: all 0.2s ease;
+}
+
+.survivor-card:hover {
+    border-color: var(--border-default);
+    transform: translateX(2px);
+}
+
+.survivor-card.priority-critical { border-left-color: var(--status-danger); }
+.survivor-card.priority-high     { border-left-color: #f97316; }
+.survivor-card.priority-medium   { border-left-color: var(--status-warn); }
+.survivor-card.priority-low      { border-left-color: var(--status-ok); }
+
+.survivor-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.survivor-id-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.survivor-id {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--text-primary);
+}
+
+.survivor-status-pill {
+    padding: 2px 6px;
+    border-radius: var(--radius-xs);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.survivor-status-pill.status-active { background: rgba(34, 197, 94, 0.15); color: var(--status-ok); }
+.survivor-status-pill.status-low { background: rgba(245, 158, 11, 0.15); color: var(--status-warn); }
+.survivor-status-pill.status-unconscious { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+.survivor-status-pill.status-verify { background: rgba(239, 68, 68, 0.15); color: var(--status-danger); }
+
+.survivor-priority-tags {
+    display: flex;
+    gap: 4px;
+}
+
+.priority-tag, .urgency-tag {
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: var(--radius-xs);
+    text-transform: uppercase;
+}
+
+.priority-tag.priority-critical { background: var(--status-danger); color: white; }
+.priority-tag.priority-high     { background: #f97316; color: white; }
+.priority-tag.priority-medium   { background: var(--status-warn); color: black; }
+.priority-tag.priority-low      { background: var(--status-ok); color: white; }
+
+.urgency-tag.urgency-immediate { background: #dc2626; color: white; }
+.urgency-tag.urgency-medium    { background: #d97706; color: white; }
+.urgency-tag.urgency-low       { background: #16a34a; color: white; }
+.urgency-tag.urgency-verify    { background: #6b7280; color: white; }
+
+.survivor-score-bar {
+    height: 3px;
+    background: var(--bg-card);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.survivor-score-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 0.4s ease;
+}
+
+.survivor-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    font-size: 9px;
+    color: var(--text-muted);
+}
+
+.survivor-meta-item {
+    background: rgba(255, 255, 255, 0.04);
+    padding: 1px 5px;
+    border-radius: 2px;
+}
+
+.survivor-conf-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--text-muted);
+}
+
+.survivor-conf-val {
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+}
+
+/* ── RESCUE PRIORITY LIST ────────────────────────────────────── */
+.rescue-priority-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.rescue-empty {
+    padding: 15px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.rescue-item {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-left: 3px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    transition: transform 0.2s ease;
+}
+
+.rescue-item:hover {
+    transform: translateX(2px);
+}
+
+.rescue-item.priority-critical { border-left-color: var(--status-danger); }
+.rescue-item.priority-high     { border-left-color: #f97316; }
+.rescue-item.priority-medium   { border-left-color: var(--status-warn); }
+.rescue-item.priority-low      { border-left-color: var(--status-ok); }
+
+.rescue-rank {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    width: 16px;
+    text-align: center;
+}
+
+.rescue-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.rescue-id {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.rescue-status-text {
+    font-size: 9px;
+    color: var(--text-muted);
+}
+
+.rescue-tags {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.rescue-count-badge {
+    padding: 2px 6px;
+    background: var(--status-danger);
+    color: white;
+    border-radius: var(--radius-full);
+    font-size: 9px;
+    font-weight: 700;
+}
+

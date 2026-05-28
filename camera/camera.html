@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rescue Intel | Live Monitoring</title>
+    <meta name="description" content="Real-time AI-powered survivor intelligence, fire detection, and rescue priority ranking.">
     <link rel="icon" type="image/png" href="../assets/favicon.png">
     <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('rescuebot-theme') || 'dark');</script>
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./camera.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 </head>
 <body>
 <div class="app-shell">
@@ -56,7 +55,7 @@
                 <i data-lucide="home"></i>
                 <span class="nav-label">Home</span>
             </a>
-            <a href="#" class="nav-item" aria-disabled="true" title="Coming Soon" data-tooltip="Settings" style="opacity:0.35;cursor:not-allowed;pointer-events:none;">
+            <a href="#" class="nav-item" aria-disabled="true" data-tooltip="Settings" style="opacity:0.35;cursor:not-allowed;pointer-events:none;">
                 <i data-lucide="settings"></i>
                 <span class="nav-label">Settings</span>
             </a>
@@ -80,16 +79,12 @@
                     <i data-lucide="menu"></i>
                 </button>
                 <span class="nav-page-title">Live Monitoring</span>
-                <span class="nav-breadcrumb">/ Camera Feed</span>
+                <span class="nav-breadcrumb">/ Survivor Intelligence</span>
             </div>
             <div class="nav-right">
                 <div class="live-indicator">
                     <div class="live-dot standby" id="cam-rec-dot"></div>
                     <span id="cam-rec-label">Standby</span>
-                </div>
-                <div class="status-pill" id="ai-server-pill" title="AI Backend Status">
-                    <div class="status-dot offline" id="ai-server-dot"></div>
-                    <span id="ai-server-text" style="font-family:var(--font-mono);font-size:10px;">AI Offline</span>
                 </div>
                 <div class="status-pill">
                     <i data-lucide="clock" style="width:11px;height:11px;"></i>
@@ -104,22 +99,56 @@
         <!-- CAMERA SHELL -->
         <div class="camera-shell">
 
-            <!-- ── AI ALERT BANNER ─────────────────────────────── -->
-            <div class="ai-alert-banner" id="ai-alert-banner" style="display:none;">
-                <div class="ai-alert-banner-inner">
-                    <div class="ai-alert-icon">
-                        <i data-lucide="alert-triangle"></i>
+            <!-- ── SCENE HAZARD BANNER ─────────────────────────── -->
+            <div class="scene-hazard-banner" id="scene-hazard-banner" style="display:none;">
+                <div class="hazard-banner-inner">
+                    <div class="hazard-icon"><i data-lucide="alert-triangle"></i></div>
+                    <div class="hazard-content">
+                        <span class="hazard-title" id="hazard-banner-title">CRITICAL HAZARD DETECTED</span>
+                        <span class="hazard-desc" id="hazard-banner-desc">Active fire + unconscious survivor in critical proximity</span>
                     </div>
-                    <div class="ai-alert-content">
-                        <span class="ai-alert-title" id="ai-alert-title">Critical Event Detected</span>
-                        <span class="ai-alert-desc" id="ai-alert-desc">Possible survivor signaling for assistance</span>
+                    <div class="hazard-tags">
+                        <span class="hazard-level-chip" id="hazard-level-chip">CRITICAL</span>
+                        <span class="hazard-survivors-chip" id="hazard-survivors-chip">0 Survivors</span>
                     </div>
-                    <div class="ai-alert-priority" id="ai-alert-priority-badge">Critical</div>
-                    <button class="ai-alert-close" id="ai-alert-close">&#x2715;</button>
+                    <button class="hazard-close" id="hazard-banner-close">&#x2715;</button>
                 </div>
             </div>
 
-            <!-- ── MAIN MONITORING CONTAINER ────────────────────── -->
+            <!-- ── SCENE SUMMARY STRIP ──────────────────────────── -->
+            <div class="scene-summary-strip" id="scene-summary-strip">
+                <div class="ss-item">
+                    <span class="ss-label">Survivors</span>
+                    <span class="ss-value" id="ss-survivor-count">0</span>
+                </div>
+                <div class="ss-divider"></div>
+                <div class="ss-item">
+                    <span class="ss-label">Fire</span>
+                    <span class="ss-value ss-fire" id="ss-fire-state">CLEAR</span>
+                </div>
+                <div class="ss-divider"></div>
+                <div class="ss-item">
+                    <span class="ss-label">Smoke</span>
+                    <span class="ss-value" id="ss-smoke-state">CLEAR</span>
+                </div>
+                <div class="ss-divider"></div>
+                <div class="ss-item">
+                    <span class="ss-label">Visibility</span>
+                    <span class="ss-value" id="ss-visibility">HIGH</span>
+                </div>
+                <div class="ss-divider"></div>
+                <div class="ss-item">
+                    <span class="ss-label">Hazard</span>
+                    <span class="ss-value ss-hazard" id="ss-hazard-level">LOW</span>
+                </div>
+                <div class="ss-divider"></div>
+                <div class="ss-item">
+                    <span class="ss-label">Spread Risk</span>
+                    <span class="ss-value" id="ss-spread-risk">NONE</span>
+                </div>
+            </div>
+
+            <!-- ── MAIN MONITORING CONTAINER ──────────────────── -->
             <div class="camera-monitoring-container">
 
                 <!-- CENTER: CAMERA FEED CARD -->
@@ -135,9 +164,7 @@
                                 Status: <span class="meta-status">Live</span>
                             </div>
                             <div class="meta-item-separator">|</div>
-                            <div class="meta-item">AI Analysis: <span class="meta-status" id="fps-badge">Active</span></div>
-                            <div class="meta-item-separator">|</div>
-                            <div class="meta-item">Connection: <span class="meta-status text-green">Stable</span></div>
+                            <div class="meta-item">AI Pipeline: <span class="meta-status text-green" id="fps-badge">Active</span></div>
                             <div class="meta-item-separator">|</div>
                             <div class="meta-item">Latency: <span class="meta-status" id="latency-badge">-- ms</span></div>
                             <div class="meta-item-separator">|</div>
@@ -156,21 +183,45 @@
                             </div>
                         </div>
 
-                        <!-- Detection Overlays -->
-                        <div class="hud-bbox human"  id="bbox-human"  style="display:none;">
-                            <div class="bbox-label">Human &middot; <span id="bbox-human-conf">0%</span></div>
+                        <!-- Dynamic Bounding Box Overlay Container -->
+                        <div id="bbox-container" style="position: absolute; inset: 0; pointer-events: none; z-index: 5;"></div>
+
+                        <!-- Bounding Box Overlays -->
+                        <div class="hud-bbox human" id="bbox-human" style="display:none;">
+                            <div class="bbox-label">PERSON &middot; <span id="bbox-human-conf">0%</span></div>
                         </div>
-                        <div class="hud-bbox hazard" id="bbox-hazard" style="display:none;">
-                            <div class="bbox-label">Hazard &middot; <span id="bbox-hazard-conf">0%</span></div>
+                        <div class="hud-bbox fire" id="bbox-fire" style="display:none;">
+                            <div class="bbox-label">FIRE &middot; <span id="bbox-fire-conf">0%</span></div>
                         </div>
-                        <div class="hud-bbox fire"   id="bbox-fire"   style="display:none;">
-                            <div class="bbox-label">Fire &middot; <span id="bbox-fire-conf">0%</span></div>
-                        </div>
-                        <div class="hud-bbox motion" id="bbox-motion" style="display:none;">
-                            <div class="bbox-label">Movement</div>
+                        <div class="hud-bbox smoke-box" id="bbox-smoke" style="display:none;">
+                            <div class="bbox-label">SMOKE &middot; <span id="bbox-smoke-conf">0%</span></div>
                         </div>
 
-                        <!-- Feed Controls (bottom overlay) -->
+                        <!-- HUD Telemetry Strip -->
+                        <div class="hud-tele-strip">
+                            <div class="hud-tele-item">
+                                <span class="hud-tele-label">LAT</span>
+                                <span class="hud-tele-value" id="hud-lat">--</span>
+                            </div>
+                            <div class="hud-tele-item">
+                                <span class="hud-tele-label">LNG</span>
+                                <span class="hud-tele-value" id="hud-lng">--</span>
+                            </div>
+                            <div class="hud-tele-item">
+                                <span class="hud-tele-label">SPD</span>
+                                <span class="hud-tele-value" id="hud-speed">-- m/s</span>
+                            </div>
+                            <div class="hud-tele-item">
+                                <span class="hud-tele-label">HDG</span>
+                                <span class="hud-tele-value" id="hud-heading">--°</span>
+                            </div>
+                            <div class="hud-tele-item">
+                                <span class="hud-tele-label">ALT</span>
+                                <span class="hud-tele-value" id="hud-alt">-- m</span>
+                            </div>
+                        </div>
+
+                        <!-- Feed Controls -->
                         <div class="monitoring-card-footer">
                             <button class="feed-btn" id="btn-stream-toggle" title="Start / Stop Monitoring">
                                 <i data-lucide="play"></i>
@@ -181,6 +232,95 @@
                             <button class="feed-btn" id="btn-fullscreen" title="Expand View">
                                 <i data-lucide="maximize"></i>
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Detection Tiles Grid (below feed) -->
+                    <div class="detection-tiles-row">
+                        <!-- Human -->
+                        <div class="detection-tile" id="tile-human">
+                            <div class="tile-icon-wrap human-icon">
+                                <i data-lucide="user"></i>
+                            </div>
+                            <div class="tile-info">
+                                <div class="tile-label">Human</div>
+                                <div class="tile-status" id="status-human">CLEAR</div>
+                            </div>
+                            <div class="tile-right">
+                                <span class="tile-count" id="count-human">0</span>
+                                <div class="tile-conf-bar">
+                                    <div class="tile-conf-fill human-fill" id="conf-human" style="width:0%"></div>
+                                </div>
+                                <span class="tile-conf-val" id="conf-val-human">0%</span>
+                            </div>
+                        </div>
+                        <!-- Fire -->
+                        <div class="detection-tile" id="tile-fire">
+                            <div class="tile-icon-wrap fire-icon">
+                                <i data-lucide="flame"></i>
+                            </div>
+                            <div class="tile-info">
+                                <div class="tile-label">Fire</div>
+                                <div class="tile-status" id="status-fire">CLEAR</div>
+                            </div>
+                            <div class="tile-right">
+                                <span class="tile-count" id="count-fire">0</span>
+                                <div class="tile-conf-bar">
+                                    <div class="tile-conf-fill fire-fill" id="conf-fire" style="width:0%"></div>
+                                </div>
+                                <span class="tile-conf-val" id="conf-val-fire">0%</span>
+                            </div>
+                        </div>
+                        <!-- Smoke -->
+                        <div class="detection-tile" id="tile-smoke">
+                            <div class="tile-icon-wrap smoke-icon">
+                                <i data-lucide="wind"></i>
+                            </div>
+                            <div class="tile-info">
+                                <div class="tile-label">Smoke</div>
+                                <div class="tile-status" id="status-smoke">CLEAR</div>
+                            </div>
+                            <div class="tile-right">
+                                <span class="tile-count" id="count-smoke">0</span>
+                                <div class="tile-conf-bar">
+                                    <div class="tile-conf-fill smoke-fill" id="conf-smoke" style="width:0%"></div>
+                                </div>
+                                <span class="tile-conf-val" id="conf-val-smoke">0%</span>
+                            </div>
+                        </div>
+                        <!-- Pose -->
+                        <div class="detection-tile" id="tile-pose">
+                            <div class="tile-icon-wrap pose-icon">
+                                <i data-lucide="person-standing"></i>
+                            </div>
+                            <div class="tile-info">
+                                <div class="tile-label">Posture</div>
+                                <div class="tile-status" id="status-pose">--</div>
+                            </div>
+                            <div class="tile-right">
+                                <span class="tile-count" id="count-pose">0</span>
+                                <div class="tile-conf-bar">
+                                    <div class="tile-conf-fill pose-fill" id="conf-pose" style="width:0%"></div>
+                                </div>
+                                <span class="tile-conf-val" id="conf-val-pose">0%</span>
+                            </div>
+                        </div>
+                        <!-- Motion -->
+                        <div class="detection-tile" id="tile-motion">
+                            <div class="tile-icon-wrap motion-icon">
+                                <i data-lucide="activity"></i>
+                            </div>
+                            <div class="tile-info">
+                                <div class="tile-label">Motion</div>
+                                <div class="tile-status" id="status-motion">NONE</div>
+                            </div>
+                            <div class="tile-right">
+                                <span class="tile-count" id="count-motion">0</span>
+                                <div class="tile-conf-bar">
+                                    <div class="tile-conf-fill motion-fill" id="conf-motion" style="width:0%"></div>
+                                </div>
+                                <span class="tile-conf-val" id="conf-val-motion">0%</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -197,8 +337,6 @@
                             </h3>
                         </summary>
                         <div class="tuning-row" style="padding-bottom:var(--space-5);">
-
-                            <!-- Camera IP -->
                             <div class="tuning-item">
                                 <div class="tuning-label-row">
                                     <span class="tuning-label">Camera IP Override</span>
@@ -208,8 +346,6 @@
                                     <button id="btn-apply-ip" class="ip-mount-btn">Mount</button>
                                 </div>
                             </div>
-
-                            <!-- Resolution -->
                             <div class="tuning-item">
                                 <div class="tuning-row-inline">
                                     <span class="tuning-label">Resolution</span>
@@ -221,8 +357,6 @@
                                     </select>
                                 </div>
                             </div>
-
-                            <!-- Visual Effect -->
                             <div class="tuning-item">
                                 <div class="tuning-row-inline">
                                     <span class="tuning-label">Effect</span>
@@ -237,8 +371,6 @@
                                     </select>
                                 </div>
                             </div>
-
-                            <!-- Brightness -->
                             <div class="tuning-item">
                                 <div class="tuning-label-row">
                                     <span class="tuning-label">Brightness</span>
@@ -246,8 +378,6 @@
                                 </div>
                                 <input type="range" id="ctrl-brightness" class="tuning-input" min="-2" max="2" value="0" step="1">
                             </div>
-
-                            <!-- Contrast -->
                             <div class="tuning-item">
                                 <div class="tuning-label-row">
                                     <span class="tuning-label">Contrast</span>
@@ -255,17 +385,6 @@
                                 </div>
                                 <input type="range" id="ctrl-contrast" class="tuning-input" min="-2" max="2" value="0" step="1">
                             </div>
-
-                            <!-- Saturation -->
-                            <div class="tuning-item">
-                                <div class="tuning-label-row">
-                                    <span class="tuning-label">Saturation</span>
-                                    <span class="tuning-val" id="val-saturation">0</span>
-                                </div>
-                                <input type="range" id="ctrl-saturation" class="tuning-input" min="-2" max="2" value="0" step="1">
-                            </div>
-
-                            <!-- Flash LED -->
                             <div class="tuning-item">
                                 <div class="tuning-label-row">
                                     <span class="tuning-label">Flash LED</span>
@@ -273,8 +392,6 @@
                                 </div>
                                 <input type="range" id="ctrl-led" class="tuning-input" min="0" max="255" value="0" step="5">
                             </div>
-
-                            <!-- Switches -->
                             <div class="switch-row">
                                 <label class="switch-label">
                                     <input type="checkbox" id="ctrl-mirror" checked>
@@ -292,94 +409,55 @@
                         </div>
                     </details>
 
-                    <!-- Detection Analysis -->
+                    <!-- Environmental Risk -->
                     <div class="cam-sidebar-section">
                         <div class="section-title-row">
-                            <h3>Detection Analysis</h3>
-                            <span class="badge badge-neutral" id="rescue-priority-badge">Low</span>
+                            <h3><i data-lucide="thermometer" style="width:14px;height:14px;color:var(--status-warn);"></i> Environmental Risk</h3>
                         </div>
-                        <div class="rescue-intel-grid">
-                            <div class="ri-card" id="ri-human">
-                                <i data-lucide="user" style="width:16px;height:16px;color:var(--accent);flex-shrink:0;"></i>
-                                <div class="ri-info">
-                                    <div class="ri-label">Human Presence</div>
-                                    <div class="ri-value" id="ri-human-val">None detected</div>
-                                </div>
-                                <span class="ri-count" id="ri-human-count">0</span>
+                        <div class="env-risk-grid">
+                            <div class="env-risk-card" id="env-fire-prox">
+                                <div class="env-risk-label">Fire Proximity</div>
+                                <div class="env-risk-value safe" id="env-fire-prox-val">SAFE</div>
                             </div>
-                            <div class="ri-card" id="ri-motion">
-                                <i data-lucide="move" style="width:16px;height:16px;color:var(--accent);flex-shrink:0;"></i>
-                                <div class="ri-info">
-                                    <div class="ri-label">Movement Activity</div>
-                                    <div class="ri-value" id="ri-motion-val">No activity</div>
-                                </div>
+                            <div class="env-risk-card" id="env-visibility">
+                                <div class="env-risk-label">Visibility</div>
+                                <div class="env-risk-value ok" id="env-visibility-val">HIGH</div>
                             </div>
-                            <div class="ri-card" id="ri-fire">
-                                <i data-lucide="flame" style="width:16px;height:16px;color:var(--status-danger);flex-shrink:0;"></i>
-                                <div class="ri-info">
-                                    <div class="ri-label">Fire Risk</div>
-                                    <div class="ri-value" id="ri-fire-val">No risk detected</div>
-                                </div>
+                            <div class="env-risk-card" id="env-smoke-density">
+                                <div class="env-risk-label">Smoke Density</div>
+                                <div class="env-risk-value ok" id="env-smoke-density-val">CLEAR</div>
                             </div>
-                            <div class="ri-card" id="ri-smoke">
-                                <i data-lucide="cloud" style="width:16px;height:16px;color:var(--text-muted);flex-shrink:0;"></i>
-                                <div class="ri-info">
-                                    <div class="ri-label">Smoke Condition</div>
-                                    <div class="ri-value" id="ri-smoke-val">Clear</div>
-                                </div>
+                            <div class="env-risk-card" id="env-toxic">
+                                <div class="env-risk-label">Toxic Warning</div>
+                                <div class="env-risk-value ok" id="env-toxic-val">NO</div>
                             </div>
-                            <div class="ri-card" id="ri-gesture">
-                                <i data-lucide="hand" style="width:16px;height:16px;color:var(--status-warn);flex-shrink:0;"></i>
-                                <div class="ri-info">
-                                    <div class="ri-label">Gesture Detection</div>
-                                    <div class="ri-value" id="ri-gesture-val">None detected</div>
-                                </div>
+                        </div>
+                    </div>
+
+                    <!-- Survivor Intelligence Panel -->
+                    <div class="cam-sidebar-section">
+                        <div class="section-title-row">
+                            <h3><i data-lucide="scan-face" style="width:14px;height:14px;color:var(--accent);"></i> Survivor Intelligence</h3>
+                            <button class="section-action-btn" id="btn-clear-survivors">Clear</button>
+                        </div>
+                        <div class="survivor-panel" id="survivor-panel">
+                            <div class="survivor-empty" id="survivor-empty">
+                                <i data-lucide="scan" style="width:22px;height:22px;opacity:0.3;"></i>
+                                <span>No survivors detected</span>
                             </div>
-                            <div class="ri-card" id="ri-blood">
-                                <i data-lucide="droplet" style="width:16px;height:16px;color:var(--status-danger);flex-shrink:0;"></i>
-                                <div class="ri-info">
-                                    <div class="ri-label">Bleeding Detection</div>
-                                    <div class="ri-value" id="ri-blood-val">Clear</div>
-                                </div>
-                            </div>
-                            <div class="ri-card" id="ri-injury">
-                                <i data-lucide="heart-pulse" style="width:16px;height:16px;color:var(--status-danger);flex-shrink:0;"></i>
-                                <div class="ri-info">
-                                    <div class="ri-label">Injury Severity</div>
-                                    <div class="ri-value" id="ri-injury-val">Not assessed</div>
-                                </div>
-                            </div>
-                            <div class="ri-card ri-card-wide" id="ri-survivor">
-                                <div class="ri-label">Rescue Priority Score</div>
-                                <div class="ri-meter-wrap">
-                                    <div class="ri-meter-bar">
-                                        <div class="ri-meter-fill survivor-fill" id="ri-survivor-fill" style="width:0%"></div>
-                                    </div>
-                                    <span class="ri-meter-val" id="ri-survivor-val">0%</span>
-                                </div>
-                            </div>
-                            <div class="ri-card ri-card-wide" id="ri-priority">
-                                <div class="ri-label">Emergency Priority</div>
-                                <div class="ri-meter-wrap">
-                                    <div class="ri-meter-bar">
-                                        <div class="ri-meter-fill priority-fill" id="ri-priority-fill" style="width:0%"></div>
-                                    </div>
-                                    <span class="ri-meter-val" id="ri-priority-val">Low</span>
-                                </div>
-                            </div>
-                            <div class="ri-card" id="ri-firstaid">
-                                <i data-lucide="cross" style="width:16px;height:16px;color:var(--status-ok);flex-shrink:0;"></i>
-                                <div class="ri-info">
-                                    <div class="ri-label">Medical Need</div>
-                                    <div class="ri-value" id="ri-firstaid-val">Verification needed</div>
-                                </div>
-                            </div>
-                            <div class="ri-card" id="ri-livestatus">
-                                <i data-lucide="radio" style="width:16px;height:16px;color:var(--accent);flex-shrink:0;"></i>
-                                <div class="ri-info">
-                                    <div class="ri-label">Feed Status</div>
-                                    <div class="ri-value" id="ri-livestatus-val">Monitoring unavailable</div>
-                                </div>
+                        </div>
+                    </div>
+
+                    <!-- Rescue Priority List -->
+                    <div class="cam-sidebar-section">
+                        <div class="section-title-row">
+                            <h3><i data-lucide="list-ordered" style="width:14px;height:14px;color:var(--status-danger);"></i> Rescue Priority List</h3>
+                            <span class="rescue-count-badge" id="rescue-count-badge">0</span>
+                        </div>
+                        <div class="rescue-priority-list" id="rescue-priority-list">
+                            <div class="rescue-empty">
+                                <i data-lucide="shield-check" style="width:20px;height:20px;opacity:0.3;"></i>
+                                <span>No active rescue targets</span>
                             </div>
                         </div>
                     </div>
@@ -418,7 +496,6 @@
 <script type="module" src="../shared/mqtt-client.js"></script>
 <script type="module" src="../shared/shared.js"></script>
 <script type="module" src="./camera.js"></script>
-<script type="module" src="./ai-backend.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();

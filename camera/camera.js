@@ -1,6 +1,8 @@
 /**
- * RescueBOT — Vision Array Controller
- * camera.js — Full camera module with MQTT, FPS counter, AI detection, snapshot.
+ * RescueBOT — 7-Stage Survivor Intelligence Controller
+ * camera.js — Handles SCENE_UPDATE payloads, survivor cards,
+ *             rescue priority list, detection tiles, env risk,
+ *             bounding boxes and legacy alert types.
  */
 
 import '../shared/mqtt-client.js';
@@ -15,30 +17,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSnapshot      = document.getElementById('btn-snapshot');
     const btnFullscreen    = document.getElementById('btn-fullscreen');
 
-    // Navbar indicators
+    // Navbar
     const camRecDot        = document.getElementById('cam-rec-dot');
     const camRecLabel      = document.getElementById('cam-rec-label');
     const missionClock     = document.getElementById('mission-clock');
 
     // HUD badges
-    const recBadge         = document.getElementById('rec-badge');
     const fpsBadge         = document.getElementById('fps-badge');
     const latencyBadge     = document.getElementById('latency-badge');
     const hudTimestamp     = document.getElementById('hud-timestamp');
 
-    // Sidebar stats
+    // Sidebar camera badge
     const camConnBadge     = document.getElementById('cam-conn-badge');
-    const statFps          = document.getElementById('stat-fps');
-    const statRes          = document.getElementById('stat-res');
-    const statLatency      = document.getElementById('stat-latency');
-    const statQual         = document.getElementById('stat-qual');
-
-    // New HUD elements
-    const zoomValueEl      = document.getElementById('zoom-value');
-    const compassDiscEl    = document.getElementById('hud-compass-disc');
-    const compassHeadingEl = document.getElementById('compass-heading-val');
-    const btnZoomIn        = document.getElementById('btn-zoom-in');
-    const btnZoomOut       = document.getElementById('btn-zoom-out');
 
     // HUD Telemetry
     const hudSpeedEl       = document.getElementById('hud-speed');
@@ -47,120 +37,91 @@ document.addEventListener('DOMContentLoaded', () => {
     const hudLngEl         = document.getElementById('hud-lng');
     const hudAltEl         = document.getElementById('hud-alt');
 
-    // Sidebar reset / clear buttons
-    const btnClearTiles    = document.getElementById('btn-clear-tiles');
-    const btnClearLog      = document.getElementById('btn-clear-log');
+    // Scene Summary Strip
+    const ssSurvivorCount  = document.getElementById('ss-survivor-count');
+    const ssFireState      = document.getElementById('ss-fire-state');
+    const ssSmokeState     = document.getElementById('ss-smoke-state');
+    const ssVisibility     = document.getElementById('ss-visibility');
+    const ssHazardLevel    = document.getElementById('ss-hazard-level');
+    const ssSpreadRisk     = document.getElementById('ss-spread-risk');
 
-    // AI log
-    const aiLogList        = document.getElementById('ai-log-list');
+    // Hazard banner
+    const hazardBanner     = document.getElementById('scene-hazard-banner');
+    const hazardTitle      = document.getElementById('hazard-banner-title');
+    const hazardDesc       = document.getElementById('hazard-banner-desc');
+    const hazardLevelChip  = document.getElementById('hazard-level-chip');
+    const hazardSurvivors  = document.getElementById('hazard-survivors-chip');
+    const hazardClose      = document.getElementById('hazard-banner-close');
 
-    // Vision Array Controls
-    const ctrlRes          = document.getElementById('ctrl-resolution');
-    const ctrlBrightness   = document.getElementById('ctrl-brightness');
-    const ctrlContrast     = document.getElementById('ctrl-contrast');
-    const ctrlSaturation   = document.getElementById('ctrl-saturation');
-    const ctrlEffect       = document.getElementById('ctrl-effect');
-    const ctrlLed          = document.getElementById('ctrl-led');
-    const ctrlMirror       = document.getElementById('ctrl-mirror');
-    const ctrlFlip         = document.getElementById('ctrl-flip');
-    const ctrlNight        = document.getElementById('ctrl-night');
-    const valBrightness    = document.getElementById('val-brightness');
-    const valContrast      = document.getElementById('val-contrast');
-    const valSaturation    = document.getElementById('val-saturation');
-    const valLed           = document.getElementById('val-led');
+    // Environmental Risk
+    const envFireProxVal   = document.getElementById('env-fire-prox-val');
+    const envVisibilityVal = document.getElementById('env-visibility-val');
+    const envSmokeDensVal  = document.getElementById('env-smoke-density-val');
+    const envToxicVal      = document.getElementById('env-toxic-val');
+
+    // Survivor panel
+    const survivorPanel    = document.getElementById('survivor-panel');
+    const survivorEmpty    = document.getElementById('survivor-empty');
+    const btnClearSurvivors= document.getElementById('btn-clear-survivors');
+
+    // Rescue priority list
+    const rescueList       = document.getElementById('rescue-priority-list');
+    const rescueCountBadge = document.getElementById('rescue-count-badge');
+
+    // Detection tiles
+    const TILES = ['human', 'fire', 'smoke', 'pose', 'motion'];
+
+    // Bounding boxes
+    const bboxHuman        = document.getElementById('bbox-human');
+    const bboxFire         = document.getElementById('bbox-fire');
+    const bboxSmoke        = document.getElementById('bbox-smoke');
+
+    // Timeline
+    const timelineList     = document.getElementById('timeline-list');
+    const btnClearTimeline = document.getElementById('btn-clear-timeline');
+
+    // Vision controls
+    const ctrlCameraIp  = document.getElementById('ctrl-camera-ip');
+    const btnApplyIp    = document.getElementById('btn-apply-ip');
+    const ctrlRes       = document.getElementById('ctrl-resolution');
+    const ctrlBrightness= document.getElementById('ctrl-brightness');
+    const ctrlContrast  = document.getElementById('ctrl-contrast');
+    const ctrlLed       = document.getElementById('ctrl-led');
+    const ctrlEffect    = document.getElementById('ctrl-effect');
+    const ctrlMirror    = document.getElementById('ctrl-mirror');
+    const ctrlFlip      = document.getElementById('ctrl-flip');
+    const ctrlNight     = document.getElementById('ctrl-night');
+    const valBrightness = document.getElementById('val-brightness');
+    const valContrast   = document.getElementById('val-contrast');
+    const valLed        = document.getElementById('val-led');
 
     // ── State ─────────────────────────────────────────────────
-    let isStreaming  = false;
-    let isRecording  = false;
-    let zoomLevel    = 1.0;
+    let isStreaming = false;
+    let isRecording = false;
+    let lastScene   = null;
 
-    // Distributed AI Hybrid State (Pauses browser model if Python YOLO server is active)
-    let hasExternalAIServer = false;
-    let lastExternalAITime = 0;
-
-    // Detection tile counts
-    const tileCounts = {
-        motion: 0,
-        human: 0,
-        hazard: 0,
-        fire: 0
-    };
-
-    // FPS tracking
-    let fpsFrameTimes  = [];
-    let fpsValue       = 0;
-    let frameCount     = 0;
-
-    // Tile auto-clear timers
+    // Tile event counters
+    const tileCounts = { human: 0, fire: 0, smoke: 0, pose: 0, motion: 0 };
     const tileTimers = {};
 
-    // NOTE: Mission clock is managed centrally by shared.js.
-    // Removed duplicate setInterval here (was running two parallel clocks).
+    // FPS tracking
+    let fpsFrameTimes = [];
+    let fpsValue      = 0;
 
     // ── HUD Timestamp ─────────────────────────────────────────
     setInterval(() => {
         if (!hudTimestamp) return;
         const now = new Date();
-        const pad = (n, len = 2) => String(n).padStart(len, '0');
+        const p   = (n, l=2) => String(n).padStart(l, '0');
         hudTimestamp.textContent =
-            `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}  ` +
-            `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+            `${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())}  ` +
+            `${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`;
     }, 1000);
 
-    // ── Zoom Logic ────────────────────────────────────────────
-    const updateZoom = () => {
-        if (zoomValueEl) zoomValueEl.textContent = `${zoomLevel.toFixed(1)}x`;
-        if (streamImg) {
-            streamImg.style.transform = `scale(${zoomLevel})`;
-            streamImg.style.transformOrigin = 'center';
-            streamImg.style.transition = 'transform 0.25s ease';
-        }
-    };
-
-    if (btnZoomIn) {
-        btnZoomIn.addEventListener('click', () => {
-            if (zoomLevel < 5.0) {
-                zoomLevel += 0.5;
-                updateZoom();
-            }
-        });
-    }
-
-    if (btnZoomOut) {
-        btnZoomOut.addEventListener('click', () => {
-            if (zoomLevel > 1.0) {
-                zoomLevel -= 0.5;
-                updateZoom();
-            }
-        });
-    }
-
-    // ── FPS Counter via img onload ────────────────────────────
-    if (streamImg) {
-        streamImg.addEventListener('load', () => {
-            const now = performance.now();
-            frameCount++;
-            fpsFrameTimes.push(now);
-
-            // Remove frames older than 1 second
-            const oneSecAgo = now - 1000;
-            fpsFrameTimes = fpsFrameTimes.filter(t => t > oneSecAgo);
-            fpsValue = fpsFrameTimes.length;
-
-            if (fpsBadge)    fpsBadge.textContent    = `${fpsValue} FPS`;
-            if (statFps)     statFps.textContent      = fpsValue;
-
-            // Estimate latency from frame rate (rough heuristic)
-            const latencyMs = fpsValue > 0 ? Math.round(1000 / fpsValue) : 0;
-            if (latencyBadge)  latencyBadge.textContent  = `${latencyMs} ms`;
-            if (statLatency)   statLatency.textContent   = `${latencyMs}`;
-
-            // Keep the stream mjpeg refreshing if it's a still URL (e.g., capture) and not a live push stream
-            if (isStreaming && streamImg.src && !streamImg.src.includes('/mjpeg') && !streamImg.src.includes('/stream') && streamImg.src.includes('/capture')) {
-                const sep = streamImg.src.includes('?') ? '&' : '?';
-                const baseUrl = streamImg.src.split('?')[0];
-                streamImg.src = `${baseUrl}${sep}_t=${Date.now()}`;
-            }
+    // ── Hazard Banner Close ───────────────────────────────────
+    if (hazardClose) {
+        hazardClose.addEventListener('click', () => {
+            if (hazardBanner) hazardBanner.style.display = 'none';
         });
     }
 
@@ -169,244 +130,94 @@ document.addEventListener('DOMContentLoaded', () => {
         btnStreamToggle.addEventListener('click', () => {
             const mqtt = window.mqttController;
             if (!isStreaming) {
-                // Activate stream
                 if (mqtt) mqtt.sendCommand('TOGGLE_STREAM', { active: true });
-                isStreaming = true;
-                isRecording = true;
-
-                // Update button
+                isStreaming = true; isRecording = true;
                 btnStreamToggle.innerHTML = `<i data-lucide="square"></i>`;
                 btnStreamToggle.title = 'Stop Monitoring';
                 btnStreamToggle.classList.add('active-stream');
-
-                // Update navbar REC indicator
-                if (camRecDot) {
-                    camRecDot.classList.remove('standby');
-                    camRecDot.classList.add('recording');
-                }
+                if (camRecDot)   { camRecDot.classList.remove('standby'); camRecDot.classList.add('recording'); }
                 if (camRecLabel) camRecLabel.textContent = 'RECORDING';
-
-                console.log('[Camera] Stream started.');
             } else {
-                // Deactivate stream
                 if (mqtt) mqtt.sendCommand('TOGGLE_STREAM', { active: false });
-                isStreaming = false;
-                isRecording = false;
-
-                // Reset button
+                isStreaming = false; isRecording = false;
                 btnStreamToggle.innerHTML = `<i data-lucide="play"></i>`;
                 btnStreamToggle.title = 'Start Monitoring';
                 btnStreamToggle.classList.remove('active-stream');
-
-                // Hide img, show placeholder
                 if (streamImg)       streamImg.style.display = 'none';
                 if (feedPlaceholder) feedPlaceholder.style.display = 'flex';
-
-                // Reset navbar indicator
-                if (camRecDot) {
-                    camRecDot.classList.remove('recording');
-                    camRecDot.classList.add('standby');
-                }
+                if (camRecDot)   { camRecDot.classList.remove('recording'); camRecDot.classList.add('standby'); }
                 if (camRecLabel) camRecLabel.textContent = 'STANDBY';
-
-                // Reset camera badge
-                if (camConnBadge) {
-                    camConnBadge.className = 'badge badge-red';
-                    camConnBadge.textContent = 'OFFLINE';
-                }
-
-                // Reset stats — unified format
                 if (fpsBadge)    fpsBadge.textContent    = '-- FPS';
                 if (latencyBadge) latencyBadge.textContent = '-- ms';
-                if (statFps)     statFps.textContent      = '--';
-                if (statLatency) statLatency.textContent  = '--';
-
-                console.log('[Camera] Stream stopped.');
             }
-
-            // Re-init lucide icons for new button
             if (window.lucide) window.lucide.createIcons();
         });
     }
 
-    // ── Vision Array Controls Event Listeners ─────────────────
-    const sendCamCommand = (cmd, valKey, val) => {
-        const mqtt = window.mqttController;
-        if (mqtt) {
-            const payload = {};
-            payload[valKey] = val;
-            mqtt.sendCommand(cmd, payload);
-        }
-    };
-
-    // ── Manual IP Mounting ────────────────────────────────────
-    const ctrlCameraIp = document.getElementById('ctrl-camera-ip');
-    const btnApplyIp   = document.getElementById('btn-apply-ip');
-
-    // Restore saved IP if present
+    // ── Manual IP Mount ───────────────────────────────────────
     if (ctrlCameraIp) {
-        const savedIp = localStorage.getItem('rescuebot-camera-ip');
-        if (savedIp) {
-            ctrlCameraIp.value = savedIp;
-        }
+        const saved = localStorage.getItem('rescuebot-camera-ip');
+        if (saved) ctrlCameraIp.value = saved;
     }
-
     if (btnApplyIp && ctrlCameraIp) {
         btnApplyIp.addEventListener('click', () => {
             let val = ctrlCameraIp.value.trim();
-            if (!val) {
-                if (window.RESCUEBOT_UI) window.RESCUEBOT_UI.toast('Please enter a valid IP address.', 'warning');
-                return;
-            }
-
-            // Remove any prefix protocol or port if the user pasted it
-            val = val.replace(/^(https?:\/\/)?/, ''); // Remove http:// or https://
-            val = val.replace(/\/.*$/, '');           // Remove trailing slash and path
-            val = val.split(':')[0];                  // Remove port if present (e.g. :81)
-
-            // Save to localStorage
+            if (!val) return;
+            val = val.replace(/^(https?:\/\/)?/, '').replace(/\/.*$/, '').split(':')[0];
             localStorage.setItem('rescuebot-camera-ip', val);
-
-            // Construct the final URL on port 81 (the stream server)
-            const streamUrl = `http://${val}:81/stream`;
-
-            // Mount the stream
-            if (streamImg) {
-                streamImg.src = streamUrl;
-                streamImg.style.display = 'block';
-            }
+            const url = `http://${val}:81/stream`;
+            if (streamImg) { streamImg.src = url; streamImg.style.display = 'block'; }
             if (feedPlaceholder) feedPlaceholder.style.display = 'none';
-
-            isStreaming = true;
-            isRecording = true;
-
-            // Update status badges
-            if (camConnBadge) {
-                camConnBadge.className = 'badge badge-green';
-                camConnBadge.textContent = 'LIVE (MANUAL)';
-            }
-            if (camRecDot) {
-                camRecDot.className = 'live-dot recording';
-            }
+            isStreaming = true; isRecording = true;
+            if (camRecDot) camRecDot.className = 'live-dot recording';
             if (camRecLabel) camRecLabel.textContent = 'LIVE';
-
-            if (window.RESCUEBOT_UI) window.RESCUEBOT_UI.toast(`Mounted manual camera feed: ${streamUrl}`, 'success');
-            console.log('[Camera] Mounted manual camera stream:', streamUrl);
+            if (window.RESCUEBOT_UI) window.RESCUEBOT_UI.toast(`Mounted: ${url}`, 'success');
         });
     }
 
-    if (ctrlRes) {
-        ctrlRes.addEventListener('change', (e) => {
-            const val = parseInt(e.target.value);
-            sendCamCommand('SET_RESOLUTION', 'val', val);
-            console.log('[Camera] Dispatched SET_RESOLUTION:', val);
-        });
-    }
+    // ── Vision Controls ───────────────────────────────────────
+    const sendCmd = (cmd, key, val) => {
+        const mqtt = window.mqttController;
+        if (mqtt) { const p = {}; p[key] = val; mqtt.sendCommand(cmd, p); }
+    };
+    if (ctrlRes)        ctrlRes.addEventListener('change',  e => sendCmd('SET_RESOLUTION', 'val', parseInt(e.target.value)));
+    if (ctrlBrightness) ctrlBrightness.addEventListener('input', e => { const v=parseInt(e.target.value); if(valBrightness) valBrightness.textContent=v>0?`+${v}`:v; sendCmd('SET_BRIGHTNESS','val',v); });
+    if (ctrlContrast)   ctrlContrast.addEventListener('input',   e => { const v=parseInt(e.target.value); if(valContrast)   valContrast.textContent=v>0?`+${v}`:v;   sendCmd('SET_CONTRAST','val',v); });
+    if (ctrlLed)        ctrlLed.addEventListener('input', e => { const v=parseInt(e.target.value); const p=Math.round((v/255)*100); if(valLed) valLed.textContent=`${p}%`; sendCmd('SET_LED_INTENSITY','val',v); if(ctrlNight) ctrlNight.checked=v>0; });
+    if (ctrlEffect)     ctrlEffect.addEventListener('change', e => sendCmd('SET_SPECIAL_EFFECT','val',parseInt(e.target.value)));
+    if (ctrlMirror)     ctrlMirror.addEventListener('change', e => sendCmd('SET_HMIRROR','enabled',e.target.checked));
+    if (ctrlFlip)       ctrlFlip.addEventListener('change',   e => sendCmd('SET_VFLIP','enabled',e.target.checked));
+    if (ctrlNight)      ctrlNight.addEventListener('change',  e => { const v=e.target.checked?255:0; if(ctrlLed) ctrlLed.value=v; if(valLed) valLed.textContent=e.target.checked?'100%':'0%'; sendCmd('SET_NIGHT_MODE','enabled',e.target.checked); });
 
-    if (ctrlBrightness) {
-        ctrlBrightness.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
-            if (valBrightness) valBrightness.textContent = val > 0 ? `+${val}` : val;
-            sendCamCommand('SET_BRIGHTNESS', 'val', val);
-        });
-    }
-
-    if (ctrlContrast) {
-        ctrlContrast.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
-            if (valContrast) valContrast.textContent = val > 0 ? `+${val}` : val;
-            sendCamCommand('SET_CONTRAST', 'val', val);
-        });
-    }
-
-    if (ctrlSaturation) {
-        ctrlSaturation.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
-            if (valSaturation) valSaturation.textContent = val > 0 ? `+${val}` : val;
-            sendCamCommand('SET_SATURATION', 'val', val);
-        });
-    }
-
-    if (ctrlEffect) {
-        ctrlEffect.addEventListener('change', (e) => {
-            const val = parseInt(e.target.value);
-            sendCamCommand('SET_SPECIAL_EFFECT', 'val', val);
-            console.log('[Camera] Dispatched SET_SPECIAL_EFFECT:', val);
-        });
-    }
-
-    if (ctrlLed) {
-        ctrlLed.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
-            const pct = Math.round((val / 255) * 100);
-            if (valLed) valLed.textContent = `${pct}%`;
-            sendCamCommand('SET_LED_INTENSITY', 'val', val);
-            if (ctrlNight) {
-                ctrlNight.checked = val > 0;
-            }
-        });
-    }
-
-    if (ctrlMirror) {
-        ctrlMirror.addEventListener('change', (e) => {
-            const enabled = e.target.checked;
-            sendCamCommand('SET_HMIRROR', 'enabled', enabled);
-            console.log('[Camera] Dispatched SET_HMIRROR:', enabled);
-        });
-    }
-
-    if (ctrlFlip) {
-        ctrlFlip.addEventListener('change', (e) => {
-            const enabled = e.target.checked;
-            sendCamCommand('SET_VFLIP', 'enabled', enabled);
-            console.log('[Camera] Dispatched SET_VFLIP:', enabled);
-        });
-    }
-
-    if (ctrlNight) {
-        ctrlNight.addEventListener('change', (e) => {
-            const enabled = e.target.checked;
-            const val = enabled ? 255 : 0;
-            if (ctrlLed) ctrlLed.value = val;
-            if (valLed) valLed.textContent = enabled ? '100%' : '0%';
-            sendCamCommand('SET_NIGHT_MODE', 'enabled', enabled);
-            console.log('[Camera] Dispatched SET_NIGHT_MODE:', enabled);
+    // ── FPS Counter ───────────────────────────────────────────
+    if (streamImg) {
+        streamImg.addEventListener('load', () => {
+            const now = performance.now();
+            fpsFrameTimes.push(now);
+            fpsFrameTimes = fpsFrameTimes.filter(t => t > now - 1000);
+            fpsValue = fpsFrameTimes.length;
+            if (fpsBadge)     fpsBadge.textContent    = `${fpsValue} FPS`;
+            const lat = fpsValue > 0 ? Math.round(1000 / fpsValue) : 0;
+            if (latencyBadge) latencyBadge.textContent = `${lat} ms`;
         });
     }
 
     // ── Snapshot ──────────────────────────────────────────────
     if (btnSnapshot) {
         btnSnapshot.addEventListener('click', () => {
-            if (!streamImg || streamImg.style.display === 'none') {
-                console.warn('[Camera] No active stream to snapshot.');
-                return;
-            }
-
+            if (!streamImg || streamImg.style.display === 'none') return;
             try {
-                const canvas  = document.createElement('canvas');
-                canvas.width  = streamImg.naturalWidth  || streamImg.width  || 640;
-                canvas.height = streamImg.naturalHeight || streamImg.height || 480;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(streamImg, 0, 0, canvas.width, canvas.height);
-
-                const dataUrl = canvas.toDataURL('image/png');
-                const link    = document.createElement('a');
-                const ts      = new Date().toISOString().replace(/[:.]/g, '-');
-                link.download = `rescuebot_snapshot_${ts}.png`;
-                link.href     = dataUrl;
-                link.click();
-                console.log('[Camera] Snapshot saved.');
-
-                // Using direct function call since addAILog might be external/missing
-                console.log('[Camera] Snapshot logged as AI event.');
+                const canvas = document.createElement('canvas');
+                canvas.width  = streamImg.naturalWidth  || 640;
+                canvas.height = streamImg.naturalHeight || 480;
+                canvas.getContext('2d').drawImage(streamImg, 0, 0);
+                const a  = document.createElement('a');
+                const ts = new Date().toISOString().replace(/[:.]/g, '-');
+                a.download = `rescuebot_snapshot_${ts}.png`;
+                a.href = canvas.toDataURL('image/png');
+                a.click();
             } catch (err) {
-                console.error('[Camera] Snapshot failed (CORS or cross-origin restriction):', err);
-                if (window.RESCUEBOT_UI) {
-                    window.RESCUEBOT_UI.toast(
-                        'Snapshot failed: camera feed may be cross-origin.',
-                        'error'
-                    );
-                }
+                if (window.RESCUEBOT_UI) window.RESCUEBOT_UI.toast('Snapshot failed (CORS restriction)', 'error');
             }
         });
     }
@@ -415,348 +226,603 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnFullscreen) {
         btnFullscreen.addEventListener('click', () => {
             if (!document.fullscreenElement) {
-                if (mainFeedPanel && mainFeedPanel.requestFullscreen) {
-                    mainFeedPanel.requestFullscreen().catch(err => {
-                        console.error('[Camera] Fullscreen error:', err);
-                    });
-                }
+                mainFeedPanel?.requestFullscreen().catch(() => {});
             } else {
                 document.exitFullscreen();
             }
         });
     }
 
-    // ── Tile Reset Button ─────────────────────────────────────
-    if (btnClearTiles) {
-        btnClearTiles.addEventListener('click', () => {
-            Object.keys(tileCounts).forEach(key => {
-                tileCounts[key] = 0;
-                const countBadge = document.getElementById(`count-${key}`);
-                if (countBadge) countBadge.textContent = '0';
+    // ── Clear Buttons ─────────────────────────────────────────
+    if (btnClearSurvivors) {
+        btnClearSurvivors.addEventListener('click', () => {
+            renderSurvivors([]);
+            renderRescueList([]);
+        });
+    }
+    if (btnClearTimeline) {
+        btnClearTimeline.addEventListener('click', () => {
+            if (timelineList) timelineList.innerHTML = `<div class="timeline-empty"><i data-lucide="clock" style="width:20px;height:20px;opacity:0.3;"></i><span>No incidents logged</span></div>`;
+            if (window.lucide) window.lucide.createIcons();
+        });
+    }
 
-                const confFill = document.getElementById(`conf-${key}`);
+    // ═════════════════════════════════════════════════════════
+    // TILE ENGINE
+    // ═════════════════════════════════════════════════════════
+    function triggerTile(key, statusText, cssClass, conf, clearMs = 5000) {
+        const tile    = document.getElementById(`tile-${key}`);
+        const statusEl= document.getElementById(`status-${key}`);
+        const countEl = document.getElementById(`count-${key}`);
+        const confFill= document.getElementById(`conf-${key}`);
+        const confVal = document.getElementById(`conf-val-${key}`);
+
+        if (!tile || !statusEl) return;
+
+        if (tileTimers[key]) { clearTimeout(tileTimers[key]); delete tileTimers[key]; }
+
+        tileCounts[key]++;
+        if (countEl) countEl.textContent = tileCounts[key];
+
+        tile.className = `detection-tile ${cssClass}`;
+        statusEl.textContent = statusText;
+        if (confFill) confFill.style.width = `${Math.min(100, conf)}%`;
+        if (confVal)  confVal.textContent   = `${Math.round(conf)}%`;
+
+        if (clearMs > 0) {
+            tileTimers[key] = setTimeout(() => {
+                tile.className = 'detection-tile';
+                statusEl.textContent = key === 'pose' ? '--' : key === 'motion' ? 'NONE' : 'CLEAR';
                 if (confFill) confFill.style.width = '0%';
+                if (confVal)  confVal.textContent  = '0%';
+                delete tileTimers[key];
+            }, clearMs);
+        }
+    }
 
-                const confVal = document.getElementById(`conf-val-${key}`);
-                if (confVal) confVal.textContent = '0%';
+    // ═════════════════════════════════════════════════════════
+    // BOUNDING BOX HELPERS & SCALING ENGINE
+    // ═════════════════════════════════════════════════════════
+    function getActiveImageRect() {
+        if (!streamImg || streamImg.style.display === 'none') return null;
+        
+        const naturalWidth = streamImg.naturalWidth || 640;
+        const naturalHeight = streamImg.naturalHeight || 480;
+        const panelWidth = streamImg.clientWidth;
+        const panelHeight = streamImg.clientHeight;
+        
+        if (!panelWidth || !panelHeight) return null;
 
-                const lastEl = document.getElementById(`last-${key}`);
-                if (lastEl) lastEl.textContent = '--:--:--';
+        const streamRatio = naturalWidth / naturalHeight;
+        const panelRatio = panelWidth / panelHeight;
+        
+        let renderWidth, renderHeight, offsetX, offsetY;
+        
+        if (panelRatio > streamRatio) {
+            // Height-constrained (letterbox columns on left/right)
+            renderHeight = panelHeight;
+            renderWidth = renderHeight * streamRatio;
+            offsetX = (panelWidth - renderWidth) / 2;
+            offsetY = 0;
+        } else {
+            // Width-constrained (letterbox rows on top/bottom)
+            renderWidth = panelWidth;
+            renderHeight = renderWidth / streamRatio;
+            offsetX = 0;
+            offsetY = (panelHeight - renderHeight) / 2;
+        }
+        
+        return {
+            left: offsetX,
+            top: offsetY,
+            width: renderWidth,
+            height: renderHeight,
+            scaleX: renderWidth / naturalWidth,
+            scaleY: renderHeight / naturalHeight
+        };
+    }
 
-                const statusEl = document.getElementById(`status-${key}`);
-                if (statusEl) statusEl.textContent = 'CLEAR';
+    function renderBoundingBoxes(survivors, fire, smoke) {
+        const container = document.getElementById('bbox-container');
+        if (!container) return;
 
-                const tile = document.getElementById(`tile-${key}`);
-                if (tile) tile.className = 'detection-tile';
+        // Clear dynamic boxes
+        container.innerHTML = '';
 
-                const bbox = document.getElementById(`bbox-${key}`);
-                if (bbox) bbox.style.display = 'none';
+        const rect = getActiveImageRect();
+        if (!rect) return;
 
-                if (tileTimers[key]) {
-                    clearTimeout(tileTimers[key]);
-                    delete tileTimers[key];
+        // Helper to create and position box element
+        function createBoxElement(bbox, conf, labelClass, labelText) {
+            const left = rect.left + bbox.x * rect.scaleX;
+            const top = rect.top + bbox.y * rect.scaleY;
+            const width = bbox.w * rect.scaleX;
+            const height = bbox.h * rect.scaleY;
+
+            const box = document.createElement('div');
+            box.className = `hud-bbox ${labelClass}`;
+            box.style.left = `${left}px`;
+            box.style.top = `${top}px`;
+            box.style.width = `${width}px`;
+            box.style.height = `${height}px`;
+
+            const label = document.createElement('div');
+            label.className = 'bbox-label';
+            label.innerHTML = `${labelText} <span>${Math.round(conf)}%</span>`;
+            box.appendChild(label);
+
+            return box;
+        }
+
+        // Render multiple person and face boxes
+        if (survivors && survivors.length > 0) {
+            survivors.forEach(s => {
+                if (s.bbox) {
+                    const boxEl = createBoxElement(s.bbox, s.conf, 'human', `PERSON ${s.id}`);
+                    container.appendChild(boxEl);
+                }
+                if (s.face) {
+                    const faceBoxEl = createBoxElement(s.face, s.face.conf || 88, 'face-box', `FACE ${s.id}`);
+                    container.appendChild(faceBoxEl);
                 }
             });
-            if (window.RESCUEBOT_UI) window.RESCUEBOT_UI.toast('AI detection stats reset.', 'info');
-        });
+        }
+
+        // Render Fire box
+        if (fire && fire.detected && fire.bbox) {
+            const fireBoxEl = createBoxElement(fire.bbox, fire.conf, 'fire', 'FIRE');
+            container.appendChild(fireBoxEl);
+        }
+
+        // Render Smoke box
+        if (smoke && smoke.detected && smoke.bbox) {
+            const smokeBoxEl = createBoxElement(smoke.bbox, smoke.conf, 'smoke-box', 'SMOKE');
+            container.appendChild(smokeBoxEl);
+        }
     }
 
-    // ── Clear Log Button ──────────────────────────────────────
-    if (btnClearLog) {
-        btnClearLog.addEventListener('click', () => {
-            if (aiLogList) {
-                aiLogList.innerHTML = `
-                    <div class="ai-log-empty">
-                        <i data-lucide="radar" class="ai-log-radar-icon"></i>
-                        <span>No events detected</span>
-                    </div>
-                `;
-                if (window.lucide) window.lucide.createIcons();
-                if (window.RESCUEBOT_UI) window.RESCUEBOT_UI.toast('AI event log cleared.', 'info');
-            }
-        });
+    function positionBbox(bboxEl, confEl, bbox, conf, label) {
+        if (!bboxEl || !bbox) return;
+        const rect = getActiveImageRect();
+        if (!rect) {
+            bboxEl.style.display = 'none';
+            return;
+        }
+        const left = rect.left + bbox.x * rect.scaleX;
+        const top = rect.top + bbox.y * rect.scaleY;
+        const width = bbox.w * rect.scaleX;
+        const height = bbox.h * rect.scaleY;
+
+        bboxEl.style.display = 'block';
+        bboxEl.style.left    = `${left}px`;
+        bboxEl.style.top     = `${top}px`;
+        bboxEl.style.width   = `${width}px`;
+        bboxEl.style.height  = `${height}px`;
+        if (confEl) confEl.textContent = `${Math.round(conf)}%`;
     }
 
-    // bindMqtt: retries up to 20 times (10 seconds total) waiting for mqttController init
-    let _bindMqttRetries = 0;
-    const _bindMqttMaxRetries = 20;
-    const bindMqtt = () => {
-        const mqtt = window.mqttController;
-        if (!mqtt) {
-            if (_bindMqttRetries >= _bindMqttMaxRetries) {
-                console.warn('[Camera] mqttController not available after max retries. MQTT features disabled.');
-                return;
-            }
-            _bindMqttRetries++;
-            setTimeout(bindMqtt, 500);
+    function hideBbox(bboxEl) {
+        if (bboxEl) bboxEl.style.display = 'none';
+    }
+
+    // ═════════════════════════════════════════════════════════
+    // SCENE SUMMARY STRIP
+    // ═════════════════════════════════════════════════════════
+    function updateSceneSummary(summary, fire, smoke) {
+        if (!summary) return;
+
+        if (ssSurvivorCount) ssSurvivorCount.textContent = summary.survivor_count ?? 0;
+
+        // Fire state
+        if (ssFireState) {
+            ssFireState.textContent = summary.fire_state || 'CLEAR';
+            ssFireState.className = `ss-value ${summary.fire_state === 'DETECTED' ? 'ss-danger' : 'ss-ok'}`;
+        }
+
+        // Smoke
+        if (ssSmokeState) {
+            const d = smoke?.density?.toUpperCase() || 'CLEAR';
+            ssSmokeState.textContent = d;
+            ssSmokeState.className = `ss-value ${d !== 'CLEAR' ? 'ss-warn' : 'ss-ok'}`;
+        }
+
+        // Visibility
+        if (ssVisibility) {
+            const v = summary.visibility || 'HIGH';
+            ssVisibility.textContent = v;
+            ssVisibility.className   = `ss-value ${v === 'LOW' ? 'ss-danger' : v === 'MEDIUM' ? 'ss-warn' : 'ss-ok'}`;
+        }
+
+        // Hazard level
+        if (ssHazardLevel) {
+            const h = summary.hazard_level || 'LOW';
+            ssHazardLevel.textContent = h;
+            ssHazardLevel.className   = `ss-value ss-hazard priority-${h.toLowerCase()}`;
+        }
+
+        // Spread risk
+        if (ssSpreadRisk) {
+            const sr = summary.fire_spread_risk || 'NONE';
+            ssSpreadRisk.textContent = sr;
+            ssSpreadRisk.className   = `ss-value ${sr === 'HIGH' ? 'ss-danger' : sr === 'MEDIUM' ? 'ss-warn' : ''}`;
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════
+    // HAZARD BANNER
+    // ═════════════════════════════════════════════════════════
+    function updateHazardBanner(summary) {
+        if (!hazardBanner || !summary) return;
+        const h = summary.hazard_level;
+        if (h === 'CRITICAL' || h === 'HIGH') {
+            hazardBanner.style.display = '';
+            hazardBanner.className = `scene-hazard-banner hazard-${h.toLowerCase()}`;
+            if (hazardTitle)   hazardTitle.textContent   = `${h} HAZARD — ACTIVE`;
+            if (hazardDesc)    hazardDesc.textContent    = buildHazardDesc(summary);
+            if (hazardLevelChip) { hazardLevelChip.textContent = h; hazardLevelChip.className = `hazard-level-chip ${h.toLowerCase()}`; }
+            if (hazardSurvivors) hazardSurvivors.textContent = `${summary.survivor_count} Survivor${summary.survivor_count !== 1 ? 's' : ''}`;
+        } else {
+            hazardBanner.style.display = 'none';
+        }
+    }
+
+    function buildHazardDesc(s) {
+        const parts = [];
+        if (s.fire_state === 'DETECTED') parts.push(`Active fire (spread: ${s.fire_spread_risk})`);
+        if (s.smoke_state && s.smoke_state !== 'CLEAR') parts.push(`${s.smoke_state} smoke`);
+        if (s.toxic_warning) parts.push('Toxic gas suspected');
+        if (s.visibility === 'LOW') parts.push('Low visibility');
+        return parts.join(' · ') || 'Hazardous environment detected';
+    }
+
+    // ═════════════════════════════════════════════════════════
+    // ENVIRONMENTAL RISK PANEL
+    // ═════════════════════════════════════════════════════════
+    function updateEnvRisk(survivors, smoke, summary) {
+        // Fire proximity: worst among survivors
+        let worstProx = 'SAFE';
+        if (survivors && survivors.length > 0) {
+            const proxOrder = { CRITICAL: 3, NEAR: 2, MODERATE: 1, SAFE: 0 };
+            survivors.forEach(s => {
+                if ((proxOrder[s.fire_proximity] || 0) > (proxOrder[worstProx] || 0))
+                    worstProx = s.fire_proximity;
+            });
+        }
+        if (envFireProxVal) {
+            envFireProxVal.textContent = worstProx;
+            envFireProxVal.className   = `env-risk-value ${worstProx === 'CRITICAL' ? 'danger' : worstProx === 'NEAR' ? 'warn' : 'safe'}`;
+        }
+
+        // Visibility
+        const vis = summary?.visibility || 'HIGH';
+        if (envVisibilityVal) {
+            envVisibilityVal.textContent = vis;
+            envVisibilityVal.className   = `env-risk-value ${vis === 'LOW' ? 'danger' : vis === 'MEDIUM' ? 'warn' : 'ok'}`;
+        }
+
+        // Smoke density
+        const density = smoke?.density?.toUpperCase() || 'CLEAR';
+        if (envSmokeDensVal) {
+            envSmokeDensVal.textContent = density;
+            envSmokeDensVal.className   = `env-risk-value ${density === 'OPAQUE' ? 'danger' : density === 'THICK' ? 'warn' : 'ok'}`;
+        }
+
+        // Toxic warning
+        const toxic = smoke?.toxic_suspicion;
+        if (envToxicVal) {
+            envToxicVal.textContent = toxic ? 'YES ⚠' : 'NO';
+            envToxicVal.className   = `env-risk-value ${toxic ? 'danger' : 'ok'}`;
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════
+    // SURVIVOR INTELLIGENCE CARDS
+    // ═════════════════════════════════════════════════════════
+    function renderSurvivors(survivors) {
+        if (!survivorPanel) return;
+
+        if (!survivors || survivors.length === 0) {
+            survivorPanel.innerHTML = `<div class="survivor-empty" id="survivor-empty">
+                <i data-lucide="scan" style="width:22px;height:22px;opacity:0.3;"></i>
+                <span>No survivors detected</span>
+            </div>`;
+            if (window.lucide) window.lucide.createIcons();
             return;
         }
 
+        survivorPanel.innerHTML = survivors.map(s => {
+            const statusClass = {
+                ACTIVE:               'status-active',
+                LOW_ACTIVITY:         'status-low',
+                POSSIBLY_UNCONSCIOUS: 'status-unconscious',
+                RESCUE_VERIFICATION:  'status-verify',
+            }[s.status] || 'status-verify';
+
+            const urgencyClass = {
+                IMMEDIATE:      'urgency-immediate',
+                MEDIUM_URGENCY: 'urgency-medium',
+                LOW_URGENCY:    'urgency-low',
+                VERIFY:         'urgency-verify',
+            }[s.urgency] || 'urgency-verify';
+
+            const priorityClass = `priority-${(s.priority||'low').toLowerCase()}`;
+
+            const motionIcon = s.motion === 'stationary' ? '🔴' : '🟢';
+            const fallenIcon = s.fallen ? ' ⚠ Fallen' : '';
+            const gestureText = s.gesture ? ` · ${s.gesture.replace(/_/g, ' ')}` : '';
+
+            const score = s.scores?.total ?? 0;
+            const scoreWidth = Math.round(score * 100);
+
+            return `<div class="survivor-card ${priorityClass}">
+                <div class="survivor-card-header">
+                    <div class="survivor-id-wrap">
+                        <span class="survivor-id">#${s.id}</span>
+                        <span class="survivor-status-pill ${statusClass}">${s.status.replace(/_/g, ' ')}</span>
+                    </div>
+                    <div class="survivor-priority-tags">
+                        <span class="priority-tag ${priorityClass}">${s.priority}</span>
+                        <span class="urgency-tag ${urgencyClass}">${s.urgency.replace(/_/g, ' ')}</span>
+                    </div>
+                </div>
+                <div class="survivor-score-bar">
+                    <div class="survivor-score-fill ${statusClass}-fill" style="width:${scoreWidth}%"></div>
+                </div>
+                <div class="survivor-meta-row">
+                    <span class="survivor-meta-item">${motionIcon} ${s.motion}${fallenIcon}</span>
+                    <span class="survivor-meta-item">🔥 ${s.fire_proximity}</span>
+                    <span class="survivor-meta-item">🧍 ${s.posture || '--'}${gestureText}</span>
+                </div>
+                <div class="survivor-conf-row">
+                    <span class="survivor-conf-label">AI Confidence</span>
+                    <span class="survivor-conf-val">${Math.round(score * 100)}%</span>
+                </div>
+            </div>`;
+        }).join('');
+
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    // ═════════════════════════════════════════════════════════
+    // RESCUE PRIORITY LIST
+    // ═════════════════════════════════════════════════════════
+    function renderRescueList(list) {
+        if (!rescueList) return;
+
+        if (rescueCountBadge) rescueCountBadge.textContent = list?.length || 0;
+
+        if (!list || list.length === 0) {
+            rescueList.innerHTML = `<div class="rescue-empty">
+                <i data-lucide="shield-check" style="width:20px;height:20px;opacity:0.3;"></i>
+                <span>No active rescue targets</span>
+            </div>`;
+            if (window.lucide) window.lucide.createIcons();
+            return;
+        }
+
+        rescueList.innerHTML = list.map((r, idx) => {
+            const urgencyClass = {
+                IMMEDIATE:      'urgency-immediate',
+                MEDIUM_URGENCY: 'urgency-medium',
+                LOW_URGENCY:    'urgency-low',
+                VERIFY:         'urgency-verify',
+            }[r.urgency] || 'urgency-verify';
+            const priorityClass = `priority-${(r.priority||'low').toLowerCase()}`;
+
+            return `<div class="rescue-item ${priorityClass}">
+                <div class="rescue-rank">${idx + 1}</div>
+                <div class="rescue-info">
+                    <div class="rescue-id">Survivor #${r.id}</div>
+                    <div class="rescue-status-text">${r.status.replace(/_/g,' ')}</div>
+                </div>
+                <div class="rescue-tags">
+                    <span class="priority-tag ${priorityClass}">${r.priority}</span>
+                    <span class="urgency-tag ${urgencyClass}">${r.urgency.replace(/_/g,' ')}</span>
+                </div>
+            </div>`;
+        }).join('');
+
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    // ═════════════════════════════════════════════════════════
+    // TIMELINE ENTRY
+    // ═════════════════════════════════════════════════════════
+    function addTimelineEntry(msg, type = 'info') {
+        if (!timelineList) return;
+        const empty = timelineList.querySelector('.timeline-empty');
+        if (empty) empty.remove();
+
+        const now = new Date();
+        const p   = n => String(n).padStart(2, '0');
+        const t   = `${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`;
+
+        const div = document.createElement('div');
+        div.className = `timeline-entry ${type}`;
+        div.innerHTML = `<span class="timeline-time">${t}</span><span class="timeline-msg">${msg}</span>`;
+        timelineList.insertBefore(div, timelineList.firstChild);
+
+        while (timelineList.children.length > 30) timelineList.removeChild(timelineList.lastChild);
+    }
+
+    // ═════════════════════════════════════════════════════════
+    // MQTT BINDING
+    // ═════════════════════════════════════════════════════════
+    let _bindRetries = 0;
+    const bindMqtt = () => {
+        const mqtt = window.mqttController;
+        if (!mqtt) {
+            if (_bindRetries++ < 20) { setTimeout(bindMqtt, 500); }
+            return;
+        }
+
+        // ── Camera stream URL ─────────────────────────────
         mqtt.on('camera', (d) => {
-            if (d && d.active && d.url) {
-                // Show the stream
-                if (streamImg) {
-                    streamImg.src = d.url;
-                    streamImg.style.display = 'block';
-                }
+            if (d?.active && d?.url) {
+                if (streamImg) { streamImg.src = d.url; streamImg.style.display = 'block'; }
                 if (feedPlaceholder) feedPlaceholder.style.display = 'none';
-
                 isStreaming = true;
-                isRecording = true;
-
-                // Navbar red blink indicator
-                if (camRecDot) {
-                    camRecDot.classList.remove('standby');
-                    camRecDot.classList.add('recording');
-                }
+                if (camRecDot)   { camRecDot.classList.remove('standby'); camRecDot.classList.add('recording'); }
                 if (camRecLabel) camRecLabel.textContent = 'LIVE';
-
-                // Sidebar badge → LIVE green
-                if (camConnBadge) {
-                    camConnBadge.className = 'badge badge-green';
-                    camConnBadge.textContent = 'LIVE';
-                }
-
-                // Update stat values from payload
-                if (d.fps      !== undefined && statFps)     statFps.textContent     = d.fps;
-                if (d.fps      !== undefined && fpsBadge)    fpsBadge.textContent    = `${d.fps} FPS`;
-                if (d.latency  !== undefined && statLatency) statLatency.textContent = d.latency;
-                if (d.latency  !== undefined && latencyBadge) latencyBadge.textContent = `${d.latency} ms`;
-                if (d.res      !== undefined && statRes)     statRes.textContent     = d.res;
-                if (d.quality  !== undefined && statQual)    statQual.textContent    = d.quality;
             }
         });
 
-        // ── MQTT: Alerts / AI Detection ───────────────────────
-        mqtt.on('alerts', (d) => {
-            if (!d || !d.label) return;
-
-            // Flag that an external AI server is active (pauses local browser model to prevent override)
-            hasExternalAIServer = true;
-            lastExternalAITime = Date.now();
-
-            // Auto-reset hasExternalAIServer if no external AI activity for 10 seconds
-            clearTimeout(window._externalAIResetTimer);
-            window._externalAIResetTimer = setTimeout(() => {
-                if (Date.now() - lastExternalAITime >= 9500) {
-                    hasExternalAIServer = false;
-                    console.log('[Camera] External AI server timed out. Browser detection re-enabled.');
-                }
-            }, 10000);
-
-            const label = String(d.label).toUpperCase();
-            const conf = d.conf !== undefined ? d.conf : Math.floor(Math.random() * 15) + 80;
-
-            addAILog({ label: label, conf: conf, desc: d.desc });
-
-            // Extract coordinates if present in the payload (dynamic fire/human brackets!)
-            const coords = (d.x !== undefined && d.y !== undefined && d.w !== undefined && d.h !== undefined) 
-                ? { x: d.x, y: d.y, w: d.w, h: d.h, name: d.label } 
-                : null;
-
-            if (label === 'HUMAN') {
-                triggerTile('human', 'DETECTED', 'triggered', conf, 5000, coords);
-            } else if (label === 'MOTION') {
-                triggerTile('motion', 'DETECTED', 'triggered', conf, 5000, coords);
-            } else if (label === 'HAZARD') {
-                triggerTile('hazard', 'WARNING', 'triggered', conf, 8000, coords);
-            } else if (label === 'FIRE') {
-                triggerTile('fire', 'DANGER', 'danger-triggered', conf, 5000, coords);
-            }
-        });
-
-        // ── MQTT: Telemetry (fire sensor & telemetry bar) ─────
-        mqtt.on('telemetry', (d) => {
-            if (!d) return;
-
-            // Flame detection fallback
-            if (
-                d.sensor === 'fire' &&
-                String(d.value).toUpperCase().includes('FIRE DETECTED')
-            ) {
-                triggerTile('fire', 'FIRE!', 'danger-triggered', 99, 5000);
-                addAILog({ label: 'FIRE', conf: 99, desc: 'Flame sensor active at rover node.' });
-            }
-
-            // HUD bottom telemetry strip overrides if sent as telemetry key-values
-            if (d.sensor === 'temp') {
-                const tempVal = parseFloat(d.value);
-                const tempEl = document.getElementById('hud-tele-temp'); // if styled card exists
-                // We also update general bottom strip elements if they match
-            }
-        });
-
-        // ── MQTT: GPS (Heading & Position Strip update) ──────
+        // ── GPS telemetry ──────────────────────────────────
         mqtt.on('gps', (d) => {
             if (!d) return;
             if (d.lat !== undefined && hudLatEl) hudLatEl.textContent = parseFloat(d.lat).toFixed(6);
             if (d.lng !== undefined && hudLngEl) hudLngEl.textContent = parseFloat(d.lng).toFixed(6);
             if (d.speed !== undefined && hudSpeedEl) hudSpeedEl.textContent = `${parseFloat(d.speed).toFixed(1)} m/s`;
             if (d.heading !== undefined) {
-                const hVal = parseFloat(d.heading);
-                if (hudHeadingEl) hudHeadingEl.textContent = `${hVal.toFixed(1)}°`;
-                if (compassHeadingEl) compassHeadingEl.textContent = `${String(Math.round(hVal)).padStart(3, '0')}°`;
-                if (compassDiscEl) compassDiscEl.style.transform = `rotate(${-hVal}deg)`;
+                if (hudHeadingEl) hudHeadingEl.textContent = `${parseFloat(d.heading).toFixed(1)}°`;
             }
             if (d.alt !== undefined && hudAltEl) hudAltEl.textContent = `${parseFloat(d.alt).toFixed(1)} m`;
         });
+
+        // ── MAIN: SCENE_UPDATE from 7-stage pipeline ───────
+        mqtt.on('alerts', (d) => {
+            if (!d) return;
+            const label = String(d.label || '').toUpperCase();
+
+            // ── Full scene update (new schema) ─────────────
+            if (label === 'SCENE_UPDATE') {
+                const summary   = d.scene_summary || {};
+                const survivors = d.survivors     || [];
+                const rescList  = d.rescue_list   || [];
+                const fire      = d.fire          || {};
+                const smoke     = d.smoke         || {};
+                const motion    = d.motion        || {};
+                const pose      = d.pose          || {};
+                const gesture   = d.gesture       || {};
+
+                lastScene = d;
+
+                // Scene summary strip
+                updateSceneSummary(summary, fire, smoke);
+
+                // Hazard banner
+                updateHazardBanner(summary);
+
+                // Environmental risk panel
+                updateEnvRisk(survivors, smoke, summary);
+
+                // Survivor intelligence cards
+                renderSurvivors(survivors);
+
+                // Rescue priority list
+                renderRescueList(rescList);
+
+                // ── Bounding Boxes and Detection Tiles ───────────────────────
+                renderBoundingBoxes(survivors, fire, smoke);
+
+                // Human tile
+                if (survivors.length > 0) {
+                    const best = survivors.reduce((a, b) => a.conf > b.conf ? a : b);
+                    triggerTile('human', 'DETECTED', 'triggered', best.conf, 6000);
+                }
+
+                // Fire tile
+                if (fire.detected) {
+                    const fClass = fire.spread_risk === 'HIGH' ? 'danger-triggered' : 'triggered';
+                    triggerTile('fire', `${fire.spread_risk} SPREAD`, fClass, fire.conf, 6000);
+                }
+
+                // Smoke tile
+                if (smoke.detected) {
+                    const sLabel = smoke.density?.toUpperCase() + (smoke.toxic_suspicion ? ' ⚠TOXIC' : '');
+                    triggerTile('smoke', sLabel, smoke.density === 'opaque' ? 'danger-triggered' : 'triggered', smoke.conf, 6000);
+                }
+
+                // Pose tile
+                if (pose.label && pose.label !== 'none') {
+                    const posClass = (pose.sos || pose.unconscious) ? 'danger-triggered' : 'triggered';
+                    const posScore = Math.round((pose.score || 0.6) * 100);
+                    triggerTile('pose', pose.label.toUpperCase().replace('_', ' '), posClass, posScore, 5000);
+                }
+
+                // Motion tile
+                if (motion.detected) {
+                    const motScore = Math.round((motion.score || 0) * 100);
+                    triggerTile('motion', motion.intensity?.toUpperCase() || 'DETECTED', 'triggered', motScore, 4000);
+                }
+
+                // Timeline for critical survivors
+                const criticals = survivors.filter(s => s.priority === 'CRITICAL');
+                criticals.forEach(s => {
+                    addTimelineEntry(
+                        `🚨 CRITICAL: Survivor #${s.id} — ${s.status.replace(/_/g,' ')} · ${s.urgency.replace(/_/g,' ')}`,
+                        'critical'
+                    );
+                });
+
+                // Timeline for fire/toxic events
+                if (fire.detected && fire.spread_risk === 'HIGH')
+                    addTimelineEntry(`🔥 High fire spread risk detected`, 'warning');
+                if (smoke.toxic_suspicion)
+                    addTimelineEntry(`☠ Toxic smoke suspected`, 'critical');
+
+                return;
+            }
+
+            // ── Legacy alert types (backward compat) ───────
+            if (label === 'HUMAN') {
+                const conf = d.conf || 85;
+                triggerTile('human', 'DETECTED', 'triggered', conf, 5000);
+                if (d.x !== undefined) {
+                    positionBbox(bboxHuman, document.getElementById('bbox-human-conf'),
+                        { x: d.x, y: d.y, w: d.w, h: d.h }, conf, 'Human');
+                }
+                addTimelineEntry(`👤 Human detected — ${d.posture || 'standing'} · Conf ${conf}%`, 'info');
+                return;
+            }
+
+            if (label === 'FIRE') {
+                triggerTile('fire', 'DETECTED', 'danger-triggered', d.conf || 80, 6000);
+                if (d.bbox) positionBbox(bboxFire, document.getElementById('bbox-fire-conf'), d.bbox, d.conf || 80, 'Fire');
+                addTimelineEntry(`🔥 Fire detected — spread: ${d.spread_risk || 'UNKNOWN'}`, 'critical');
+                return;
+            }
+
+            if (label === 'SMOKE') {
+                triggerTile('smoke', (d.density || 'DETECTED').toUpperCase(), 'triggered', d.conf || 70, 6000);
+                addTimelineEntry(`💨 Smoke — ${d.density || 'unknown'} · Visibility ${d.visibility_pct || '--'}%`, 'warning');
+                return;
+            }
+
+            if (label === 'MOTION') {
+                triggerTile('motion', 'DETECTED', 'triggered', d.conf || 60, 4000);
+                return;
+            }
+
+            if (label === 'GESTURE') {
+                addTimelineEntry(`✋ Gesture: ${d.desc || 'hand signal'}`, 'info');
+                return;
+            }
+
+            if (label === 'SURVIVOR_CRITICAL') {
+                const s = d.survivor || {};
+                addTimelineEntry(`🚨 CRITICAL survivor #${s.id || '?'} — ${s.urgency || 'IMMEDIATE'}`, 'critical');
+                if (window.RESCUEBOT_UI)
+                    window.RESCUEBOT_UI.toast(`CRITICAL: Survivor #${s.id || '?'} needs IMMEDIATE attention`, 'error');
+                return;
+            }
+        });
     };
 
-    // Wait for mqttController to be available
     bindMqtt();
 
-    // ── Tile Trigger Helper ───────────────────────────────────
-    /**
-     * Highlights a detection tile, increments count, shows confidence and triggers bounding box.
-     */
-    function triggerTile(key, statusText, cssClass, conf, clearMs, coords = null) {
-        const tile = document.getElementById(`tile-${key}`);
-        const statusEl = document.getElementById(`status-${key}`);
-        const countBadge = document.getElementById(`count-${key}`);
-        const confFill = document.getElementById(`conf-${key}`);
-        const confVal = document.getElementById(`conf-val-${key}`);
-        const lastEl = document.getElementById(`last-${key}`);
-        const bbox = document.getElementById(`bbox-${key}`);
-        const bboxConf = document.getElementById(`bbox-${key}-conf`);
+    // ── MQTT status dot ───────────────────────────────────────
+    const mqttDot  = document.getElementById('mqtt-dot');
+    const mqttText = document.getElementById('mqtt-status-text');
+    window.addEventListener('ares:statusChanged', (e) => {
+        const s = e.detail;
+        if (!mqttDot || !mqttText) return;
+        if (s === 'CONNECTED')   { mqttDot.className = 'status-dot';          mqttText.textContent = 'SYSTEM ONLINE'; }
+        else if (s === 'CONNECTING') { mqttDot.className = 'status-dot warning'; mqttText.textContent = 'ESTABLISHING...'; }
+        else                     { mqttDot.className = 'status-dot offline';   mqttText.textContent = 'SYSTEM OFFLINE'; }
+    });
 
-        if (!tile || !statusEl) return;
-
-        // Clear any pending auto-reset
-        if (tileTimers[key]) {
-            clearTimeout(tileTimers[key]);
-            delete tileTimers[key];
-        }
-
-        // Increment count
-        tileCounts[key]++;
-        if (countBadge) countBadge.textContent = tileCounts[key];
-
-        // Apply triggered class & status text
-        tile.classList.remove('triggered', 'danger-triggered');
-        tile.classList.add(cssClass);
-        statusEl.textContent = statusText;
-
-        // Update confidence
-        if (confFill) confFill.style.width = `${conf}%`;
-        if (confVal) confVal.textContent = `${conf}%`;
-
-        // Update last trigger time
-        const now = new Date();
-        const pad = (n) => String(n).padStart(2, '0');
-        const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-        if (lastEl) lastEl.textContent = timeStr;
-
-        // Show HUD bounding box overlay and position it if coordinates are provided
-        if (bbox) {
-            bbox.style.display = 'block';
-            if (bboxConf) {
-                let suffix = '';
-                if (coords && coords.name) {
-                    suffix = ` (${coords.name.toUpperCase()})`;
-                }
-                bboxConf.textContent = `${conf}%${suffix}`;
-            }
-
-            if (coords && streamImg) {
-                const imgWidth = streamImg.clientWidth || streamImg.width || 640;
-                const imgHeight = streamImg.clientHeight || streamImg.height || 480;
-                const natWidth = streamImg.naturalWidth || 640;
-                const natHeight = streamImg.naturalHeight || 480;
-
-                const scaleX = imgWidth / natWidth;
-                const scaleY = imgHeight / natHeight;
-
-                let left = coords.x * scaleX;
-                let top = coords.y * scaleY;
-                let width = coords.w * scaleX;
-                let height = coords.h * scaleY;
-
-                // Adjust bounding box to only target the face/head area if it is a human detection
-                if (key === 'human') {
-                    const faceW = width * 0.35;
-                    const faceH = Math.min(height * 0.18, faceW * 1.25);
-                    const faceX = left + (width - faceW) / 2;
-                    const faceY = top + (height * 0.04);
-
-                    left = faceX;
-                    top = faceY;
-                    width = faceW;
-                    height = faceH;
-                }
-
-                bbox.style.left = `${left}px`;
-                bbox.style.top = `${top}px`;
-                bbox.style.width = `${width}px`;
-                bbox.style.height = `${height}px`;
-            } else if (!coords) {
-                // Default fallback centered positioning to keep it visible if no coords
-                bbox.style.left = '10%';
-                bbox.style.top = '10%';
-                bbox.style.width = '80%';
-                bbox.style.height = '80%';
-            }
-        }
-
-        // Auto-clear timer if specified
-        if (clearMs > 0) {
-            tileTimers[key] = setTimeout(() => {
-                tile.classList.remove('triggered', 'danger-triggered');
-                statusEl.textContent = 'CLEAR';
-                if (bbox) bbox.style.display = 'none';
-                delete tileTimers[key];
-            }, clearMs);
-        }
-    }
-
-    // ── Add AI Log Entry ──────────────────────────────────────
-    /**
-     * Prepends a new rich log entry to the AI event log.
-     */
-    function addAILog(entry) {
-        if (!aiLogList) return;
-
-        // Remove empty state placeholder if present
-        const emptyEl = aiLogList.querySelector('.ai-log-empty');
-        if (emptyEl) emptyEl.remove();
-
-        const label   = String(entry.label || 'EVENT').toUpperCase();
-        const conf    = entry.conf !== undefined ? entry.conf : 0;
-        const typeMap = {
-            MOTION:   { class: 'log-motion', desc: 'Rover proximity radar reports motion signature.' },
-            HUMAN:    { class: 'log-human', desc: 'AI Vision analysis confirms presence of human biological outline.' },
-            HAZARD:   { class: 'log-hazard', desc: 'Integrated environmental analysis detects toxic chemical/gas signature.' },
-            FIRE:     { class: 'log-fire', desc: 'Thermal infrared array sensors detect active flame thermal profile.' },
-            SNAPSHOT: { class: 'log-default', desc: 'Rover snapshot captured and archived locally.' },
-        };
-        const logMeta = typeMap[label] || { class: 'log-default', desc: 'Field diagnostic telemetry event logged.' };
-
-        const now = new Date();
-        const pad = (n) => String(n).padStart(2, '0');
-        const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-
-        const div = document.createElement('div');
-        div.className = `ai-log-entry ${logMeta.class}`;
-        div.innerHTML = `
-            <div class="ai-log-entry-header">
-                <span class="ai-log-pill">${label}</span>
-                <div class="ai-log-meta-right">
-                    <span class="ai-log-time">${timeStr}</span>
-                    ${conf ? `<span class="badge ${conf > 90 ? 'badge-red' : 'badge-amber'}" style="font-size: 8px; padding: 1px 4px;">${conf}%</span>` : ''}
-                </div>
-            </div>
-            <div class="ai-log-desc">${entry.desc || logMeta.desc}</div>
-        `;
-
-        // Prepend so newest is at top
-        aiLogList.insertBefore(div, aiLogList.firstChild);
-
-        // Cap log at 20 entries
-        while (aiLogList.children.length > 20) {
-            aiLogList.removeChild(aiLogList.lastChild);
-        }
-    }
-
-    // ── Sidebar Collapse (mirrors shared.js behaviour) ────────
+    // ── Sidebar collapse ──────────────────────────────────────
     const sidebarCollapseBtn = document.getElementById('sidebar-collapse-btn');
     const sidebar            = document.getElementById('sidebar');
     if (sidebarCollapseBtn && sidebar) {
@@ -764,209 +830,21 @@ document.addEventListener('DOMContentLoaded', () => {
             sidebar.classList.toggle('collapsed');
             const icon = sidebarCollapseBtn.querySelector('[data-lucide]');
             if (icon) {
-                const isCollapsed = sidebar.classList.contains('collapsed');
-                icon.setAttribute('data-lucide', isCollapsed ? 'chevrons-right' : 'chevrons-left');
-                if (typeof lucide !== 'undefined') lucide.createIcons();
+                icon.setAttribute('data-lucide', sidebar.classList.contains('collapsed') ? 'chevrons-right' : 'chevrons-left');
+                if (window.lucide) lucide.createIcons();
             }
         });
     }
 
-    // ── MQTT status dot wiring ────────────────────────────────
-    const mqttDot        = document.getElementById('mqtt-dot');
-    const mqttStatusText = document.getElementById('mqtt-status-text');
-
-    window.addEventListener('ares:statusChanged', (e) => {
-        const s = e.detail;
-        if (!mqttDot || !mqttStatusText) return;
-        if (s === 'CONNECTED') {
-            mqttDot.className = 'status-dot';
-            mqttStatusText.textContent = 'SYSTEM ONLINE';
-        } else if (s === 'CONNECTING') {
-            mqttDot.className = 'status-dot warning';
-            mqttStatusText.textContent = 'ESTABLISHING...';
-        } else {
-            mqttDot.className = 'status-dot offline';
-            mqttStatusText.textContent = 'SYSTEM OFFLINE';
+    // ── Viewport Resize Listener ──────────────────────────────
+    window.addEventListener('resize', () => {
+        if (lastScene) {
+            const survivors = lastScene.survivors || [];
+            const fire      = lastScene.fire      || {};
+            const smoke     = lastScene.smoke     || {};
+            renderBoundingBoxes(survivors, fire, smoke);
         }
     });
 
-    // ── EDGE AI OBJECT DETECTION (TensorFlow.js + COCO-SSD) ──
-    let cocoModel = null;
-    let detectionTimeout = null;
-    let lastAlertTime = 0;
-    const alertThrottleMs = 5000; // Throttle MQTT alerts to 5 seconds to avoid network flooding
-
-    console.log('[Edge AI] Loading COCO-SSD object detection neural network...');
-    if (typeof cocoSsd !== 'undefined') {
-        cocoSsd.load().then(model => {
-            cocoModel = model;
-            console.log('[Edge AI] Neural network successfully mounted!');
-            if (window.RESCUEBOT_UI) window.RESCUEBOT_UI.toast('🤖 Edge AI Engine Online!', 'success');
-            
-            // Set indicator
-            const fpsBadge = document.getElementById('fps-badge');
-            if (fpsBadge) fpsBadge.textContent = 'AI DETECTING';
-            
-            // Initiate Edge AI loop
-            startDetectionLoop();
-        }).catch(err => {
-            console.error('[Edge AI] Failed to load model:', err);
-        });
-    } else {
-        console.warn('[Edge AI] cocoSsd global namespace not found. TensorFlow.js script may have failed to load.');
-    }
-
-    function startDetectionLoop() {
-        if (hasExternalAIServer && (Date.now() - lastExternalAITime < 10000)) {
-            // An external Python AI server is actively publishing detections.
-            // Pause local browser-side COCO-SSD processing to save CPU
-            // and prevent local bounding boxes from fighting with server coordinates.
-            detectionTimeout = setTimeout(startDetectionLoop, 1000);
-            return;
-        }
-
-        if (!isStreaming || !cocoModel || !streamImg || streamImg.style.display === 'none') {
-            // Check once per second when offline or model is compiling
-            detectionTimeout = setTimeout(startDetectionLoop, 1000);
-            return;
-        }
-
-        // Detect objects in raw image pixel matrix
-        cocoModel.detect(streamImg).then(predictions => {
-            handleAIPredictions(predictions);
-            // Schedule next frame in 100ms (10 FPS limit to keep browser fluid)
-            detectionTimeout = setTimeout(startDetectionLoop, 100);
-        }).catch(err => {
-            console.error('[Edge AI] Execution error:', err);
-            detectionTimeout = setTimeout(startDetectionLoop, 1000);
-        });
-    }
-
-    function handleAIPredictions(predictions) {
-        const humanBBox = document.getElementById('bbox-human');
-        const hazardBBox = document.getElementById('bbox-hazard');
-
-        let humanDetected = false;
-        let hazardDetected = false;
-
-        predictions.forEach(p => {
-            const scorePercent = Math.round(p.score * 100);
-            if (scorePercent < 55) return; // Threshold cutoff for noise filtering
-
-            // Map tensor coordinates to browser rendered canvas dimensions!
-            const imgWidth = streamImg.clientWidth || streamImg.width || 640;
-            const imgHeight = streamImg.clientHeight || streamImg.height || 480;
-            const natWidth = streamImg.naturalWidth || imgWidth;
-            const natHeight = streamImg.naturalHeight || imgHeight;
-
-            const scaleX = imgWidth / natWidth;
-            const scaleY = imgHeight / natHeight;
-
-            const [x, y, w, h] = p.bbox;
-            const displayX = x * scaleX;
-            const displayY = y * scaleY;
-            const displayW = w * scaleX;
-            const displayH = h * scaleY;
-
-            if (p.class === 'person') {
-                humanDetected = true;
-                
-                // Position HUD bracket to show only the face (approx. top portion of the person)
-                if (humanBBox) {
-                    humanBBox.style.display = 'block';
-                    
-                    const faceW = displayW * 0.35;
-                    const faceH = Math.min(displayH * 0.18, faceW * 1.25);
-                    const faceX = displayX + (displayW - faceW) / 2;
-                    const faceY = displayY + (displayH * 0.04);
-
-                    humanBBox.style.left = `${faceX}px`;
-                    humanBBox.style.top = `${faceY}px`;
-                    humanBBox.style.width = `${faceW}px`;
-                    humanBBox.style.height = `${faceH}px`;
-                    
-                    const labelConf = document.getElementById('bbox-human-conf');
-                    if (labelConf) labelConf.textContent = `${scorePercent}%`;
-                }
-
-                // Push visual highlight & counts
-                triggerTile('human', 'DETECTED', 'triggered', scorePercent, 3000);
-                
-                // Dispatch MQTT alarm
-                publishAlert('HUMAN', scorePercent, 'Edge AI confirms active human biometric outline in stream matrix.');
-            }
-            else if (['backpack', 'handbag', 'cat', 'dog', 'chair', 'cell phone', 'laptop', 'bottle', 'cup', 'scissors', 'car', 'truck', 'motorcycle', 'fire hydrant', 'stop sign', 'traffic light', 'umbrella', 'suitcase', 'bird'].includes(p.class)) {
-                hazardDetected = true;
-
-                // Position hazard bracket
-                if (hazardBBox) {
-                    hazardBBox.style.display = 'block';
-                    hazardBBox.style.left = `${displayX}px`;
-                    hazardBBox.style.top = `${displayY}px`;
-                    hazardBBox.style.width = `${displayW}px`;
-                    hazardBBox.style.height = `${displayH}px`;
-                    
-                    const labelConf = document.getElementById('bbox-hazard-conf');
-                    if (labelConf) labelConf.textContent = `${scorePercent}% (${p.class.toUpperCase()})`;
-                }
-
-                // Push visual highlight & counts
-                triggerTile('hazard', 'WARNING', 'triggered', scorePercent, 4000);
-                
-                // Dispatch MQTT alarm
-                publishAlert('HAZARD', scorePercent, `Vision analysis tags risk structural obstacle: ${p.class.toUpperCase()}`);
-            }
-        });
-
-        // Hide bounding boxes if targets are lost
-        if (!humanDetected && humanBBox) humanBBox.style.display = 'none';
-        if (!hazardDetected && hazardBBox) hazardBBox.style.display = 'none';
-
-        // Update Side Intelligence Section for Local Fallback Engine
-        const riHumanVal = document.getElementById('ri-human-val');
-        const riHumanCount = document.getElementById('ri-human-count');
-        const riHumanCard = document.getElementById('ri-human');
-        
-        if (riHumanVal) {
-            if (humanDetected) {
-                const personPreds = predictions.filter(p => p.class === 'person' && Math.round(p.score * 100) >= 55);
-                const count = personPreds.length;
-                riHumanVal.textContent = 'Detected';
-                riHumanVal.className = 'ri-value active';
-                if (riHumanCount) riHumanCount.textContent = count;
-                if (riHumanCard) {
-                    riHumanCard.classList.remove('alert');
-                    riHumanCard.classList.add('active');
-                }
-            } else {
-                riHumanVal.textContent = 'No human detected';
-                riHumanVal.className = 'ri-value';
-                if (riHumanCount) riHumanCount.textContent = '0';
-                if (riHumanCard) {
-                    riHumanCard.classList.remove('active', 'alert');
-                }
-            }
-        }
-    }
-
-    function publishAlert(label, conf, desc) {
-        const now = Date.now();
-        if (now - lastAlertTime < alertThrottleMs) return;
-        
-        const mqtt = window.mqttController;
-        if (mqtt) {
-            mqtt.sendCommand('ALERT_TRIGGERED', {
-                type: 'DETECTION',
-                label: label,
-                conf: conf,
-                desc: desc
-            });
-            lastAlertTime = now;
-            console.log('[Edge AI] Broadcasted MQTT Alert:', label, conf);
-        }
-    }
-
-    // ── Lucide icon init ──────────────────────────────────────
     if (typeof lucide !== 'undefined') lucide.createIcons();
-
 });

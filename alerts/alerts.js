@@ -63,9 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── ADD ALERT ──────────────────────────────────────────────
-    function addAlert(type, priority, title, desc, icon) {
-        // Deduplication: reject identical type+priority combos within 5 seconds
-        const dedupKey = `${type}:${priority}`;
+    function addAlert(type, priority, title, desc, icon, urgency = null) {
+        // Deduplication: reject identical type+priority+title combos within 5 seconds
+        const dedupKey = `${type}:${priority}:${title}`;
         const now = Date.now();
         if (lastAlertTime[dedupKey] && now - lastAlertTime[dedupKey] < 5000) {
             return;
@@ -80,7 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
             desc,
             icon,
             timestamp: new Date(),
-            resolved:  false
+            resolved:  false,
+            urgency
         };
         alerts.push(alert);
         renderAlerts();
@@ -117,6 +118,10 @@ document.addEventListener('DOMContentLoaded', () => {
             item.className = `alert-item ${alert.priority}`;
             item.style.animationDelay = `${idx * 0.04}s`;
 
+            const urgencyHtml = alert.urgency 
+                ? `<span class="urgency-tag urgency-${alert.urgency.toLowerCase().replace('_urgency', '')}">${sanitize(alert.urgency.replace('_', ' '))}</span>` 
+                : '';
+
             item.innerHTML = `
                 <div class="alert-icon">${sanitize(alert.icon)}</div>
                 <div class="alert-content">
@@ -126,11 +131,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="alert-priority-badge">
                     <span class="badge ${priorityBadgeClass(alert.priority)}">${priorityLabel(alert.priority)}</span>
+                    ${urgencyHtml}
                 </div>
             `;
             alertList.appendChild(item);
         });
     }
+
 
     // ── UPDATE STATS ───────────────────────────────────────────
     function updateStats() {
@@ -262,17 +269,66 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         mqtt.on('alerts', d => {
-            if (d.label === 'HUMAN') {
+            if (d.label === 'SCENE_UPDATE') {
+                // Loop through survivors
+                if (d.survivors && Array.isArray(d.survivors)) {
+                    d.survivors.forEach(survivor => {
+                        const prioLower = survivor.priority.toLowerCase();
+                        // 1. SURVIVOR_CRITICAL
+                        if (survivor.priority === 'CRITICAL' || survivor.priority === 'HIGH') {
+                            addAlert(
+                                'SURVIVOR_CRITICAL',
+                                prioLower,
+                                `👤 Survivor #${survivor.id} [${survivor.priority}]`,
+                                `Status: ${survivor.status} | Posture: ${survivor.posture} | Gesture: ${survivor.gesture || 'none'}.`,
+                                '👤',
+                                survivor.urgency
+                            );
+                        }
+                        // 2. SURVIVOR_UNCONSCIOUS
+                        if (survivor.status === 'POSSIBLY_UNCONSCIOUS') {
+                            addAlert(
+                                'SURVIVOR_UNCONSCIOUS',
+                                prioLower,
+                                `💤 Unconscious Suspect #${survivor.id}`,
+                                `Unconscious posture detected. Urgency: ${survivor.urgency}.`,
+                                '💤',
+                                survivor.urgency
+                            );
+                        }
+                        // 3. TRAPPED
+                        if (survivor.trapped_prob > 0.6) {
+                            addAlert(
+                                'TRAPPED',
+                                prioLower,
+                                `⚠️ Trapped Suspect #${survivor.id}`,
+                                `High trapped probability: ${Math.round(survivor.trapped_prob * 100)}%. Urgency: ${survivor.urgency}.`,
+                                '⚠️',
+                                survivor.urgency
+                            );
+                        }
+                    });
+                }
+                // 4. FIRE_SPREAD
+                if (d.fire && d.fire.detected && d.fire.spread_risk === 'HIGH') {
+                    addAlert('FIRE_SPREAD', 'critical', '🔥 Rapid Fire Spread!', 'Fire spread risk is HIGH.', '🔥');
+                }
+                // 5. SMOKE_DENSE
+                if (d.smoke && d.smoke.detected && (d.smoke.density === 'opaque' || d.smoke.density === 'thick')) {
+                    addAlert(
+                        'SMOKE_DENSE',
+                        d.smoke.density === 'opaque' ? 'critical' : 'high',
+                        '💨 Dense Smoke Warning',
+                        `Dense smoke (${d.smoke.density.toUpperCase()}) detected. Visibility: ${d.smoke.visibility_pct}%.`,
+                        '💨'
+                    );
+                }
+            } else if (d.label === 'HUMAN') {
                 addAlert('detection', 'medium', '👤 Human Detected', d.desc || 'PIR sensor detected human presence in field of view', '👤');
-            }
-            if (d.label === 'MOTION') {
-                addAlert('motion', 'low', '👁️ Motion Detected', d.desc || 'Movement detected in rover proximity zone', '👁️');
-            }
-            if (d.label === 'FIRE') {
-                addAlert('fire', 'critical', '🔥 Fire Detected!', d.desc || 'AI Vision confirms active fire signature in camera stream.', '🔥');
-            }
-            if (d.label === 'HAZARD') {
-                addAlert('hazard', 'high', '⚠️ Hazard Warning', d.desc || 'AI Vision isolates environmental structural hazard.', '⚠️');
+            } else if (d.label === 'FIRE') {
+                addAlert('fire', 'critical', '🔥 Fire Detected!', d.desc || 'Fire detected in camera feed', '🔥');
+            } else if (d.label === 'SMOKE') {
+                addAlert('smoke', 'high', '💨 Smoke Detected', d.desc || 'Smoke detected in camera feed', '💨');
             }
         });
     }
