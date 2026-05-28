@@ -9,52 +9,14 @@
  */
 
 /* ── THEME INIT (run immediately, before DOMContentLoaded)
-       Enforces user selected or default dark theme         ── */
+       Enforces dark theme globally                         ── */
 ;(function applyThemeEarly() {
-    const savedTheme = localStorage.getItem('rescuebot-theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.documentElement.setAttribute('data-theme', 'dark');
 })();
-
-/* ── HELPERS ─────────────────────────────────────────────────── */
-
-function getCurrentTheme() {
-    return document.documentElement.getAttribute('data-theme') || 'dark';
-}
-
-function setTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('rescuebot-theme', theme);
-    updateThemeIcons(theme);
-    window.dispatchEvent(new CustomEvent('ares:themeChanged', { detail: theme }));
-}
-
-function toggleTheme() {
-    const current = getCurrentTheme();
-    const next = current === 'dark' ? 'light' : 'dark';
-    setTheme(next);
-}
-
-function updateThemeIcons(theme) {
-    // In dark mode → show sun icon (to switch to light)
-    // In light mode → show moon icon (to switch to dark)
-    const iconName = theme === 'dark' ? 'sun' : 'moon';
-
-    document.querySelectorAll('[id="theme-toggle"], [id="landing-theme-toggle"], .theme-toggle-btn, .nav-theme-btn').forEach(btn => {
-        btn.innerHTML = `<i data-lucide="${iconName}"></i>`;
-        if (window.lucide) window.lucide.createIcons({ nodes: [btn] });
-        
-        const label = theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-        btn.setAttribute('title', label);
-        btn.setAttribute('aria-label', label);
-    });
-}
 
 
 /* ── MAIN DOM READY ─────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
-
-    /* ── Apply saved theme icon state ─────────────────────────── */
-    updateThemeIcons(getCurrentTheme());
 
     /* ── DYNAMIC NAVIGATION & AVATAR INJECTION ──────────────── */
     const sidebarEl = document.getElementById('sidebar');
@@ -127,10 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /* ── THEME TOGGLE BUTTON ─────────────────────────────────── */
-    document.querySelectorAll('#theme-toggle, #landing-theme-toggle, .theme-toggle-btn, .nav-theme-btn').forEach(btn => {
-        btn.addEventListener('click', toggleTheme);
-    });
+
 
     /* ── ACTIVE NAV ITEM ─────────────────────────────────────── */
     const currentPath = window.location.pathname.toLowerCase();
@@ -202,10 +161,9 @@ document.addEventListener('DOMContentLoaded', () => {
 window.RESCUEBOT_UI = {
 
     toast(message, type = 'info') {
-        const isLight = getCurrentTheme() === 'light';
-        const bg      = isLight ? '#FFFFFF' : '#0E1520';
-        const color   = isLight ? '#0F172A' : '#EFF2F7';
-        const border  = isLight ? '#E2E8F0' : 'rgba(255,255,255,0.08)';
+        const bg      = '#0E1520';
+        const color   = '#EFF2F7';
+        const border  = 'rgba(255,255,255,0.08)';
 
         const accentColors = {
             success: '#22C55E',
@@ -275,7 +233,9 @@ window.RESCUEBOT_UI = {
         requestAnimationFrame(update);
     },
 
-    getTheme:    getCurrentTheme,
-    setTheme,
-    toggleTheme
+    getTheme() {
+        return 'dark';
+    },
+    setTheme(theme) {},
+    toggleTheme() {}
 };

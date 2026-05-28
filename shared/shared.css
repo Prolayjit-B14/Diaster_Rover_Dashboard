@@ -1587,3 +1587,11 @@ html, body {
   border-color: rgba(59, 130, 246, 0.2);
 }
 
+/* Remove theme toggle buttons globally from all pages */
+#theme-toggle,
+#landing-theme-toggle,
+.theme-toggle-btn,
+.nav-theme-btn {
+  display: none !important;
+}
+
