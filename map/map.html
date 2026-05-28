@@ -131,36 +131,37 @@
             to { transform: scale(1.2); }
         }
 
-        /* GPS Status overlay waiting message */
-        .gps-loading-overlay {
+        /* GPS Status overlay waiting spinner */
+        .gps-loading-indicator {
             position: absolute;
-            inset: 0;
-            background: rgba(8, 12, 22, 0.75);
-            backdrop-filter: blur(4px);
-            z-index: 500;
+            top: 66px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(245, 158, 11, 0.92);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            color: #ffffff;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: var(--radius-full);
+            box-shadow: var(--shadow-sm);
+            z-index: 1000;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            font-family: var(--font-body);
-            transition: opacity 0.5s ease;
-        }
-        .gps-loading-card {
-            background: #151C2C;
-            border: 1px solid var(--border-default);
-            padding: 20px 32px;
-            border-radius: var(--radius-md);
-            text-align: center;
-            box-shadow: var(--shadow-lg);
+            gap: 8px;
+            pointer-events: none;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: opacity 0.4s ease, transform 0.4s ease;
         }
         .gps-spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid rgba(59, 130, 246, 0.15);
-            border-top-color: var(--accent);
+            width: 10px;
+            height: 10px;
+            border: 1.5px solid rgba(255, 255, 255, 0.25);
+            border-top-color: #ffffff;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 12px;
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
@@ -453,13 +454,10 @@
         <!-- MAP CANVAS CONTAINER -->
         <div class="map-shell" style="position:relative; width:100%; height:100%;">
 
-            <!-- ── WAITING FOR GPS SIGNAL SCREEN ── -->
-            <div id="gps-loading-overlay" class="gps-loading-overlay">
-                <div class="gps-loading-card">
-                    <div class="gps-spinner"></div>
-                    <h3 style="color: var(--text-primary); font-size: 13px; font-weight: 600; margin-bottom: 6px;">Waiting for Rover telemetry...</h3>
-                    <p style="color: var(--text-secondary); font-size: 11px; margin: 0;">Connect hardware to send real-time coordinates over MQTT.</p>
-                </div>
+            <!-- ── FLOATING GPS STATUS LOADER (Non-blocking) ── -->
+            <div id="gps-status-indicator" class="gps-loading-indicator">
+                <div class="gps-spinner"></div>
+                <span>Awaiting GPS telemetry...</span>
             </div>
 
             <!-- ── INTERACTIVE MAP CANVAS (LEAFLET) ─────────────────────────── -->
@@ -750,11 +748,12 @@
 
     // ── CORE FUNCTION: updateRoverLocation (lat, lng parameter order) ──
     window.updateRoverLocation = function(lat, lng) {
-        // Remove loading screen on first active telemetry coordinate packet
-        const loadOverlay = document.getElementById('gps-loading-overlay');
-        if (loadOverlay && loadOverlay.style.display !== 'none') {
-            loadOverlay.style.opacity = '0';
-            setTimeout(() => { loadOverlay.style.display = 'none'; }, 500);
+        // Remove loading status indicator on first active telemetry coordinate packet
+        const loadIndicator = document.getElementById('gps-status-indicator');
+        if (loadIndicator) {
+            loadIndicator.style.opacity = '0';
+            loadIndicator.style.transform = 'translateX(-50%) translateY(-10px)';
+            setTimeout(() => { loadIndicator.style.display = 'none'; }, 400);
         }
 
         // Initialize geofence relative to actual GPS location on the first packet
@@ -1029,7 +1028,7 @@
         });
     }
 
-    // ── MQTT SUBSCRIBER AND PARSING BINDINGS ───────────────────────────────
+    // ── SETUP MQTT CONNECTOR ───────────────────────────────────────────────
     function setupMqttConnector() {
         const mqttCtrl = window.mqttController;
         if (mqttCtrl) {
