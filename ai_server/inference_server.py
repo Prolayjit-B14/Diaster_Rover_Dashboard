@@ -1135,9 +1135,21 @@ class DisasterAIEngine:
                             severity = "high"
                             color = (0, 255, 128)
 
-                        # Visual HUD bracket overlays
-                        cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), color, 2)
-                        cv2.putText(annotated_frame, f"{sub_label} ({survivor_prob}%)", (x1, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
+                        # Estimate face bounding box from person's box
+                        face_w = int(bw * 0.35)
+                        face_h = int(min(bh * 0.18, face_w * 1.25))
+                        face_x = int(x1 + (bw - face_w) / 2)
+                        face_y = int(y1 + (bh * 0.04))
+
+                        # Ensure coordinates are within frame boundaries
+                        face_x = max(0, min(face_x, width - 1))
+                        face_y = max(0, min(face_y, height - 1))
+                        face_w = max(1, min(face_w, width - face_x))
+                        face_h = max(1, min(face_h, height - face_y))
+
+                        # Visual HUD bracket overlays (face only)
+                        cv2.rectangle(annotated_frame, (face_x, face_y), (face_x + face_w, face_y + face_h), color, 2)
+                        cv2.putText(annotated_frame, f"{sub_label} ({survivor_prob}%)", (face_x, face_y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
 
                         if bleeding_detected and bleed_mask is not None:
                             contours, _ = cv2.findContours(bleed_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -1219,8 +1231,20 @@ class DisasterAIEngine:
                     severity = "high"
                     color = (0, 128, 255)
                 
-                cv2.rectangle(annotated_frame, (mx, my), (mx+mw, my+mh), color, 2)
-                cv2.putText(annotated_frame, f"Heuristic: {sub_label} ({survivor_prob}%)", (mx, my - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
+                # Estimate face bounding box from motion box
+                face_w = int(mw * 0.35)
+                face_h = int(min(mh * 0.18, face_w * 1.25))
+                face_x = int(mx + (mw - face_w) / 2)
+                face_y = int(my + (mh * 0.04))
+
+                # Ensure coordinates are within frame boundaries
+                face_x = max(0, min(face_x, width - 1))
+                face_y = max(0, min(face_y, height - 1))
+                face_w = max(1, min(face_w, width - face_x))
+                face_h = max(1, min(face_h, height - face_y))
+
+                cv2.rectangle(annotated_frame, (face_x, face_y), (face_x + face_w, face_y + face_h), color, 2)
+                cv2.putText(annotated_frame, f"Heuristic: {sub_label} ({survivor_prob}%)", (face_x, face_y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
                 
                 desc_text = f"Heuristic {sub_label} Detected - Motion tracking and visual fluor diagnostics active."
                 if bleeding_detected:

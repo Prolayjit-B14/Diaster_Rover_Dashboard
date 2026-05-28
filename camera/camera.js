@@ -666,10 +666,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 const scaleX = imgWidth / natWidth;
                 const scaleY = imgHeight / natHeight;
 
-                bbox.style.left = `${coords.x * scaleX}px`;
-                bbox.style.top = `${coords.y * scaleY}px`;
-                bbox.style.width = `${coords.w * scaleX}px`;
-                bbox.style.height = `${coords.h * scaleY}px`;
+                let left = coords.x * scaleX;
+                let top = coords.y * scaleY;
+                let width = coords.w * scaleX;
+                let height = coords.h * scaleY;
+
+                // Adjust bounding box to only target the face/head area if it is a human detection
+                if (key === 'human') {
+                    const faceW = width * 0.35;
+                    const faceH = Math.min(height * 0.18, faceW * 1.25);
+                    const faceX = left + (width - faceW) / 2;
+                    const faceY = top + (height * 0.04);
+
+                    left = faceX;
+                    top = faceY;
+                    width = faceW;
+                    height = faceH;
+                }
+
+                bbox.style.left = `${left}px`;
+                bbox.style.top = `${top}px`;
+                bbox.style.width = `${width}px`;
+                bbox.style.height = `${height}px`;
             } else if (!coords) {
                 // Default fallback centered positioning to keep it visible if no coords
                 bbox.style.left = '10%';
@@ -853,13 +871,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (p.class === 'person') {
                 humanDetected = true;
                 
-                // Position HUD bracket
+                // Position HUD bracket to show only the face (approx. top portion of the person)
                 if (humanBBox) {
                     humanBBox.style.display = 'block';
-                    humanBBox.style.left = `${displayX}px`;
-                    humanBBox.style.top = `${displayY}px`;
-                    humanBBox.style.width = `${displayW}px`;
-                    humanBBox.style.height = `${displayH}px`;
+                    
+                    const faceW = displayW * 0.35;
+                    const faceH = Math.min(displayH * 0.18, faceW * 1.25);
+                    const faceX = displayX + (displayW - faceW) / 2;
+                    const faceY = displayY + (displayH * 0.04);
+
+                    humanBBox.style.left = `${faceX}px`;
+                    humanBBox.style.top = `${faceY}px`;
+                    humanBBox.style.width = `${faceW}px`;
+                    humanBBox.style.height = `${faceH}px`;
                     
                     const labelConf = document.getElementById('bbox-human-conf');
                     if (labelConf) labelConf.textContent = `${scorePercent}%`;
@@ -897,6 +921,32 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide bounding boxes if targets are lost
         if (!humanDetected && humanBBox) humanBBox.style.display = 'none';
         if (!hazardDetected && hazardBBox) hazardBBox.style.display = 'none';
+
+        // Update Side Intelligence Section for Local Fallback Engine
+        const riHumanVal = document.getElementById('ri-human-val');
+        const riHumanCount = document.getElementById('ri-human-count');
+        const riHumanCard = document.getElementById('ri-human');
+        
+        if (riHumanVal) {
+            if (humanDetected) {
+                const personPreds = predictions.filter(p => p.class === 'person' && Math.round(p.score * 100) >= 55);
+                const count = personPreds.length;
+                riHumanVal.textContent = 'Detected';
+                riHumanVal.className = 'ri-value active';
+                if (riHumanCount) riHumanCount.textContent = count;
+                if (riHumanCard) {
+                    riHumanCard.classList.remove('alert');
+                    riHumanCard.classList.add('active');
+                }
+            } else {
+                riHumanVal.textContent = 'No human detected';
+                riHumanVal.className = 'ri-value';
+                if (riHumanCount) riHumanCount.textContent = '0';
+                if (riHumanCard) {
+                    riHumanCard.classList.remove('active', 'alert');
+                }
+            }
+        }
     }
 
     function publishAlert(label, conf, desc) {

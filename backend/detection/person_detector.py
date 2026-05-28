@@ -103,17 +103,31 @@ class PersonDetector:
         return PersonDetection()
 
     def draw(self, frame: np.ndarray, result: PersonDetection) -> np.ndarray:
-        """Draws person bounding box with posture label."""
+        """Draws person bounding box (focused on face/head area) with posture label."""
         if result.detected and result.bbox:
             b = result.bbox
+            
+            # Estimate face bounding box from the person's bounding box
+            face_w = int(b.w * 0.35)
+            face_h = int(min(b.h * 0.18, face_w * 1.25))
+            face_x = int(b.x + (b.w - face_w) / 2)
+            face_y = int(b.y + (b.h * 0.04))
+
+            # Ensure coordinates are within frame boundaries
+            h_img, w_img = frame.shape[:2]
+            face_x = max(0, min(face_x, w_img - 1))
+            face_y = max(0, min(face_y, h_img - 1))
+            face_w = max(1, min(face_w, w_img - face_x))
+            face_h = max(1, min(face_h, h_img - face_y))
+
             color = (0, 255, 0) if result.is_rescuer else (
                 (0, 0, 255) if result.is_motionless else (0, 212, 255)
             )
-            cv2.rectangle(frame, (b.x, b.y), (b.x + b.w, b.y + b.h), color, 2)
+            cv2.rectangle(frame, (face_x, face_y), (face_x + face_w, face_y + face_h), color, 2)
             label = f"{result.pose_state.upper()} ({int(result.confidence * 100)}%)"
             if result.is_rescuer:
                 label = f"RESCUER ({int(result.confidence * 100)}%)"
-            cv2.putText(frame, label, (b.x, b.y - 5),
+            cv2.putText(frame, label, (face_x, face_y - 5),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
         return frame
 
