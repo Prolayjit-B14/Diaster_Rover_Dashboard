@@ -140,38 +140,7 @@
             to { transform: scale(1.2); }
         }
 
-        /* GPS Status overlay waiting spinner */
-        .gps-loading-indicator {
-            position: absolute;
-            top: 66px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(245, 158, 11, 0.92);
-            border: 1px solid rgba(245, 158, 11, 0.25);
-            color: #ffffff;
-            font-family: var(--font-mono);
-            font-size: 10px;
-            font-weight: 600;
-            padding: 6px 16px;
-            border-radius: var(--radius-full);
-            box-shadow: var(--shadow-sm);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            pointer-events: none;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            transition: opacity 0.4s ease, transform 0.4s ease;
-        }
-        .gps-spinner {
-            width: 10px;
-            height: 10px;
-            border: 1.5px solid rgba(255, 255, 255, 0.25);
-            border-top-color: #ffffff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+
 
         /* ── MAP LAYOUT STRUCTURE ───────────────────────────────────────────── */
         .map-shell {
@@ -196,68 +165,54 @@
         .map-floating-tools {
             position: absolute;
             top: 14px;
-            left: 14px;
-            background: rgba(11, 15, 25, 0.90);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-md);
-            padding: 12px;
-            width: 62px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: row;
+            gap: 6px;
             pointer-events: auto;
             z-index: 1000;
-            box-shadow: var(--shadow-md);
         }
-        [data-theme="light"] .map-floating-tools {
-            background: rgba(255, 255, 255, 0.94);
-        }
-        .map-tools-title {
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-bottom: var(--space-2);
-            text-align: center;
-        }
-        .map-tools-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: var(--space-2);
+        .map-tool-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--border-subtle);
+            align-self: center;
+            margin: 0 4px;
+            flex-shrink: 0;
         }
 
         /* ── TOOL STRIP BUTTONS ────────────────────────────────────────────── */
         .map-tool-btn {
-            width: 100%;
-            aspect-ratio: 1 / 1;
+            width: 34px;
+            height: 34px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 8px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-subtle);
+            background: rgba(11, 15, 25, 0.88);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--border-default);
             border-radius: var(--radius-sm);
             color: var(--btn-color, var(--text-secondary));
             cursor: pointer;
-            transition: background-color var(--t-fast), border-color var(--t-fast), color var(--t-fast), box-shadow var(--t-fast);
-            box-shadow: var(--shadow-inset);
+            transition: var(--t-fast);
+            flex-shrink: 0;
         }
         [data-theme="light"] .map-tool-btn {
-            background: var(--bg-elevated);
+            background: rgba(255, 255, 255, 0.94);
         }
         .map-tool-btn svg,
         .map-tool-btn i {
-            width: 18px;
-            height: 18px;
+            width: 14px;
+            height: 14px;
             flex-shrink: 0;
         }
         .map-tool-btn:hover {
             border-color: var(--btn-color, var(--border-accent));
-            background: rgba(255, 255, 255, 0.04);
+            color: #0B0F19;
+            background: var(--btn-color, var(--accent)) !important;
             box-shadow: 0 0 10px var(--btn-color);
-        }
-        [data-theme="light"] .map-tool-btn:hover {
-            background: rgba(0, 0, 0, 0.02);
         }
         .map-tool-btn.active {
             border-color: var(--btn-color, var(--border-accent)) !important;
@@ -273,9 +228,9 @@
         .map-tool-btn::after {
             content: attr(data-tooltip);
             position: absolute;
-            left: calc(100% + 10px);
-            top: 50%;
-            transform: translateY(-50%) scale(0.9);
+            top: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
             background: rgba(11, 15, 25, 0.95);
             backdrop-filter: blur(8px);
             border: 1px solid var(--btn-color, var(--border-default));
@@ -294,12 +249,12 @@
         .map-tool-btn::before {
             content: '';
             position: absolute;
-            left: calc(100% + 2px);
-            top: 50%;
-            transform: translateY(-50%) scale(0.9);
+            top: calc(100% + 2px);
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
             border-width: 5px;
             border-style: solid;
-            border-color: transparent var(--btn-color, var(--border-default)) transparent transparent;
+            border-color: transparent transparent var(--btn-color, var(--border-default)) transparent;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.15s ease, transform 0.15s ease;
@@ -308,7 +263,7 @@
         .map-tool-btn:hover::after,
         .map-tool-btn:hover::before {
             opacity: 1;
-            transform: translateY(-50%) scale(1);
+            transform: translateX(-50%) scale(1);
         }
 
         /* ── HUD BOTTOM COORDINATES PANELS ───────────────────────────────────── */
@@ -471,7 +426,13 @@
         
         /* Mobile adjustment for HUD overlays */
         @media (max-width: 900px) {
-            .map-floating-tools { display: none !important; }
+            .map-floating-tools {
+                max-width: calc(100vw - 32px);
+                overflow-x: auto;
+                white-space: nowrap;
+                justify-content: flex-start;
+                padding: 4px;
+            }
         }
     </style>
 </head>
@@ -563,53 +524,46 @@
         <!-- MAP CANVAS CONTAINER -->
         <div class="map-shell">
 
-            <!-- ── FLOATING GPS STATUS LOADER (Non-blocking) ── -->
-            <div id="gps-status-indicator" class="gps-loading-indicator">
-                <div class="gps-spinner"></div>
-                <span>Awaiting GPS telemetry...</span>
-            </div>
-
             <!-- ── INTERACTIVE MAP CANVAS (LEAFLET) ─────────────────────────── -->
             <div id="map-canvas"></div>
 
-            <!-- ── FLOATING TACTICAL TOOLBAR (LEFT SIDEBAR HUD) ──────────────── -->
+            <!-- ── FLOATING TACTICAL TOOLBAR (TOP MIDDLE) ──────────────── -->
             <div class="map-hud-overlay map-floating-tools">
-                <div class="map-tools-title">Tools</div>
-                <div class="map-tools-grid">
-                    <button class="map-tool-btn active" id="btn-follow" style="--btn-color: #00D4FF;" data-tooltip="Follow Rover">
-                        <i data-lucide="crosshair"></i>
-                    </button>
-                    <button class="map-tool-btn" id="btn-safe" style="--btn-color: #00FF88;" data-tooltip="Safe Zone">
-                        <i data-lucide="shield"></i>
-                    </button>
-                    <button class="map-tool-btn" id="btn-danger" style="--btn-color: #FF2D55;" data-tooltip="Danger Zone">
-                        <i data-lucide="alert-triangle"></i>
-                    </button>
-                    <button class="map-tool-btn" id="btn-base-station" style="--btn-color: #00D4FF;" data-tooltip="Base Station">
-                        <i data-lucide="radio"></i>
-                    </button>
-                    <button class="map-tool-btn" id="btn-survivor" style="--btn-color: #FF007F;" data-tooltip="Survivor (SOS)">
-                        <i data-lucide="heart"></i>
-                    </button>
-                    <button class="map-tool-btn" id="btn-obstacle" style="--btn-color: #FFB800;" data-tooltip="Obstacle">
-                        <i data-lucide="construction"></i>
-                    </button>
-                    <button class="map-tool-btn" id="btn-supplies" style="--btn-color: #A066FF;" data-tooltip="Supplies">
-                        <i data-lucide="package"></i>
-                    </button>
-                    <button class="map-tool-btn" id="btn-fire" style="--btn-color: #FF5722;" data-tooltip="Fire Source">
-                        <i data-lucide="flame"></i>
-                    </button>
-                    <button class="map-tool-btn" id="btn-gas" style="--btn-color: #E040FB;" data-tooltip="Gas Hazard">
-                        <i data-lucide="skull"></i>
-                    </button>
-                    <button class="map-tool-btn" id="btn-water" style="--btn-color: #2196F3;" data-tooltip="Water Hazard">
-                        <i data-lucide="droplet"></i>
-                    </button>
-                    <button class="map-tool-btn" id="btn-clear-path" style="--btn-color: #8BA4C0;" data-tooltip="Clear Trail">
-                        <i data-lucide="trash-2"></i>
-                    </button>
-                </div>
+                <button class="map-tool-btn active" id="btn-follow" style="--btn-color: #00D4FF;" data-tooltip="Follow Rover">
+                    <i data-lucide="crosshair"></i>
+                </button>
+                <div class="map-tool-divider"></div>
+                <button class="map-tool-btn" id="btn-safe" style="--btn-color: #00FF88;" data-tooltip="Safe Zone">
+                    <i data-lucide="shield"></i>
+                </button>
+                <button class="map-tool-btn" id="btn-danger" style="--btn-color: #FF2D55;" data-tooltip="Danger Zone">
+                    <i data-lucide="alert-triangle"></i>
+                </button>
+                <button class="map-tool-btn" id="btn-base-station" style="--btn-color: #00D4FF;" data-tooltip="Base Station">
+                    <i data-lucide="radio"></i>
+                </button>
+                <button class="map-tool-btn" id="btn-survivor" style="--btn-color: #FF007F;" data-tooltip="Survivor (SOS)">
+                    <i data-lucide="heart"></i>
+                </button>
+                <button class="map-tool-btn" id="btn-obstacle" style="--btn-color: #FFB800;" data-tooltip="Obstacle">
+                    <i data-lucide="construction"></i>
+                </button>
+                <button class="map-tool-btn" id="btn-supplies" style="--btn-color: #A066FF;" data-tooltip="Supplies">
+                    <i data-lucide="package"></i>
+                </button>
+                <button class="map-tool-btn" id="btn-fire" style="--btn-color: #FF5722;" data-tooltip="Fire Source">
+                    <i data-lucide="flame"></i>
+                </button>
+                <button class="map-tool-btn" id="btn-gas" style="--btn-color: #E040FB;" data-tooltip="Gas Hazard">
+                    <i data-lucide="skull"></i>
+                </button>
+                <button class="map-tool-btn" id="btn-water" style="--btn-color: #2196F3;" data-tooltip="Water Hazard">
+                    <i data-lucide="droplet"></i>
+                </button>
+                <div class="map-tool-divider"></div>
+                <button class="map-tool-btn" id="btn-clear-path" style="--btn-color: #8BA4C0;" data-tooltip="Clear Trail">
+                    <i data-lucide="trash-2"></i>
+                </button>
             </div>
 
             <!-- ── HUD BOTTOM STATS CARDS (COORDINATES READOUTS) ─────────────── -->
@@ -813,13 +767,7 @@
 
     // ── CORE FUNCTION: updateRoverLocation (lat, lng parameter order) ──
     window.updateRoverLocation = function(lat, lng) {
-        // Remove loading status indicator on first active telemetry coordinate packet
-        const loadIndicator = document.getElementById('gps-status-indicator');
-        if (loadIndicator) {
-            loadIndicator.style.opacity = '0';
-            loadIndicator.style.transform = 'translateX(-50%) translateY(-10px)';
-            setTimeout(() => { loadIndicator.style.display = 'none'; }, 400);
-        }
+        // Rover GPS location has been updated
 
         // Initialize geofence relative to actual GPS location on the first packet
         if (!geofenceInitialized) {
