@@ -55,44 +55,26 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ── Apply saved theme icon state ─────────────────────────── */
     updateThemeIcons(getCurrentTheme());
 
-    /* ── DYNAMIC MOBILE MENU BUTTON & BACKDROP INJECTION ──────── */
-    const navLeft    = document.querySelector('.top-navbar .nav-left');
-    const sidebarEl  = document.getElementById('sidebar');
-    if (navLeft && sidebarEl) {
-        if (!document.getElementById('mobile-menu-btn')) {
-            const mobileBtn = document.createElement('button');
-            mobileBtn.className = 'mobile-menu-btn';
-            mobileBtn.id = 'mobile-menu-btn';
-            mobileBtn.title = 'Open Menu';
-            mobileBtn.setAttribute('aria-label', 'Open Menu');
-            mobileBtn.innerHTML = '<i data-lucide="menu"></i>';
-            navLeft.prepend(mobileBtn);
-        }
+    /* ── MOBILE MENU + BACKDROP ──────────────────────────────── */
+    const sidebarEl = document.getElementById('sidebar');
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const backdrop  = document.getElementById('sidebar-backdrop');
 
-        if (!document.getElementById('sidebar-backdrop')) {
-            const backdrop = document.createElement('div');
-            backdrop.className = 'sidebar-backdrop';
-            backdrop.id = 'sidebar-backdrop';
-            document.body.appendChild(backdrop);
-
-            const mobileBtn = document.getElementById('mobile-menu-btn');
-            mobileBtn.addEventListener('click', () => {
-                sidebarEl.classList.add('mobile-open');
-                backdrop.classList.add('visible');
-            });
-            backdrop.addEventListener('click', () => {
+    if (sidebarEl && mobileBtn && backdrop) {
+        mobileBtn.addEventListener('click', () => {
+            sidebarEl.classList.add('mobile-open');
+            backdrop.classList.add('visible');
+        });
+        backdrop.addEventListener('click', () => {
+            sidebarEl.classList.remove('mobile-open');
+            backdrop.classList.remove('visible');
+        });
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
                 sidebarEl.classList.remove('mobile-open');
                 backdrop.classList.remove('visible');
             });
-
-            // Close sidebar on nav-item click (mobile)
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    sidebarEl.classList.remove('mobile-open');
-                    backdrop.classList.remove('visible');
-                });
-            });
-        }
+        });
     }
 
     /* ── THEME TOGGLE BUTTON ─────────────────────────────────── */
@@ -100,17 +82,11 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', toggleTheme);
     });
 
-    /* ── SIDEBAR COLLAPSE ────────────────────────────────────── */
-    const sidebar     = document.getElementById('sidebar');
+    /* ── SIDEBAR COLLAPSE (not used in icon-only mode) ─────────── */
     const collapseBtn = document.getElementById('sidebar-collapse-btn');
-    if (sidebar && collapseBtn) {
-        // Restore saved collapse state
-        if (localStorage.getItem('sidebar-collapsed') === 'true') {
-            sidebar.classList.add('collapsed');
-        }
+    if (sidebarEl && collapseBtn) {
         collapseBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-            localStorage.setItem('sidebar-collapsed', sidebar.classList.contains('collapsed'));
+            sidebarEl.classList.toggle('collapsed');
             setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 50);
         });
     }
@@ -185,16 +161,10 @@ document.addEventListener('DOMContentLoaded', () => {
 window.RESCUEBOT_UI = {
 
     toast(message, type = 'info') {
-        const colors = {
-            info:    '#00D4FF',
-            success: '#00FF88',
-            warning: '#FFB800',
-            error:   '#FF2D55'
-        };
         const isLight = getCurrentTheme() === 'light';
-        const bg      = isLight ? '#FFFFFF' : '#0D1B35';
-        const color   = isLight ? '#0F1B2D' : '#E8F4FD';
-        const accent  = colors[type] || colors.info;
+        const bg      = isLight ? '#FFFFFF' : '#1E2840';
+        const color   = isLight ? '#0F172A' : '#F1F5F9';
+        const border  = isLight ? '#E2E8F0' : 'rgba(255,255,255,0.1)';
 
         // Remove existing toast of same type to prevent stacking
         const existing = document.querySelector(`.rescuebot-toast[data-type="${type}"]`);
@@ -205,10 +175,10 @@ window.RESCUEBOT_UI = {
         toast.dataset.type = type;
         toast.style.cssText = `
             position:fixed; bottom:24px; right:24px; z-index:9999;
-            background:${bg}; border:1px solid ${accent};
-            color:${color}; padding:12px 20px; border-radius:10px;
-            font-family:'Inter',sans-serif; font-size:13px; font-weight:500;
-            box-shadow:0 4px 20px rgba(0,0,0,0.2), 0 0 20px ${accent}33;
+            background:${bg}; border:1px solid ${border};
+            color:${color}; padding:12px 20px; border-radius:8px;
+            font-family:'Inter',system-ui,sans-serif; font-size:13px; font-weight:500;
+            box-shadow:0 4px 20px rgba(0,0,0,0.25);
             max-width:320px; opacity:0; transform:translateY(8px);
             transition:opacity 0.25s ease, transform 0.25s ease;
             pointer-events:none;

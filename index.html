@@ -4,90 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rescue Intel | Disaster Rescue Monitoring System</title>
-    <meta name="description" content="Real-time disaster rescue monitoring, rover control, hazard detection and emergency response system powered by IoT, ESP32, and MQTT.">
+    <meta name="description" content="Real-time disaster rescue monitoring, rover control, hazard detection and emergency response platform powered by ESP32, MQTT and AI Vision.">
     <link rel="icon" type="image/png" href="./assets/favicon.png">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://rescuebot.vercel.app/">
-    <!-- Apply theme before CSS parses to prevent flash -->
     <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('rescuebot-theme') || 'dark');</script>
     <link rel="stylesheet" href="./shared/shared.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        /* ── LANDING OVERRIDES ──────────────────────────────── */
+        /* ── LANDING PAGE OVERRIDES ─────────────────────────── */
         html, body { overflow-x: hidden; overflow-y: auto; height: auto; }
-
-        /* ── PARTICLE BACKGROUND ────────────────────────────── */
-        #particle-canvas {
-            position: fixed; inset: 0; z-index: 0;
-            pointer-events: none;
-        }
 
         /* ── NAV ─────────────────────────────────────────────── */
         .landing-nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            height: 68px;
+            height: 56px;
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 48px;
-            background: rgba(2, 8, 23, 0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0,212,255,0.1);
-            transition: all 0.3s ease;
+            padding: 0 40px;
+            background: rgba(11, 15, 25, 0.94);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle);
         }
 
         .nav-brand {
-            display: flex; align-items: center; gap: 12px;
+            display: flex; align-items: center; gap: 10px;
         }
 
         .nav-logo {
-            width: 38px; height: 38px;
-            background: linear-gradient(135deg, #00D4FF, #0080AA);
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 800; font-size: 18px; color: #020817;
-            box-shadow: 0 0 20px rgba(0,212,255,0.5);
+            width: 32px; height: 32px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 1px solid var(--border-default);
+            flex-shrink: 0;
+        }
+
+        .nav-logo img {
+            width: 100%; height: 100%;
+            object-fit: cover;
         }
 
         .nav-brand-name {
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700; font-size: 17px;
-            color: #E8F4FD;
-            letter-spacing: 0.02em;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
         }
 
         .nav-links {
-            display: flex; align-items: center; gap: 8px;
+            display: flex; align-items: center; gap: 4px;
         }
 
         .nav-link-item {
-            padding: 8px 16px;
-            color: rgba(232,244,253,0.6);
+            padding: 6px 12px;
+            color: var(--text-muted);
             font-size: 13px; font-weight: 500;
             text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.2s;
-            letter-spacing: 0.02em;
+            border-radius: var(--radius-sm);
+            transition: var(--t-fast);
         }
 
-        .nav-link-item:hover { color: #00D4FF; background: rgba(0,212,255,0.08); }
-        .nav-link-item.active { color: #00D4FF; }
+        .nav-link-item:hover { color: var(--text-secondary); background: rgba(255,255,255,0.04); }
+        .nav-link-item.active { color: var(--text-primary); }
 
         .nav-cta {
-            padding: 9px 20px;
-            background: rgba(0,212,255,0.1);
-            border: 1px solid rgba(0,212,255,0.3);
-            color: #00D4FF;
-            border-radius: 8px;
-            font-size: 13px; font-weight: 600;
+            padding: 7px 16px;
+            background: var(--accent-muted);
+            border: 1px solid var(--accent-border);
+            color: var(--accent);
+            border-radius: var(--radius-sm);
+            font-size: 13px; font-weight: 500;
             text-decoration: none;
-            transition: all 0.2s;
+            transition: var(--t-fast);
         }
 
         .nav-cta:hover {
-            background: rgba(0,212,255,0.2);
-            box-shadow: 0 0 20px rgba(0,212,255,0.3);
+            background: rgba(59, 130, 246, 0.2);
         }
+
+        .nav-theme-btn {
+            width: 32px; height: 32px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: var(--t-fast);
+            margin-right: 8px;
+        }
+        .nav-theme-btn:hover {
+            background: var(--bg-card);
+            border-color: var(--border-default);
+            color: var(--text-secondary);
+        }
+        .nav-theme-btn svg { width: 15px; height: 15px; }
 
         /* ── HERO ─────────────────────────────────────────────── */
         .hero {
@@ -95,333 +107,371 @@
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             text-align: center;
-            padding: 120px 24px 80px;
+            padding: 100px 24px 80px;
             position: relative; z-index: 1;
         }
 
         .hero-status-chip {
-            display: inline-flex; align-items: center; gap: 8px;
-            padding: 8px 20px;
-            background: rgba(0, 255, 136, 0.08);
-            border: 1px solid rgba(0, 255, 136, 0.25);
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 5px 14px;
+            background: var(--status-ok-bg);
+            border: 1px solid var(--status-ok-bd);
             border-radius: 99px;
-            font-family: 'JetBrains Mono', monospace;
             font-size: 11px; font-weight: 600;
-            color: #00FF88;
-            letter-spacing: 0.1em;
-            margin-bottom: 36px;
-            animation: fadeInDown 0.6s ease;
+            color: var(--status-ok);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 32px;
+            animation: fadeInDown 0.5s ease;
         }
 
         .chip-dot {
-            width: 7px; height: 7px;
-            background: #00FF88;
+            width: 6px; height: 6px;
+            background: var(--status-ok);
             border-radius: 50%;
-            box-shadow: 0 0 10px #00FF88;
-            animation: pulse-dot 1.5s ease-in-out infinite;
+            animation: pulseOnline 2.5s ease-in-out infinite;
         }
 
         .hero-title {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: clamp(2.8rem, 6vw, 5.5rem);
+            font-size: clamp(2.2rem, 5vw, 4rem);
             font-weight: 700;
-            line-height: 1.05;
-            letter-spacing: -0.02em;
-            margin-bottom: 24px;
-            color: #E8F4FD;
-            animation: fadeInUp 0.7s 0.1s both ease;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            animation: fadeInUp 0.6s 0.1s both ease;
         }
 
         .hero-title .accent {
-            background: linear-gradient(135deg, #00D4FF, #00FF88);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--accent);
         }
 
         .hero-tagline {
-            font-size: clamp(1rem, 2vw, 1.2rem);
-            color: rgba(232,244,253,0.55);
-            max-width: 620px;
+            font-size: clamp(0.9rem, 1.8vw, 1.05rem);
+            color: var(--text-secondary);
+            max-width: 540px;
             line-height: 1.7;
-            margin-bottom: 48px;
-            animation: fadeInUp 0.7s 0.2s both ease;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.6s 0.2s both ease;
+            font-weight: 400;
         }
 
         .hero-actions {
-            display: flex; align-items: center; gap: 16px;
+            display: flex; align-items: center; gap: 12px;
             flex-wrap: wrap; justify-content: center;
-            animation: fadeInUp 0.7s 0.3s both ease;
-            margin-bottom: 80px;
+            animation: fadeInUp 0.6s 0.3s both ease;
+            margin-bottom: 64px;
         }
 
         .cta-primary {
-            display: inline-flex; align-items: center; gap: 10px;
-            padding: 16px 36px;
-            background: linear-gradient(135deg, #00D4FF, #0099BB);
-            color: #020817;
-            border-radius: 10px;
-            font-size: 15px; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 11px 24px;
+            background: var(--accent);
+            color: #ffffff;
+            border-radius: var(--radius-md);
+            font-size: 14px; font-weight: 600;
             text-decoration: none;
-            letter-spacing: 0.03em;
-            box-shadow: 0 8px 30px rgba(0,212,255,0.35);
-            transition: all 0.3s ease;
+            letter-spacing: 0.01em;
+            transition: var(--t-fast);
+            border: 1px solid var(--accent);
         }
 
         .cta-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 40px rgba(0,212,255,0.55);
+            background: var(--accent-dim);
+            border-color: var(--accent-dim);
         }
 
+        .cta-primary svg { width: 16px; height: 16px; }
+
         .cta-secondary {
-            display: inline-flex; align-items: center; gap: 10px;
-            padding: 16px 36px;
-            background: transparent;
-            color: #00D4FF;
-            border: 1px solid rgba(0,212,255,0.4);
-            border-radius: 10px;
-            font-size: 15px; font-weight: 600;
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 11px 24px;
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            font-size: 14px; font-weight: 500;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: var(--t-fast);
         }
 
         .cta-secondary:hover {
-            background: rgba(0,212,255,0.08);
-            border-color: #00D4FF;
-            box-shadow: 0 0 30px rgba(0,212,255,0.2);
-            transform: translateY(-3px);
+            background: var(--bg-card);
+            border-color: var(--border-strong);
+            color: var(--text-primary);
         }
+
+        .cta-secondary svg { width: 16px; height: 16px; }
 
         /* ── STATS BAR ─────────────────────────────────────────── */
         .stats-bar {
-            display: flex; gap: 48px; justify-content: center;
-            padding: 28px 48px;
-            background: rgba(10, 22, 40, 0.9);
-            border-top: 1px solid rgba(0,212,255,0.08);
-            border-bottom: 1px solid rgba(0,212,255,0.08);
-            backdrop-filter: blur(20px);
+            display: flex; gap: 0;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
             position: relative; z-index: 1;
-            animation: fadeIn 0.8s 0.5s both;
+            overflow-x: auto;
         }
 
         .stat-item {
+            flex: 1;
             text-align: center;
+            padding: 20px 24px;
+            border-right: 1px solid var(--border-subtle);
+            min-width: 120px;
         }
 
+        .stat-item:last-child { border-right: none; }
+
         .stat-num {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 2rem; font-weight: 700;
-            color: #00D4FF;
+            font-family: var(--font-mono);
+            font-size: 1.5rem; font-weight: 600;
+            color: var(--accent);
+            line-height: 1;
+            margin-bottom: 6px;
         }
 
         .stat-lbl {
-            font-size: 11px; font-weight: 600;
-            letter-spacing: 0.1em; text-transform: uppercase;
-            color: rgba(232,244,253,0.4);
-            margin-top: 4px;
+            font-size: 11px; font-weight: 500;
+            letter-spacing: 0.06em; text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        /* ── DIVIDER ──────────────────────────────────────────── */
+        .section-divider {
+            width: 40px; height: 2px;
+            background: var(--accent);
+            margin: 0 auto 16px;
+            border-radius: 2px;
         }
 
         /* ── FEATURES SECTION ──────────────────────────────────── */
         .features-section {
-            padding: 100px 48px;
+            padding: 80px 40px;
             position: relative; z-index: 1;
-            background: linear-gradient(180deg, transparent, rgba(6,14,31,0.5) 50%, transparent);
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-subtle);
         }
 
-        .features-label {
+        .section-eyebrow {
             text-align: center;
             font-size: 11px; font-weight: 600;
-            letter-spacing: 0.2em; text-transform: uppercase;
-            color: #00D4FF;
-            margin-bottom: 20px;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 12px;
         }
 
         .features-title {
             text-align: center;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+            font-size: clamp(1.4rem, 2.8vw, 2rem);
             font-weight: 700;
-            color: #E8F4FD;
-            margin-bottom: 64px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .features-subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 48px;
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
         }
 
         .features-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-            max-width: 1100px;
+            gap: 16px;
+            max-width: 1040px;
             margin: 0 auto;
         }
 
         .feature-card {
-            background: rgba(13, 27, 53, 0.8);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 16px;
-            padding: 32px 28px;
-            transition: all 0.3s ease;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            transition: border-color var(--t-fast), box-shadow var(--t-fast);
             cursor: default;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute; top: 0; left: 0; right: 0; height: 2px;
-            background: var(--card-accent, #00D4FF);
-            border-radius: 16px 16px 0 0;
-            opacity: 0;
-            transition: opacity 0.3s;
         }
 
         .feature-card:hover {
-            transform: translateY(-6px);
-            border-color: rgba(255,255,255,0.12);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            border-color: var(--border-default);
+            box-shadow: var(--shadow-sm);
         }
 
-        .feature-card:hover::before { opacity: 1; }
-
         .feature-icon-wrap {
-            width: 52px; height: 52px;
-            border-radius: 12px;
+            width: 40px; height: 40px;
+            border-radius: var(--radius-md);
             display: flex; align-items: center; justify-content: center;
-            margin-bottom: 20px;
-            font-size: 24px;
+            margin-bottom: 16px;
+            background: var(--accent-muted);
+            border: 1px solid var(--accent-border);
+            flex-shrink: 0;
+        }
+
+        .feature-icon-wrap svg {
+            width: 18px; height: 18px;
+            color: var(--accent);
         }
 
         .feature-card-title {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 16px; font-weight: 700;
-            color: #E8F4FD;
-            margin-bottom: 10px;
+            font-size: 14px; font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.01em;
         }
 
         .feature-card-desc {
-            font-size: 13px; line-height: 1.7;
-            color: rgba(232,244,253,0.5);
+            font-size: 13px; line-height: 1.6;
+            color: var(--text-secondary);
         }
 
         /* ── TECH STACK ──────────────────────────────────────────── */
         .tech-section {
-            padding: 80px 48px;
+            padding: 64px 40px;
             text-align: center;
             position: relative; z-index: 1;
+            border-top: 1px solid var(--border-subtle);
         }
 
         .tech-chips {
-            display: flex; flex-wrap: wrap; gap: 12px;
-            justify-content: center; max-width: 700px; margin: 32px auto 0;
+            display: flex; flex-wrap: wrap; gap: 8px;
+            justify-content: center; max-width: 680px; margin: 24px auto 0;
         }
 
         .tech-chip {
-            padding: 8px 18px;
-            background: rgba(10,22,40,0.9);
-            border: 1px solid rgba(255,255,255,0.08);
+            padding: 5px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
             border-radius: 99px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px; font-weight: 500;
-            color: rgba(232,244,253,0.6);
-            transition: all 0.2s;
+            font-family: var(--font-mono);
+            font-size: 11px; font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--t-fast);
+            letter-spacing: 0.01em;
         }
 
         .tech-chip:hover {
-            border-color: rgba(0,212,255,0.4);
-            color: #00D4FF;
-            background: rgba(0,212,255,0.05);
+            border-color: var(--border-default);
+            color: var(--text-primary);
         }
 
         /* ── FOOTER ──────────────────────────────────────────────── */
         .landing-footer {
             text-align: center;
-            padding: 40px 48px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            font-size: 12px; color: rgba(232,244,253,0.3);
+            padding: 32px 40px;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 12px;
+            color: var(--text-muted);
             position: relative; z-index: 1;
+            background: var(--bg-deep);
+            line-height: 1.8;
+        }
+
+        .landing-footer strong { color: var(--text-secondary); font-weight: 500; }
+
+        /* ── SUBTLE GRID BG ────────────────────────────────────── */
+        .grid-bg {
+            position: fixed; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(var(--border-subtle) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+            opacity: 0.6;
         }
 
         /* ── ANIMATIONS ──────────────────────────────────────────── */
         @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-16px); }
+            from { opacity: 0; transform: translateY(-12px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(24px); }
+            from { opacity: 0; transform: translateY(16px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to   { opacity: 1; }
+        @keyframes pulseOnline {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
         }
 
-        /* ── GRID BACKGROUND ─────────────────────────────────────── */
-        .grid-bg {
-            position: fixed; inset: 0; z-index: 0;
-            background-image:
-                linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
-            background-size: 60px 60px;
-            pointer-events: none;
-        }
-
+        /* ── RESPONSIVE ──────────────────────────────────────────── */
         @media (max-width: 900px) {
-            .landing-nav { padding: 0 24px; }
+            .landing-nav { padding: 0 20px; }
             .nav-links { display: none; }
-            .hero { padding: 100px 24px 60px; }
-            .features-section { padding: 60px 24px; }
-            .features-grid { grid-template-columns: 1fr; }
-            .stats-bar { gap: 32px; padding: 24px; flex-wrap: wrap; }
+            .hero { padding: 90px 20px 60px; }
+            .features-section { padding: 60px 20px; }
+            .features-grid { grid-template-columns: 1fr; gap: 12px; }
+            .stats-bar { flex-wrap: wrap; }
+            .stat-item { flex: 1 0 calc(50% - 1px); }
+            .tech-section { padding: 48px 20px; }
+        }
+
+        @media (max-width: 600px) {
+            .stat-item { flex: 1 0 100%; border-right: none; border-bottom: 1px solid var(--border-subtle); }
+            .stat-item:last-child { border-bottom: none; }
+            .hero-actions { flex-direction: column; width: 100%; }
+            .cta-primary, .cta-secondary { width: 100%; justify-content: center; }
         }
     </style>
 </head>
 <body>
     <div class="grid-bg"></div>
-    <canvas id="particle-canvas"></canvas>
 
     <!-- NAVBAR -->
     <nav class="landing-nav">
         <div class="nav-brand">
             <div class="nav-logo">
-                <img src="./assets/logo.png" alt="Rescue Intel" style="width:38px;height:38px;object-fit:cover;border-radius:8px;">
+                <img src="./assets/logo.png" alt="Rescue Intel">
             </div>
             <span class="nav-brand-name">Rescue Intel</span>
         </div>
         <div class="nav-links">
-            <a href="#" class="nav-link-item active">Operations Home</a>
+            <a href="#" class="nav-link-item active">Home</a>
             <a href="./dashboard/dashboard.html" class="nav-link-item">Overview</a>
             <a href="./camera/camera.html" class="nav-link-item">Live Monitoring</a>
             <a href="./map/map.html" class="nav-link-item">Incident Map</a>
-            <a href="./sensors/sensors.html" class="nav-link-item">Field Sensors</a>
-            <a href="./alerts/alerts.html" class="nav-link-item">Alerts & Reports</a>
+            <a href="./sensors/sensors.html" class="nav-link-item">Sensors</a>
+            <a href="./alerts/alerts.html" class="nav-link-item">Alerts</a>
         </div>
-        <a href="./dashboard/dashboard.html" class="nav-cta">Launch Overview →</a>
+        <div style="display:flex;align-items:center;gap:8px;">
+            <button class="nav-theme-btn" id="landing-theme-toggle" title="Toggle theme" aria-label="Toggle theme">
+                <i data-lucide="moon"></i>
+            </button>
+            <a href="./dashboard/dashboard.html" class="nav-cta">Launch Dashboard</a>
+        </div>
     </nav>
 
-    <!-- HERO SECTION -->
+    <!-- HERO -->
     <section class="hero">
         <div class="hero-status-chip">
             <div class="chip-dot"></div>
-            <span>SYSTEM ONLINE — MQTT ACTIVE — ALL SENSORS OPERATIONAL</span>
+            <span>System Online &mdash; All Sensors Operational</span>
         </div>
 
         <h1 class="hero-title">
             Disaster Rescue<br>
-            <span class="accent">Monitoring System</span>
+            <span class="accent">Monitoring Platform</span>
         </h1>
 
         <p class="hero-tagline">
-            Real-time monitoring, rover control, hazard detection & emergency response.
-            Powered by ESP32, MQTT, GPS &amp; AI Vision.
+            Real-time rover telemetry, hazard detection and emergency response coordination.
+            Powered by ESP32, MQTT, GPS and computer vision.
         </p>
 
         <div class="hero-actions">
             <a href="./dashboard/dashboard.html" class="cta-primary">
-                <i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i>
+                <i data-lucide="layout-dashboard"></i>
                 Launch Dashboard
             </a>
             <a href="./camera/camera.html" class="cta-secondary">
-                <i data-lucide="video" style="width:18px;height:18px;"></i>
+                <i data-lucide="video"></i>
                 Live Monitoring
             </a>
         </div>
@@ -446,44 +496,59 @@
             <div class="stat-lbl">Camera Stream</div>
         </div>
         <div class="stat-item">
-            <div class="stat-num">24/7</div>
-            <div class="stat-lbl">Monitoring</div>
+            <div class="stat-num">24 / 7</div>
+            <div class="stat-lbl">Continuous Monitoring</div>
         </div>
     </div>
 
     <!-- FEATURES SECTION -->
     <section class="features-section">
-        <div class="features-label">What We Monitor</div>
-        <h2 class="features-title">Full-Spectrum Disaster Intelligence</h2>
+        <div class="section-eyebrow">Platform Capabilities</div>
+        <h2 class="features-title">End-to-End Disaster Intelligence</h2>
+        <p class="features-subtitle">
+            Unified monitoring stack from sensor telemetry to field response coordination.
+        </p>
 
         <div class="features-grid">
-            <div class="feature-card" style="--card-accent:#00D4FF">
-                <div class="feature-icon-wrap" style="background:rgba(0,212,255,0.1); color:#00D4FF;">📡</div>
+            <div class="feature-card">
+                <div class="feature-icon-wrap">
+                    <i data-lucide="radio"></i>
+                </div>
                 <div class="feature-card-title">Live Telemetry</div>
-                <div class="feature-card-desc">Real-time sensor data streamed via MQTT from ESP32. Temperature, gas, vibration, humidity updated every 100ms.</div>
+                <div class="feature-card-desc">Real-time sensor data streamed via MQTT from ESP32. Temperature, gas, vibration, humidity updated at 100ms intervals.</div>
             </div>
-            <div class="feature-card" style="--card-accent:#00FF88">
-                <div class="feature-icon-wrap" style="background:rgba(0,255,136,0.1); color:#00FF88;">🛰️</div>
+            <div class="feature-card">
+                <div class="feature-icon-wrap">
+                    <i data-lucide="map-pin"></i>
+                </div>
                 <div class="feature-card-title">GPS Tracking</div>
-                <div class="feature-card-desc">Live rover location with NEO-6M GPS module. Interactive Leaflet map with path trail, waypoints and hazard zones.</div>
+                <div class="feature-card-desc">Live rover location with NEO-6M GPS module. Interactive Leaflet map with path trail, waypoints and hazard zone overlays.</div>
             </div>
-            <div class="feature-card" style="--card-accent:#FF6B35">
-                <div class="feature-icon-wrap" style="background:rgba(255,107,53,0.1); color:#FF6B35;">🔥</div>
+            <div class="feature-card">
+                <div class="feature-icon-wrap">
+                    <i data-lucide="flame"></i>
+                </div>
                 <div class="feature-card-title">Hazard Detection</div>
                 <div class="feature-card-desc">MQ-2 gas sensor, flame detector and PIR motion sensor detect fire, toxic gases and human presence in real-time.</div>
             </div>
-            <div class="feature-card" style="--card-accent:#A855F7">
-                <div class="feature-icon-wrap" style="background:rgba(168,85,247,0.1); color:#A855F7;">🎥</div>
-                <div class="feature-card-title">AI Vision Array</div>
-                <div class="feature-card-desc">ESP32-CAM live streaming with human detection, motion analytics, and snapshot capture. Low-latency MJPEG feed.</div>
+            <div class="feature-card">
+                <div class="feature-icon-wrap">
+                    <i data-lucide="scan"></i>
+                </div>
+                <div class="feature-card-title">Vision Analysis</div>
+                <div class="feature-card-desc">ESP32-CAM live streaming with AI object detection, human presence analysis, motion tracking and snapshot capture.</div>
             </div>
-            <div class="feature-card" style="--card-accent:#FF2D55">
-                <div class="feature-icon-wrap" style="background:rgba(255,45,85,0.1); color:#FF2D55;">🚨</div>
+            <div class="feature-card">
+                <div class="feature-icon-wrap">
+                    <i data-lucide="bell-ring"></i>
+                </div>
                 <div class="feature-card-title">Emergency Alerts</div>
-                <div class="feature-card-desc">Priority-classified alert system with critical/high/medium/low tiers. SOS trigger, sound alerts and timeline logging.</div>
+                <div class="feature-card-desc">Priority-classified alert system with critical / high / medium / low tiers. SOS broadcast, audio alerts and timeline logging.</div>
             </div>
-            <div class="feature-card" style="--card-accent:#FFB800">
-                <div class="feature-icon-wrap" style="background:rgba(255,184,0,0.1); color:#FFB800;">🤖</div>
+            <div class="feature-card">
+                <div class="feature-icon-wrap">
+                    <i data-lucide="cpu"></i>
+                </div>
                 <div class="feature-card-title">Rover Control</div>
                 <div class="feature-card-desc">Emergency stop, autonomous mode toggle, camera control and return-to-base commands dispatched via MQTT.</div>
             </div>
@@ -492,8 +557,8 @@
 
     <!-- TECH STACK -->
     <section class="tech-section">
-        <div class="features-label">Technology Stack</div>
-        <h2 class="features-title" style="font-size:1.8rem;">Built on Industry Hardware & Protocols</h2>
+        <div class="section-eyebrow">Technology Stack</div>
+        <h2 class="features-title" style="font-size:1.5rem;margin-bottom:0;">Built on Proven Hardware &amp; Protocols</h2>
         <div class="tech-chips">
             <span class="tech-chip">ESP32-CAM</span>
             <span class="tech-chip">MQTT / EMQX</span>
@@ -506,77 +571,21 @@
             <span class="tech-chip">L298N Motor</span>
             <span class="tech-chip">Vite + Vanilla JS</span>
             <span class="tech-chip">WebSocket</span>
+            <span class="tech-chip">TensorFlow.js</span>
             <span class="tech-chip">Vercel</span>
         </div>
     </section>
 
     <!-- FOOTER -->
     <footer class="landing-footer">
-        <strong style="color:rgba(232,244,253,0.5);">Rescue Intel Operations</strong> — Empowering Rescue Missions through IoT &amp; AI<br>
-        © 2026 TEAM BOT THINGS — Prolayjit Biswas · Arghya Roy · Shubhajit Haldar · Papan Chowdhury
+        <strong>Rescue Intel Operations</strong> — Disaster Monitoring &amp; Emergency Response Platform<br>
+        &copy; 2026 Team Bot Things — Prolayjit Biswas &middot; Arghya Roy &middot; Shubhajit Haldar &middot; Papan Chowdhury
     </footer>
 
     <script>
-        // Lucide already loaded in <head>; initialize icons on DOM ready
         if (window.lucide) lucide.createIcons();
 
-        // ── PARTICLE CANVAS ────────────────────────────────────────
-        const canvas = document.getElementById('particle-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resize();
-        window.addEventListener('resize', resize);
-
-        class Particle {
-            constructor() { this.reset(); }
-            reset() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 1.5 + 0.3;
-                this.speedX = (Math.random() - 0.5) * 0.4;
-                this.speedY = (Math.random() - 0.5) * 0.4;
-                this.alpha = Math.random() * 0.4 + 0.1;
-                this.color = Math.random() > 0.7 ? '#00D4FF' : '#ffffff';
-            }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
-            }
-            draw() {
-                ctx.globalAlpha = this.alpha;
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        for (let i = 0; i < 120; i++) particles.push(new Particle());
-
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            // Draw connections
-            ctx.globalAlpha = 0.03;
-            ctx.strokeStyle = '#00D4FF';
-            ctx.lineWidth = 0.5;
-            particles.forEach((a, i) => {
-                particles.slice(i + 1).forEach(b => {
-                    const dist = Math.hypot(a.x - b.x, a.y - b.y);
-                    if (dist < 100) { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
-                });
-            });
-            requestAnimationFrame(animateParticles);
-        }
-        animateParticles();
-
-        // ── UPTIME COUNTER ──────────────────────────────────────────
+        // ── UPTIME COUNTER ──────────────────────────────────────
         let secs = 0;
         setInterval(() => {
             secs++;
@@ -586,18 +595,39 @@
             document.getElementById('stat-uptime').textContent = `${h}:${m}:${s}`;
         }, 1000);
 
-        // ── SCROLL FADE-IN ───────────────────────────────────────────
+        // ── SCROLL FADE-IN ───────────────────────────────────────
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(e => {
-                if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; }
+                if (e.isIntersecting) {
+                    e.target.style.opacity = '1';
+                    e.target.style.transform = 'translateY(0)';
+                }
             });
-        }, { threshold: 0.1 });
+        }, { threshold: 0.08 });
 
         document.querySelectorAll('.feature-card').forEach((el, i) => {
             el.style.opacity = '0';
-            el.style.transform = 'translateY(30px)';
-            el.style.transition = `opacity 0.5s ${i * 0.08}s ease, transform 0.5s ${i * 0.08}s ease`;
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = `opacity 0.4s ${i * 0.06}s ease, transform 0.4s ${i * 0.06}s ease`;
             observer.observe(el);
+        });
+
+        // ── THEME TOGGLE ─────────────────────────────────────────
+        const themeBtn = document.getElementById('landing-theme-toggle');
+        function applyTheme(t) {
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem('rescuebot-theme', t);
+            const icon = themeBtn.querySelector('i') || themeBtn.querySelector('svg');
+            if (icon) {
+                icon.setAttribute('data-lucide', t === 'dark' ? 'sun' : 'moon');
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+        const saved = localStorage.getItem('rescuebot-theme') || 'dark';
+        applyTheme(saved);
+        themeBtn.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            applyTheme(current === 'dark' ? 'light' : 'dark');
         });
     </script>
 </body>

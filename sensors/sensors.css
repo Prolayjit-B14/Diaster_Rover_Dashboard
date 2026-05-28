@@ -1,286 +1,249 @@
 /* ============================================================
-   RESCUEBOT — SENSOR INTEGRATION ARRAY
-   sensors/sensors.css
+   SENSORS PAGE — Field Sensor Monitoring
    ============================================================ */
 
-/* ── SENSOR GRID ─────────────────────────────────────────── */
+/* ── SENSOR GRID ─────────────────────────────────────────────── */
 .sensor-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 16px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
 }
 
-/* ── SENSOR CARD BASE ────────────────────────────────────── */
+/* ── SENSOR CARD ─────────────────────────────────────────────── */
 .sensor-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-dim);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-  position: relative;
-  overflow: hidden;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    transition: border-color var(--t-fast), box-shadow var(--t-fast);
+    position: relative;
+    overflow: hidden;
 }
 
-/* Accent top stripe */
+/* Top accent line using card color variable */
 .sensor-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--card-color, #00D4FF);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  opacity: 0.8;
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-color, var(--accent));
+    opacity: 0.6;
 }
 
-/* Hover lift + colored glow */
 .sensor-card:hover {
-  transform: translateY(-4px);
-  border-color: color-mix(in srgb, var(--card-color, #00D4FF) 30%, transparent);
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.4),
-    0 0 24px color-mix(in srgb, var(--card-color, #00D4FF) 10%, transparent);
+    border-color: var(--border-default);
+    box-shadow: var(--shadow-sm);
 }
 
-/* ── CARD HEADER ─────────────────────────────────────────── */
+/* ── SENSOR CARD HEADER ──────────────────────────────────────── */
 .sensor-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
 }
 
 .sensor-icon-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
 }
 
 .sensor-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
+    width: 36px; height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    border: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+}
+
+.sensor-icon i, .sensor-icon svg {
+    width: 16px; height: 16px;
 }
 
 .sensor-name {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  line-height: 1.2;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
 }
 
 .sensor-model {
-  font-size: 10px;
-  color: var(--text-muted);
-  opacity: 0.6;
-  margin-top: 2px;
-  font-family: var(--font-mono);
-  letter-spacing: 0.05em;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 1px;
+    letter-spacing: 0.02em;
 }
 
-/* ── VALUE SECTION ───────────────────────────────────────── */
+/* ── SENSOR VALUE SECTION ────────────────────────────────────── */
 .sensor-value-section {
-  margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
 }
 
 .sensor-big-val {
-  font-family: var(--font-mono);
-  font-size: 2.4rem;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 2.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1;
+    letter-spacing: -0.02em;
 }
 
 .sensor-unit {
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  color: var(--text-muted);
-  margin-left: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-left: 4px;
+    font-weight: 400;
 }
 
-/* ── PROGRESS BAR ────────────────────────────────────────── */
 .sensor-bar-wrap {
-  width: 100%;
-  height: 6px;
-  background: var(--bg-elevated);
-  border-radius: 99px;
-  overflow: hidden;
-  margin-top: 12px;
+    width: 100%;
+    height: 3px;
+    background: var(--bg-elevated);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: var(--space-2);
 }
 
 .sensor-bar {
-  height: 100%;
-  border-radius: 99px;
-  transition: width 0.8s ease;
-  background: var(--card-color, #00D4FF);
-  min-width: 0%;
-  max-width: 100%;
+    height: 100%;
+    background: var(--card-color, var(--accent));
+    border-radius: 99px;
+    transition: width 1s ease;
+    opacity: 0.8;
 }
 
-/* ── CARD FOOTER ─────────────────────────────────────────── */
+/* ── SENSOR FOOTER ───────────────────────────────────────────── */
 .sensor-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-subtle);
 }
 
 .sensor-footer-key {
-  font-size: 10px;
-  color: var(--text-muted);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
 }
 
 .sensor-footer-val {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
-/* ── ALERT / WARNING STATES ──────────────────────────────── */
-.sensor-card.alert-state {
-  border-color: var(--red) !important;
-  animation: sensorAlert 1s ease-in-out infinite alternate;
-}
-
-@keyframes sensorAlert {
-  from { box-shadow: 0 0 0 transparent; }
-  to   { box-shadow: 0 0 20px rgba(255, 45, 85, 0.3); }
-}
-
-.sensor-card.warning-state {
-  border-color: var(--amber) !important;
-}
-
-/* ── CIRCULAR RING ───────────────────────────────────────── */
+/* ── CIRCULAR RING (Humidity / Battery) ──────────────────────── */
 .circular-ring-wrap {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  margin: 8px auto;
+    width: 88px;
+    height: 88px;
+    position: relative;
+    margin: 0 auto;
 }
 
 .circular-ring-wrap svg {
-  transform: rotate(-90deg);
-  width: 80px;
-  height: 80px;
+    width: 100%; height: 100%;
+    transform: rotate(-90deg);
 }
 
-.circular-ring-bg {
-  stroke: var(--bg-elevated);
-  fill: none;
-}
-
+.circular-ring-bg   { stroke: var(--bg-elevated); fill: none; }
 .circular-ring-fill {
-  stroke: var(--card-color, #00D4FF);
-  stroke-linecap: round;
-  fill: none;
-  filter: drop-shadow(0 0 4px var(--card-color, #00D4FF));
-  transition: stroke-dashoffset 1s ease;
+    fill: none;
+    stroke: var(--card-color, var(--accent));
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease;
 }
 
 .circular-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-primary);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
-/* ── PULSE RING (PIR) ────────────────────────────────────── */
-.pulse-ring {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 2px solid var(--card-color, #00D4FF);
-  margin: 0 auto;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.pulse-ring.active {
-  animation: pulseRing 2s ease infinite;
-}
-
-@keyframes pulseRing {
-  0%   { transform: scale(0.8); opacity: 0.8; }
-  100% { transform: scale(1.6); opacity: 0; }
-}
-
-/* ── PIR MOTION TEXT ─────────────────────────────────────── */
-.pir-status-text {
-  font-family: var(--font-mono);
-  font-size: 1.4rem;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--text-primary);
-  margin-top: 8px;
-  text-align: center;
-}
-
+/* ── PIR MOTION CARD ─────────────────────────────────────────── */
 .pir-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
 }
 
-/* ── GPS CARD EXTRAS ─────────────────────────────────────── */
-.gps-coords {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-top: 4px;
-  line-height: 1.6;
+.pulse-ring {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    border: 2px solid var(--border-default);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    position: relative;
+    transition: border-color var(--t-fast);
 }
 
+.pulse-ring.motion-active {
+    border-color: var(--card-color, var(--accent));
+    animation: pirRipple 1.2s ease-out infinite;
+}
+
+@keyframes pirRipple {
+    0%   { box-shadow: 0 0 0 0 rgba(6,182,212,0.4); }
+    100% { box-shadow: 0 0 0 16px rgba(6,182,212,0); }
+}
+
+.pir-status-text {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* ── GPS CARD INNER ──────────────────────────────────────────── */
 .gps-row {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 12px;
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
 }
 
 .gps-row-item {
-  text-align: center;
+    flex: 1;
+    min-width: 60px;
 }
 
-/* ── SECTION HEADER RIGHT ────────────────────────────────── */
+/* ── SECTION HEADER RIGHT ────────────────────────────────────── */
 .section-header-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
 }
 
-/* ── RESPONSIVE ──────────────────────────────────────────── */
-@media (max-width: 900px) {
-  .sensor-grid {
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  }
+/* ── RESPONSIVE ──────────────────────────────────────────────── */
+@media (max-width: 1400px) {
+    .sensor-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
-@media (max-width: 600px) {
-  .sensor-grid {
-    grid-template-columns: 1fr;
-  }
+@media (max-width: 1100px) {
+    .sensor-grid { grid-template-columns: repeat(2, 1fr); }
+}
 
-  .sensor-big-val {
-    font-size: 2rem;
-  }
+@media (max-width: 700px) {
+    .sensor-grid { grid-template-columns: 1fr; }
 }

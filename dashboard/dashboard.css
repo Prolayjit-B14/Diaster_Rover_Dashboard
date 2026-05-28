@@ -1,32 +1,32 @@
 /* ============================================================
-   DASHBOARD PAGE STYLES
+   DASHBOARD PAGE — OVERVIEW
    ============================================================ */
 
-/* ── WIDGET GRID ──────────────────────────────────────────── */
+/* ── WIDGET GRIDS ──────────────────────────────────────────── */
 .widget-grid-top {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    gap: var(--space-4);
 }
 
 .widget-grid-mid {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    gap: 16px;
+    gap: var(--space-4);
 }
 
 .widget-grid-bottom {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    gap: var(--space-4);
 }
 
 /* ── STATUS CARD ──────────────────────────────────────────── */
 .status-card {
-    padding: 20px;
+    padding: var(--space-5);
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-4);
 }
 
 .status-icon-row {
@@ -36,104 +36,112 @@
 }
 
 .status-icon {
-    width: 44px; height: 44px;
-    border-radius: 10px;
+    width: 40px; height: 40px;
+    border-radius: var(--radius-md);
     display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid var(--border-subtle);
+}
+
+.status-icon svg, .status-icon i {
+    width: 18px; height: 18px;
 }
 
 .status-beacon {
-    width: 12px; height: 12px;
+    width: 10px; height: 10px;
     border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 12px var(--green);
+    background: var(--status-ok);
     position: relative;
+    flex-shrink: 0;
 }
 
 .status-beacon::after {
     content: '';
     position: absolute;
-    inset: -6px;
+    inset: -5px;
     border-radius: 50%;
-    border: 2px solid var(--green);
+    border: 1.5px solid var(--status-ok);
     opacity: 0.4;
-    animation: beaconPulse 1.8s ease-out infinite;
+    animation: beaconRing 2s ease-out infinite;
 }
 
-@keyframes beaconPulse {
-    0% { transform: scale(0.8); opacity: 0.6; }
+@keyframes beaconRing {
+    0%   { transform: scale(0.8); opacity: 0.5; }
     100% { transform: scale(2.2); opacity: 0; }
 }
 
 .status-title {
-    font-family: var(--font-display);
-    font-size: 15px; font-weight: 700;
+    font-size: 14px; font-weight: 600;
     color: var(--text-primary);
+    letter-spacing: -0.01em;
 }
 
 .status-sub {
-    font-size: 11px; font-weight: 500;
+    font-size: 11px; font-weight: 400;
     color: var(--text-muted);
-    letter-spacing: 0.04em;
+    margin-top: 2px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
 }
 
 /* ── GPS CARD ──────────────────────────────────────────────── */
-.gps-card { padding: 20px; }
+.gps-card { padding: var(--space-5); }
 
 .gps-coord-row {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-    margin-bottom: 12px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);
+    margin-bottom: var(--space-3);
 }
 
 .coord-box {
     background: var(--bg-elevated);
-    border: 1px solid var(--border-dim);
+    border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
-    padding: 10px 14px;
+    padding: 8px 12px;
 }
 
 .coord-label-sm {
-    font-size: 9px; font-weight: 700;
-    letter-spacing: 0.12em; text-transform: uppercase;
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.10em; text-transform: uppercase;
     color: var(--text-muted);
     margin-bottom: 4px;
 }
 
 .coord-val {
     font-family: var(--font-mono);
-    font-size: 13px; font-weight: 600;
-    color: var(--cyan);
+    font-size: 12px; font-weight: 500;
+    color: var(--text-primary);
 }
 
 .gps-bottom {
-    display: flex; gap: 12px;
+    display: flex; gap: var(--space-2);
 }
 
 .gps-mini-stat {
     flex: 1; text-align: center;
     background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
     padding: 8px;
 }
 
 /* ── BATTERY CARD ─────────────────────────────────────────── */
 .battery-card {
-    padding: 20px;
+    padding: var(--space-5);
     display: flex; flex-direction: column; align-items: center;
-    gap: 12px;
+    gap: var(--space-3);
 }
 
 .battery-ring-wrap {
     position: relative;
-    width: 100px; height: 100px;
+    width: 96px; height: 96px;
 }
 
 .battery-ring-wrap svg { transform: rotate(-90deg); }
 
 .battery-ring-bg { stroke: var(--bg-elevated); }
 .battery-ring-fill {
-    stroke: var(--green);
+    stroke: var(--status-ok);
     stroke-linecap: round;
-    filter: drop-shadow(0 0 6px rgba(0,255,136,0.6));
     transition: stroke-dashoffset 1s ease;
 }
 
@@ -145,73 +153,77 @@
 
 .battery-pct {
     font-family: var(--font-mono);
-    font-size: 22px; font-weight: 700;
+    font-size: 20px; font-weight: 600;
     color: var(--text-primary);
+    line-height: 1;
 }
 
 .battery-label-sm {
     font-size: 9px; color: var(--text-muted);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-top: 3px;
 }
 
 .battery-info-row {
-    display: flex; gap: 20px;
+    display: flex; gap: var(--space-5);
 }
 
 .batt-info-item { text-align: center; }
 
 .batt-info-val {
     font-family: var(--font-mono);
-    font-size: 14px; font-weight: 600;
+    font-size: 13px; font-weight: 500;
     color: var(--text-primary);
 }
 
 .batt-info-lbl {
     font-size: 10px; color: var(--text-muted);
-    letter-spacing: 0.06em;
+    margin-top: 2px;
 }
 
 /* ── ENVIRONMENT CARD ─────────────────────────────────────── */
-.env-card { padding: 20px; }
+.env-card { padding: var(--space-5); }
 
-.env-items { display: flex; flex-direction: column; gap: 12px; }
+.env-items { display: flex; flex-direction: column; gap: var(--space-3); }
 
 .env-item {
     display: flex; align-items: center;
-    gap: 12px;
+    gap: var(--space-3);
 }
 
 .env-icon {
-    width: 36px; height: 36px;
-    border-radius: 8px;
+    width: 32px; height: 32px;
+    border-radius: var(--radius-sm);
     display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
     flex-shrink: 0;
+    font-size: 15px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-elevated);
 }
 
-.env-info { flex: 1; }
+.env-info { flex: 1; min-width: 0; }
 
 .env-name {
     font-size: 11px; font-weight: 600;
     color: var(--text-muted);
-    letter-spacing: 0.06em; text-transform: uppercase;
-    margin-bottom: 4px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    margin-bottom: 2px;
 }
 
 .env-val-row {
-    display: flex; align-items: baseline; gap: 4px;
+    display: flex; align-items: baseline; gap: 3px;
 }
 
 .env-value {
     font-family: var(--font-mono);
-    font-size: 18px; font-weight: 700;
+    font-size: 16px; font-weight: 600;
     color: var(--text-primary);
 }
 
 .env-unit { font-size: 11px; color: var(--text-muted); }
 
 .env-bar {
-    width: 60px; height: 4px;
+    width: 56px; height: 3px;
     background: var(--bg-elevated);
     border-radius: 99px;
     overflow: hidden;
@@ -222,81 +234,89 @@
     height: 100%;
     border-radius: 99px;
     transition: width 1s ease;
+    background: var(--accent);
 }
 
 /* ── MINI MAP CARD ────────────────────────────────────────── */
 .mini-map-card {
     padding: 0;
     overflow: hidden;
-    height: 360px;
+    height: 320px;
 }
 
 .mini-map-header {
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border-dim);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-subtle);
     display: flex; align-items: center; justify-content: space-between;
 }
 
 .mini-map-header-title {
-    font-size: 12px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
+    font-size: 12px; font-weight: 600;
     color: var(--text-secondary);
+    display: flex; align-items: center; gap: 6px;
+}
+
+.mini-map-header-title svg, .mini-map-header-title i {
+    width: 13px; height: 13px;
+    color: var(--accent);
 }
 
 #mini-map-container {
     width: 100%;
-    height: calc(100% - 48px);
+    height: calc(100% - 44px);
 }
 
 /* ── MINI CAM CARD ────────────────────────────────────────── */
 .mini-cam-card {
     padding: 0;
     overflow: hidden;
-    height: 360px;
+    height: 320px;
 }
 
 .mini-cam-header {
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border-dim);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-subtle);
     display: flex; align-items: center; justify-content: space-between;
 }
 
 .cam-body {
     width: 100%;
-    height: calc(100% - 48px);
-    background: #000;
+    height: calc(100% - 44px);
+    background: #000000;
     display: flex; align-items: center; justify-content: center;
     position: relative;
+    overflow: hidden;
 }
 
 .cam-placeholder {
     display: flex; flex-direction: column;
-    align-items: center; gap: 12px;
+    align-items: center; gap: var(--space-3);
     color: var(--text-muted);
 }
 
-.cam-placeholder i { width: 36px; height: 36px; }
+.cam-placeholder i, .cam-placeholder svg { width: 32px; height: 32px; }
+.cam-placeholder span { font-size: 12px; color: var(--text-muted); }
 
 /* ── ALERT MINI CARD ──────────────────────────────────────── */
-.alert-mini-card { padding: 20px; }
+.alert-mini-card { padding: var(--space-5); }
 
-.alert-mini-list { display: flex; flex-direction: column; gap: 8px; }
+.alert-mini-list { display: flex; flex-direction: column; gap: var(--space-2); }
 
 .alert-mini-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 12px;
+    display: flex; align-items: center; gap: var(--space-3);
+    padding: 8px 10px;
     background: var(--bg-elevated);
     border-radius: var(--radius-sm);
-    border-left: 3px solid;
+    border-left: 2px solid;
     transition: var(--t-fast);
 }
 
 .alert-mini-item:hover { background: var(--bg-card-hover); }
-.alert-mini-item.critical { border-left-color: var(--red); }
-.alert-mini-item.warning  { border-left-color: var(--amber); }
-.alert-mini-item.ok       { border-left-color: var(--green); }
+.alert-mini-item.critical { border-left-color: var(--status-danger); }
+.alert-mini-item.warning  { border-left-color: var(--status-warn); }
+.alert-mini-item.ok       { border-left-color: var(--status-ok); }
 
-.alert-mini-icon { font-size: 16px; flex-shrink: 0; }
+.alert-mini-icon { font-size: 14px; flex-shrink: 0; }
 
 .alert-mini-text {
     flex: 1;
@@ -304,115 +324,120 @@
     color: var(--text-primary);
 }
 
-.alert-mini-badge {
-    font-size: 9px; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    padding: 2px 8px; border-radius: 99px;
-}
-
 /* ── QUICK ACTIONS CARD ───────────────────────────────────── */
-.quick-actions-card { padding: 20px; }
+.quick-actions-card { padding: var(--space-5); }
 
 .actions-grid {
     display: grid; grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 12px;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
 }
 
 .action-btn {
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: 8px;
-    padding: 16px 12px;
+    gap: var(--space-2);
+    padding: 14px 10px;
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-dim);
+    border: 1px solid var(--border-subtle);
     background: var(--bg-elevated);
     cursor: pointer;
-    transition: var(--t-med);
+    transition: var(--t-fast);
     color: var(--text-secondary);
-    font-size: 11px; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    font-family: var(--font-body);
 }
 
-.action-btn i { width: 22px; height: 22px; }
+.action-btn i, .action-btn svg { width: 18px; height: 18px; }
 
 .action-btn:hover {
-    transform: translateY(-2px);
     border-color: var(--border-default);
     color: var(--text-primary);
+    background: var(--bg-card-hover);
 }
 
 .action-btn.danger {
-    border-color: rgba(255,45,85,0.3);
-    color: var(--red);
-    background: rgba(255,45,85,0.05);
+    border-color: var(--status-danger-bd);
+    color: var(--status-danger);
+    background: var(--status-danger-bg);
 }
 
 .action-btn.danger:hover {
-    background: rgba(255,45,85,0.12);
-    border-color: var(--red);
-    box-shadow: 0 0 20px rgba(255,45,85,0.2);
+    background: rgba(239, 68, 68, 0.15);
+    border-color: var(--status-danger);
 }
 
 .action-btn.primary {
-    border-color: var(--border-cyan);
-    color: var(--cyan);
-    background: var(--cyan-glow);
+    border-color: var(--accent-border);
+    color: var(--accent);
+    background: var(--accent-muted);
 }
 
 .action-btn.primary:hover {
-    background: rgba(0,212,255,0.15);
-    box-shadow: var(--glow-cyan);
+    background: rgba(59, 130, 246, 0.18);
 }
 
 /* ── TELEMETRY MINI CARDS ─────────────────────────────────── */
-.tele-card { padding: 16px 20px; }
+.tele-card { padding: var(--space-4) var(--space-5); }
 
 .tele-icon-label {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 12px;
+    display: flex; align-items: center; gap: var(--space-2);
+    margin-bottom: var(--space-3);
 }
 
-.tele-icon { width: 28px; height: 28px; border-radius: 6px;
-    display: flex; align-items: center; justify-content: center; }
+.tele-icon {
+    width: 26px; height: 26px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border-subtle);
+}
+
+.tele-icon svg, .tele-icon i { width: 14px; height: 14px; }
 
 .tele-label {
-    font-size: 10px; font-weight: 700;
-    letter-spacing: 0.12em; text-transform: uppercase;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--text-muted);
 }
 
 .tele-val {
     font-family: var(--font-mono);
-    font-size: 1.6rem; font-weight: 700;
+    font-size: 1.5rem; font-weight: 600;
     color: var(--text-primary);
     line-height: 1;
 }
 
 .tele-unit {
     font-family: var(--font-mono);
-    font-size: 0.8rem; color: var(--text-muted);
-    margin-left: 3px;
+    font-size: 0.75rem; color: var(--text-muted);
+    margin-left: 2px;
 }
 
 .tele-sub {
     font-size: 11px; color: var(--text-muted);
-    margin-top: 6px;
+    margin-top: var(--space-2);
+    font-weight: 400;
 }
 
 /* ── RESPONSIVE ───────────────────────────────────────────── */
 @media (max-width: 1400px) {
-    .widget-grid-top { grid-template-columns: repeat(2, 1fr); }
+    .widget-grid-top    { grid-template-columns: repeat(2, 1fr); }
     .widget-grid-bottom { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 1100px) {
     .widget-grid-mid { grid-template-columns: 1fr; }
-    .mini-map-card, .mini-cam-card { height: 300px; }
+    .mini-map-card, .mini-cam-card { height: 280px; }
 }
 
 @media (max-width: 800px) {
-    .widget-grid-top { grid-template-columns: 1fr 1fr; }
+    .widget-grid-top    { grid-template-columns: 1fr 1fr; }
     .widget-grid-bottom { grid-template-columns: 1fr 1fr; }
     .actions-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 500px) {
+    .widget-grid-top    { grid-template-columns: 1fr; }
+    .widget-grid-bottom { grid-template-columns: 1fr; }
 }

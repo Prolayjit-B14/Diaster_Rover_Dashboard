@@ -19,7 +19,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo-mark">
-                <img src="../assets/logo.png" alt="Rescue Intel" style="width:32px;height:32px;object-fit:cover;border-radius:6px;">
+                <img src="../assets/logo.png" alt="Rescue Intel">
             </div>
             <div class="logo-text">
                 <span class="logo-name">Rescue Intel</span>
@@ -27,49 +27,45 @@
             </div>
         </div>
 
-        <button class="sidebar-collapse-btn" id="sidebar-collapse-btn">
-            <i data-lucide="chevrons-left" style="width:14px;height:14px;"></i>
-        </button>
-
         <nav class="sidebar-nav">
             <div class="nav-section-label">Operations</div>
-            <a href="../dashboard/dashboard.html" class="nav-item">
+            <a href="../dashboard/dashboard.html" class="nav-item" data-tooltip="Overview">
                 <i data-lucide="layout-dashboard"></i>
                 <span class="nav-label">Overview</span>
             </a>
-            <a href="../camera/camera.html" class="nav-item">
+            <a href="../camera/camera.html" class="nav-item" data-tooltip="Live Monitoring">
                 <i data-lucide="video"></i>
                 <span class="nav-label">Live Monitoring</span>
             </a>
-            <a href="./map.html" class="nav-item active">
+            <a href="./map.html" class="nav-item active" data-tooltip="Incident Map">
                 <i data-lucide="map"></i>
                 <span class="nav-label">Incident Map</span>
             </a>
-            <a href="../sensors/sensors.html" class="nav-item">
+            <a href="../sensors/sensors.html" class="nav-item" data-tooltip="Field Sensors">
                 <i data-lucide="activity"></i>
                 <span class="nav-label">Field Sensors</span>
             </a>
-            <a href="../alerts/alerts.html" class="nav-item">
+            <a href="../alerts/alerts.html" class="nav-item" data-tooltip="Alerts">
                 <i data-lucide="bell-ring"></i>
-                <span class="nav-label">Alerts & Reports</span>
+                <span class="nav-label">Alerts</span>
                 <span class="nav-badge" id="sidebar-alert-count">0</span>
             </a>
 
-            <div class="nav-section-label" style="margin-top:16px;">System</div>
-            <a href="../" class="nav-item">
+            <div class="nav-section-label" style="margin-top:8px;">System</div>
+            <a href="../" class="nav-item" data-tooltip="Home">
                 <i data-lucide="home"></i>
-                <span class="nav-label">Operations Home</span>
+                <span class="nav-label">Home</span>
             </a>
-            <a href="#" class="nav-item" aria-disabled="true" title="Coming Soon" style="opacity:0.45;cursor:not-allowed;pointer-events:none;">
+            <a href="#" class="nav-item" aria-disabled="true" title="Coming Soon" data-tooltip="Settings" style="opacity:0.35;cursor:not-allowed;pointer-events:none;">
                 <i data-lucide="settings"></i>
-                <span class="nav-label">System Settings</span>
+                <span class="nav-label">Settings</span>
             </a>
         </nav>
 
         <div class="sidebar-footer">
             <div class="status-pill" style="width:100%; justify-content:center;">
                 <div class="status-dot mqtt-status-dot" id="mqtt-dot"></div>
-                <span class="mqtt-status-text" id="mqtt-status-text" style="font-family:var(--font-mono);font-size:10px;">CONNECTING...</span>
+                <span class="mqtt-status-text" id="mqtt-status-text" style="font-family:var(--font-mono);font-size:10px;">CONNECTING</span>
             </div>
         </div>
     </aside>
@@ -80,29 +76,29 @@
         <!-- TOP NAVBAR -->
         <header class="top-navbar">
             <div class="nav-left">
+                <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open navigation">
+                    <i data-lucide="menu"></i>
+                </button>
                 <span class="nav-page-title">Incident Map</span>
-                <span class="nav-breadcrumb">/ Map</span>
+                <span class="nav-breadcrumb">/ GPS Tracking</span>
             </div>
             <div class="nav-right">
                 <div class="status-pill">
                     <div class="status-dot" id="gps-dot"></div>
-                    <span id="gps-status" style="font-family:var(--font-mono);font-size:11px;">3D GPS FIX</span>
+                    <span id="gps-status" style="font-family:var(--font-mono);font-size:11px;">3D GPS Fix</span>
                 </div>
                 <div class="status-pill">
-                    <i data-lucide="clock" style="width:12px;height:12px;"></i>
+                    <i data-lucide="clock" style="width:11px;height:11px;"></i>
                     <span id="mission-clock" style="font-family:var(--font-mono);">--:--:--</span>
                 </div>
-                <button class="icon-btn" title="Notifications" aria-label="Notifications">
-                    <i data-lucide="bell"></i>
-                </button>
-                <button class="icon-btn" id="theme-toggle" title="Switch to Light Mode" aria-label="Switch to Light Mode">
+                <button class="icon-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
                     <i data-lucide="moon"></i>
                 </button>
-                <div class="icon-btn" style="background:var(--cyan);color:var(--bg-void);font-weight:700;font-size:12px;cursor:default;">PB</div>
+                <div class="icon-btn" style="background:var(--accent);color:#fff;font-weight:700;font-size:11px;cursor:default;border-color:var(--accent);">PB</div>
             </div>
         </header>
 
-        <!-- MAP SHELL (no page-content wrapper) -->
+        <!-- MAP SHELL -->
         <div class="map-shell">
 
             <!-- ── LEFT: TOOLS PANEL ──────────────────────────── -->
@@ -114,23 +110,23 @@
                     <div class="map-tools-group">
                         <button class="map-tool-btn active" id="btn-follow">
                             <i data-lucide="crosshair"></i>
-                            FOLLOW ROVER
+                            Follow Rover
                         </button>
                         <button class="map-tool-btn" id="btn-waypoint">
                             <i data-lucide="map-pin"></i>
-                            ADD WAYPOINT
+                            Add Waypoint
                         </button>
                         <button class="map-tool-btn" id="btn-hazard">
                             <i data-lucide="alert-triangle"></i>
-                            MARK HAZARD
+                            Mark Hazard
                         </button>
                         <button class="map-tool-btn" id="btn-clear-zone">
                             <i data-lucide="shield"></i>
-                            SAFE ZONE
+                            Safe Zone
                         </button>
                         <button class="map-tool-btn danger" id="btn-emergency-route">
                             <i data-lucide="alert-octagon"></i>
-                            EMERGENCY ROUTE
+                            Emergency Route
                         </button>
                     </div>
                 </div>
@@ -141,8 +137,8 @@
                 <div class="tool-panel-section">
                     <div class="map-tools-title">Map Layer</div>
                     <div class="layer-toggle-row">
-                        <button class="layer-btn active" id="btn-street">STREET</button>
-                        <button class="layer-btn" id="btn-satellite">SATELLITE</button>
+                        <button class="layer-btn active" id="btn-street">Street</button>
+                        <button class="layer-btn" id="btn-satellite">Satellite</button>
                     </div>
                 </div>
 
@@ -153,27 +149,27 @@
                     <div class="map-tools-title">Live Telemetry</div>
                     <div class="coord-display-panel">
                         <div class="coord-row">
-                            <span class="coord-key">LAT</span>
+                            <span class="coord-key">Lat</span>
                             <span class="coord-value" id="lat-display">0.000000°</span>
                         </div>
                         <div class="coord-sep"></div>
                         <div class="coord-row">
-                            <span class="coord-key">LNG</span>
+                            <span class="coord-key">Lng</span>
                             <span class="coord-value" id="lng-display">0.000000°</span>
                         </div>
                         <div class="coord-sep"></div>
                         <div class="coord-row">
-                            <span class="coord-key">SPEED</span>
+                            <span class="coord-key">Speed</span>
                             <span class="coord-value" id="speed-display">0.0 km/h</span>
                         </div>
                         <div class="coord-sep"></div>
                         <div class="coord-row">
-                            <span class="coord-key">DIST</span>
+                            <span class="coord-key">Distance</span>
                             <span class="coord-value" id="dist-display">0 m</span>
                         </div>
                         <div class="coord-sep"></div>
                         <div class="coord-row">
-                            <span class="coord-key">SATS</span>
+                            <span class="coord-key">Satellites</span>
                             <span class="coord-value" id="sats-display">0</span>
                         </div>
                     </div>
@@ -185,7 +181,7 @@
                 <div class="tool-panel-section" style="flex:1;">
                     <div class="map-tools-title">Landmarks</div>
                     <div class="landmark-list" id="landmark-list">
-                        <div class="landmark-placeholder">Click map to add</div>
+                        <div class="landmark-placeholder">Click map to add markers</div>
                     </div>
                 </div>
 
@@ -197,9 +193,9 @@
                 <!-- Leaflet Map -->
                 <div id="map-canvas"></div>
 
-                <!-- HUD Top: Coordinates Label -->
+                <!-- HUD Top: Label -->
                 <div class="map-hud-overlay map-hud-top">
-                    LIVE MISSION COORDINATES
+                    Live Mission Coordinates
                 </div>
 
                 <!-- HUD Bottom: Stats Cards -->
@@ -222,7 +218,7 @@
                     </div>
                 </div>
 
-                <!-- Right Controls: Zoom / Recenter / Layers -->
+                <!-- Right Controls: Zoom / Recenter -->
                 <div class="map-tools-right">
                     <button class="map-zoom-btn" id="btn-zoom-in" title="Zoom In">
                         <i data-lucide="plus"></i>
@@ -249,7 +245,8 @@
     <!-- end .main-column -->
 
 </div>
-<!-- end .app-shell -->
+
+<div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 <script type="module" src="../shared/mqtt-client.js"></script>

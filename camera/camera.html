@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="../shared/shared.css">
     <link rel="stylesheet" href="./camera.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- TensorFlow.js and COCO-SSD Object Detection Models -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 </head>
@@ -20,7 +19,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo-mark">
-                <img src="../assets/logo.png" alt="Rescue Intel" style="width:32px;height:32px;object-fit:cover;border-radius:6px;">
+                <img src="../assets/logo.png" alt="Rescue Intel">
             </div>
             <div class="logo-text">
                 <span class="logo-name">Rescue Intel</span>
@@ -28,49 +27,45 @@
             </div>
         </div>
 
-        <button class="sidebar-collapse-btn" id="sidebar-collapse-btn">
-            <i data-lucide="chevrons-left" style="width:14px;height:14px;"></i>
-        </button>
-
         <nav class="sidebar-nav">
             <div class="nav-section-label">Operations</div>
-            <a href="../dashboard/dashboard.html" class="nav-item">
+            <a href="../dashboard/dashboard.html" class="nav-item" data-tooltip="Overview">
                 <i data-lucide="layout-dashboard"></i>
                 <span class="nav-label">Overview</span>
             </a>
-            <a href="./camera.html" class="nav-item active">
+            <a href="./camera.html" class="nav-item active" data-tooltip="Live Monitoring">
                 <i data-lucide="video"></i>
                 <span class="nav-label">Live Monitoring</span>
             </a>
-            <a href="../map/map.html" class="nav-item">
+            <a href="../map/map.html" class="nav-item" data-tooltip="Incident Map">
                 <i data-lucide="map"></i>
                 <span class="nav-label">Incident Map</span>
             </a>
-            <a href="../sensors/sensors.html" class="nav-item">
+            <a href="../sensors/sensors.html" class="nav-item" data-tooltip="Field Sensors">
                 <i data-lucide="activity"></i>
                 <span class="nav-label">Field Sensors</span>
             </a>
-            <a href="../alerts/alerts.html" class="nav-item">
+            <a href="../alerts/alerts.html" class="nav-item" data-tooltip="Alerts">
                 <i data-lucide="bell-ring"></i>
-                <span class="nav-label">Alerts & Reports</span>
+                <span class="nav-label">Alerts</span>
                 <span class="nav-badge" id="sidebar-alert-count">0</span>
             </a>
 
-            <div class="nav-section-label" style="margin-top:16px;">System</div>
-            <a href="../" class="nav-item">
+            <div class="nav-section-label" style="margin-top:8px;">System</div>
+            <a href="../" class="nav-item" data-tooltip="Home">
                 <i data-lucide="home"></i>
-                <span class="nav-label">Operations Home</span>
+                <span class="nav-label">Home</span>
             </a>
-            <a href="#" class="nav-item" aria-disabled="true" title="Coming Soon" style="opacity:0.45;cursor:not-allowed;pointer-events:none;">
+            <a href="#" class="nav-item" aria-disabled="true" title="Coming Soon" data-tooltip="Settings" style="opacity:0.35;cursor:not-allowed;pointer-events:none;">
                 <i data-lucide="settings"></i>
-                <span class="nav-label">System Settings</span>
+                <span class="nav-label">Settings</span>
             </a>
         </nav>
 
         <div class="sidebar-footer">
             <div class="status-pill" style="width:100%; justify-content:center;">
                 <div class="status-dot" id="mqtt-dot"></div>
-                <span id="mqtt-status-text" style="font-family:var(--font-mono);font-size:10px;">CONNECTING...</span>
+                <span id="mqtt-status-text" style="font-family:var(--font-mono);font-size:10px;">CONNECTING</span>
             </div>
         </div>
     </aside>
@@ -81,53 +76,53 @@
         <!-- TOP NAVBAR -->
         <header class="top-navbar">
             <div class="nav-left">
+                <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open navigation">
+                    <i data-lucide="menu"></i>
+                </button>
                 <span class="nav-page-title">Live Monitoring</span>
                 <span class="nav-breadcrumb">/ Camera Feed</span>
             </div>
             <div class="nav-right">
-                <!-- Live Recording Indicator -->
                 <div class="live-indicator">
                     <div class="live-dot standby" id="cam-rec-dot"></div>
-                    <span id="cam-rec-label">STANDBY</span>
+                    <span id="cam-rec-label">Standby</span>
                 </div>
-                <!-- AI Server Status Pill -->
-                <div class="status-pill" id="ai-server-pill" title="Python AI Backend Status">
+                <div class="status-pill" id="ai-server-pill" title="AI Backend Status">
                     <div class="status-dot offline" id="ai-server-dot"></div>
-                    <span id="ai-server-text" style="font-family:var(--font-mono);font-size:10px;">AI OFFLINE</span>
+                    <span id="ai-server-text" style="font-family:var(--font-mono);font-size:10px;">AI Offline</span>
                 </div>
-                <!-- Mission Clock -->
                 <div class="status-pill">
-                    <i data-lucide="clock" style="width:12px;height:12px;"></i>
+                    <i data-lucide="clock" style="width:11px;height:11px;"></i>
                     <span id="mission-clock" style="font-family:var(--font-mono);">--:--:--</span>
                 </div>
-                <button class="icon-btn" title="Notifications" aria-label="Notifications">
-                    <i data-lucide="bell"></i>
-                </button>
-                <!-- Theme Toggle -->
-                <button class="icon-btn" id="theme-toggle" title="Switch to Light Mode" aria-label="Switch to Light Mode">
+                <button class="icon-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
                     <i data-lucide="moon"></i>
                 </button>
             </div>
         </header>
 
-        <!-- CAMERA SHELL (no page-content padding) -->
+        <!-- CAMERA SHELL -->
         <div class="camera-shell">
 
             <!-- ── AI ALERT BANNER ─────────────────────────────── -->
             <div class="ai-alert-banner" id="ai-alert-banner" style="display:none;">
                 <div class="ai-alert-banner-inner">
-                    <div class="ai-alert-icon"><i data-lucide="alert-triangle" style="width:16px;height:16px;"></i></div>
-                    <div class="ai-alert-content">
-                        <span class="ai-alert-title" id="ai-alert-title">CRITICAL EVENT DETECTED</span>
-                        <span class="ai-alert-desc" id="ai-alert-desc">Possible survivor signaling for help</span>
+                    <div class="ai-alert-icon">
+                        <i data-lucide="alert-triangle"></i>
                     </div>
-                    <div class="ai-alert-priority" id="ai-alert-priority-badge">CRITICAL</div>
+                    <div class="ai-alert-content">
+                        <span class="ai-alert-title" id="ai-alert-title">Critical Event Detected</span>
+                        <span class="ai-alert-desc" id="ai-alert-desc">Possible survivor signaling for assistance</span>
+                    </div>
+                    <div class="ai-alert-priority" id="ai-alert-priority-badge">Critical</div>
                     <button class="ai-alert-close" id="ai-alert-close">&#x2715;</button>
                 </div>
             </div>
 
-            <!-- ── MONITORING CARD CONTAINER ───────────────────── -->
+            <!-- ── MAIN MONITORING CONTAINER ────────────────────── -->
             <div class="camera-monitoring-container">
+
+                <!-- CENTER: CAMERA FEED CARD -->
                 <div class="monitoring-card">
                     <div class="monitoring-card-header">
                         <div class="header-title-block">
@@ -135,7 +130,10 @@
                             <h2 class="monitoring-title">Camera Feed</h2>
                         </div>
                         <div class="monitoring-meta-bar">
-                            <div class="meta-item"><span class="meta-dot live" id="rec-badge"></span>Status: <span class="meta-status">Live</span></div>
+                            <div class="meta-item">
+                                <span class="meta-dot live" id="rec-badge"></span>
+                                Status: <span class="meta-status">Live</span>
+                            </div>
                             <div class="meta-item-separator">|</div>
                             <div class="meta-item">AI Analysis: <span class="meta-status" id="fps-badge">Active</span></div>
                             <div class="meta-item-separator">|</div>
@@ -149,34 +147,32 @@
 
                     <!-- Stream Container -->
                     <div class="main-feed-panel" id="main-feed-panel">
-                        <!-- Video Wrap -->
+                        <!-- Video -->
                         <div class="feed-video-wrap">
                             <img id="esp32-stream" class="feed-img" src="" alt="ESP32 Camera Stream" crossorigin="anonymous" style="display:none;">
-
-                            <!-- Placeholder -->
                             <div class="feed-placeholder" id="feed-placeholder">
                                 <i data-lucide="video-off"></i>
-                                <span>WAITING FOR FIELD SIGNAL</span>
+                                <span>Awaiting field signal</span>
                             </div>
                         </div>
 
-                        <!-- Target Bounding Boxes (Simplified professional outlines) -->
-                        <div class="hud-bbox human" id="bbox-human" style="display: none;">
-                            <div class="bbox-label">Human Presence · <span id="bbox-human-conf">0%</span></div>
+                        <!-- Detection Overlays -->
+                        <div class="hud-bbox human"  id="bbox-human"  style="display:none;">
+                            <div class="bbox-label">Human &middot; <span id="bbox-human-conf">0%</span></div>
                         </div>
-                        <div class="hud-bbox hazard" id="bbox-hazard" style="display: none;">
-                            <div class="bbox-label">Hazard Presence · <span id="bbox-hazard-conf">0%</span></div>
+                        <div class="hud-bbox hazard" id="bbox-hazard" style="display:none;">
+                            <div class="bbox-label">Hazard &middot; <span id="bbox-hazard-conf">0%</span></div>
                         </div>
-                        <div class="hud-bbox fire" id="bbox-fire" style="display: none;">
-                            <div class="bbox-label">Fire Presence · <span id="bbox-fire-conf">0%</span></div>
+                        <div class="hud-bbox fire"   id="bbox-fire"   style="display:none;">
+                            <div class="bbox-label">Fire &middot; <span id="bbox-fire-conf">0%</span></div>
                         </div>
-                        <div class="hud-bbox motion" id="bbox-motion" style="display: none;">
-                            <div class="bbox-label">Movement Activity</div>
+                        <div class="hud-bbox motion" id="bbox-motion" style="display:none;">
+                            <div class="bbox-label">Movement</div>
                         </div>
 
-                        <!-- Floating Footer Controls -->
+                        <!-- Feed Controls (bottom overlay) -->
                         <div class="monitoring-card-footer">
-                            <button class="feed-btn" id="btn-stream-toggle" title="Start/Stop Monitoring">
+                            <button class="feed-btn" id="btn-stream-toggle" title="Start / Stop Monitoring">
                                 <i data-lucide="play"></i>
                             </button>
                             <button class="feed-btn" id="btn-snapshot" title="Capture Snapshot">
@@ -188,220 +184,225 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- ── CAMERA SIDEBAR ──────────────────────────────── -->
-            <div class="cam-sidebar">
+                <!-- RIGHT: CAM SIDEBAR -->
+                <div class="cam-sidebar">
 
+                    <!-- Vision Tuning (Collapsible) -->
+                    <details class="cam-sidebar-section collapsible" style="padding-bottom:0;">
+                        <summary class="section-title-row" style="margin-bottom:0;cursor:pointer;user-select:none;padding-bottom:var(--space-5);">
+                            <h3>
+                                Vision Tuning
+                                <i data-lucide="chevron-down" class="chevron-icon" style="width:13px;height:13px;color:var(--text-muted);"></i>
+                            </h3>
+                        </summary>
+                        <div class="tuning-row" style="padding-bottom:var(--space-5);">
 
+                            <!-- Camera IP -->
+                            <div class="tuning-item">
+                                <div class="tuning-label-row">
+                                    <span class="tuning-label">Camera IP Override</span>
+                                </div>
+                                <div class="ip-row">
+                                    <input type="text" id="ctrl-camera-ip" class="tuning-text-input" placeholder="e.g. 192.168.1.100">
+                                    <button id="btn-apply-ip" class="ip-mount-btn">Mount</button>
+                                </div>
+                            </div>
 
-                <!-- Vision Tuning Section (Collapsible) -->
-                <details class="cam-sidebar-section collapsible" style="border-bottom: 1px solid var(--border-dim);">
-                    <summary class="section-title-row" style="margin-bottom: 12px; list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
-                        <h3 style="display: flex; align-items: center; gap: 8px;">Vision Tuning <i data-lucide="chevron-down" style="width: 14px; height: 14px; transition: transform 0.2s;"></i></h3>
-                    </summary>
-                    <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;">
-                        <!-- Manual Camera IP Override -->
-                        <div style="display: flex; flex-direction: column; gap: 5px; border-bottom: 1px dashed var(--border-dim); padding-bottom: 10px;">
-                            <span style="font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Manual Camera IP / Override</span>
-                            <div style="display: flex; gap: 6px;">
-                                <input type="text" id="ctrl-camera-ip" placeholder="e.g., 192.168.1.100" style="flex: 1; background: var(--bg-elevated); border: 1px solid var(--border-dim); border-radius: 4px; color: var(--text-primary); font-size: 11px; padding: 5px 8px; outline: none; transition: border-color 0.2s; font-family: var(--font-mono);">
-                                <button id="btn-apply-ip" style="background: var(--cyan); border: none; border-radius: 4px; color: black; font-weight: 700; font-size: 10px; padding: 0 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; transition: opacity 0.2s;">Mount</button>
+                            <!-- Resolution -->
+                            <div class="tuning-item">
+                                <div class="tuning-row-inline">
+                                    <span class="tuning-label">Resolution</span>
+                                    <select id="ctrl-resolution" class="tuning-select" style="width:auto;max-width:140px;">
+                                        <option value="7">QVGA (320×240)</option>
+                                        <option value="9" selected>VGA (640×480)</option>
+                                        <option value="11">SVGA (800×600)</option>
+                                        <option value="13">UXGA (1600×1200)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Visual Effect -->
+                            <div class="tuning-item">
+                                <div class="tuning-row-inline">
+                                    <span class="tuning-label">Effect</span>
+                                    <select id="ctrl-effect" class="tuning-select" style="width:auto;max-width:140px;">
+                                        <option value="0" selected>Normal</option>
+                                        <option value="1">Negative</option>
+                                        <option value="2">Grayscale</option>
+                                        <option value="3">Red Tint</option>
+                                        <option value="4">Green Tint</option>
+                                        <option value="5">Blue Tint</option>
+                                        <option value="6">Sepia</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Brightness -->
+                            <div class="tuning-item">
+                                <div class="tuning-label-row">
+                                    <span class="tuning-label">Brightness</span>
+                                    <span class="tuning-val" id="val-brightness">0</span>
+                                </div>
+                                <input type="range" id="ctrl-brightness" class="tuning-input" min="-2" max="2" value="0" step="1">
+                            </div>
+
+                            <!-- Contrast -->
+                            <div class="tuning-item">
+                                <div class="tuning-label-row">
+                                    <span class="tuning-label">Contrast</span>
+                                    <span class="tuning-val" id="val-contrast">0</span>
+                                </div>
+                                <input type="range" id="ctrl-contrast" class="tuning-input" min="-2" max="2" value="0" step="1">
+                            </div>
+
+                            <!-- Saturation -->
+                            <div class="tuning-item">
+                                <div class="tuning-label-row">
+                                    <span class="tuning-label">Saturation</span>
+                                    <span class="tuning-val" id="val-saturation">0</span>
+                                </div>
+                                <input type="range" id="ctrl-saturation" class="tuning-input" min="-2" max="2" value="0" step="1">
+                            </div>
+
+                            <!-- Flash LED -->
+                            <div class="tuning-item">
+                                <div class="tuning-label-row">
+                                    <span class="tuning-label">Flash LED</span>
+                                    <span class="tuning-val" id="val-led">0%</span>
+                                </div>
+                                <input type="range" id="ctrl-led" class="tuning-input" min="0" max="255" value="0" step="5">
+                            </div>
+
+                            <!-- Switches -->
+                            <div class="switch-row">
+                                <label class="switch-label">
+                                    <input type="checkbox" id="ctrl-mirror" checked>
+                                    Mirror
+                                </label>
+                                <label class="switch-label">
+                                    <input type="checkbox" id="ctrl-flip" checked>
+                                    Flip
+                                </label>
+                                <label class="switch-label">
+                                    <input type="checkbox" id="ctrl-night">
+                                    Flash
+                                </label>
                             </div>
                         </div>
+                    </details>
 
-                        <!-- Resolution Dropdown -->
-                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                            <span style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Resolution</span>
-                            <select id="ctrl-resolution" style="background: var(--bg-elevated); border: 1px solid var(--border-dim); border-radius: 4px; color: var(--text-primary); font-size: 11px; padding: 4px 10px; cursor: pointer; outline: none; transition: border-color 0.2s;">
-                                <option value="7">QVGA (320x240)</option>
-                                <option value="9" selected>VGA (640x480)</option>
-                                <option value="11">SVGA (800x600)</option>
-                                <option value="13">UXGA (1600x1200)</option>
-                            </select>
+                    <!-- Rescue Intelligence -->
+                    <div class="cam-sidebar-section">
+                        <div class="section-title-row">
+                            <h3>Rescue Intelligence</h3>
+                            <span class="badge badge-neutral" id="rescue-priority-badge">Low</span>
                         </div>
-                        
-                        <!-- Special Effects Dropdown -->
-                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-                            <span style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Visual Effects</span>
-                            <select id="ctrl-effect" style="background: var(--bg-elevated); border: 1px solid var(--border-dim); border-radius: 4px; color: var(--text-primary); font-size: 11px; padding: 4px 10px; cursor: pointer; outline: none; transition: border-color 0.2s;">
-                                <option value="0" selected>Normal</option>
-                                <option value="1">Negative</option>
-                                <option value="2">Grayscale</option>
-                                <option value="3">Red Tint</option>
-                                <option value="4">Green Tint</option>
-                                <option value="5">Blue Tint</option>
-                                <option value="6">Sepia</option>
-                            </select>
-                        </div>
-
-                        <!-- Brightness Slider -->
-                        <div>
-                            <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;">
-                                <span>Brightness</span>
-                                <span id="val-brightness" style="font-family: var(--font-mono); color: var(--cyan); font-weight: 700;">0</span>
+                        <div class="rescue-intel-grid">
+                            <div class="ri-card" id="ri-human">
+                                <i data-lucide="user" style="width:16px;height:16px;color:var(--accent);flex-shrink:0;"></i>
+                                <div class="ri-info">
+                                    <div class="ri-label">Human Presence</div>
+                                    <div class="ri-value" id="ri-human-val">None detected</div>
+                                </div>
+                                <span class="ri-count" id="ri-human-count">0</span>
                             </div>
-                            <input type="range" id="ctrl-brightness" min="-2" max="2" value="0" step="1" style="width: 100%; accent-color: var(--cyan); height: 4px; background: var(--bg-elevated); border-radius: 2px; cursor: pointer; outline: none;">
-                        </div>
-
-                        <!-- Contrast Slider -->
-                        <div>
-                            <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;">
-                                <span>Contrast</span>
-                                <span id="val-contrast" style="font-family: var(--font-mono); color: var(--cyan); font-weight: 700;">0</span>
+                            <div class="ri-card" id="ri-motion">
+                                <i data-lucide="move" style="width:16px;height:16px;color:var(--accent);flex-shrink:0;"></i>
+                                <div class="ri-info">
+                                    <div class="ri-label">Movement Activity</div>
+                                    <div class="ri-value" id="ri-motion-val">No activity</div>
+                                </div>
                             </div>
-                            <input type="range" id="ctrl-contrast" min="-2" max="2" value="0" step="1" style="width: 100%; accent-color: var(--cyan); height: 4px; background: var(--bg-elevated); border-radius: 2px; cursor: pointer; outline: none;">
-                        </div>
-
-                        <!-- Saturation Slider -->
-                        <div>
-                            <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;">
-                                <span>Saturation</span>
-                                <span id="val-saturation" style="font-family: var(--font-mono); color: var(--cyan); font-weight: 700;">0</span>
+                            <div class="ri-card" id="ri-fire">
+                                <i data-lucide="flame" style="width:16px;height:16px;color:var(--status-danger);flex-shrink:0;"></i>
+                                <div class="ri-info">
+                                    <div class="ri-label">Fire Risk</div>
+                                    <div class="ri-value" id="ri-fire-val">No risk detected</div>
+                                </div>
                             </div>
-                            <input type="range" id="ctrl-saturation" min="-2" max="2" value="0" step="1" style="width: 100%; accent-color: var(--cyan); height: 4px; background: var(--bg-elevated); border-radius: 2px; cursor: pointer; outline: none;">
-                        </div>
-
-                        <!-- Flash LED Intensity Slider -->
-                        <div>
-                            <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em;">
-                                <span>Flash LED Duty</span>
-                                <span id="val-led" style="font-family: var(--font-mono); color: var(--cyan); font-weight: 700;">0%</span>
+                            <div class="ri-card" id="ri-smoke">
+                                <i data-lucide="cloud" style="width:16px;height:16px;color:var(--text-muted);flex-shrink:0;"></i>
+                                <div class="ri-info">
+                                    <div class="ri-label">Smoke Condition</div>
+                                    <div class="ri-value" id="ri-smoke-val">Clear</div>
+                                </div>
                             </div>
-                            <input type="range" id="ctrl-led" min="0" max="255" value="0" step="5" style="width: 100%; accent-color: var(--cyan); height: 4px; background: var(--bg-elevated); border-radius: 2px; cursor: pointer; outline: none;">
-                        </div>
-
-                        <!-- Switch Options -->
-                        <div style="display: flex; justify-content: space-between; margin-top: 4px;">
-                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">
-                                <input type="checkbox" id="ctrl-mirror" checked style="accent-color: var(--cyan); cursor: pointer; width: 13px; height: 13px;"> Mirror
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">
-                                <input type="checkbox" id="ctrl-flip" checked style="accent-color: var(--cyan); cursor: pointer; width: 13px; height: 13px;"> Flip
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">
-                                <input type="checkbox" id="ctrl-night" style="accent-color: var(--cyan); cursor: pointer; width: 13px; height: 13px;"> Flash
-                            </label>
-                        </div>
-                    </div>
-                </details>
-
-
-
-                <!-- ── RESCUE INTELLIGENCE CARDS ──────────────────── -->
-                <div class="cam-sidebar-section">
-                    <div class="section-title-row">
-                        <h3>Rescue Intelligence</h3>
-                        <span class="badge" id="rescue-priority-badge" style="font-size:9px;padding:2px 6px;">LOW</span>
-                    </div>
-                    <div class="rescue-intel-grid">
-                        <div class="ri-card" id="ri-human">
-                            <span class="ri-icon">👤</span>
-                            <div class="ri-info">
-                                <span class="ri-label">Human Presence</span>
-                                <span class="ri-value" id="ri-human-val">No human detected</span>
+                            <div class="ri-card" id="ri-gesture">
+                                <i data-lucide="hand" style="width:16px;height:16px;color:var(--status-warn);flex-shrink:0;"></i>
+                                <div class="ri-info">
+                                    <div class="ri-label">Gesture Detection</div>
+                                    <div class="ri-value" id="ri-gesture-val">None detected</div>
+                                </div>
                             </div>
-                            <span class="ri-count" id="ri-human-count">0</span>
-                        </div>
-                        <div class="ri-card" id="ri-motion">
-                            <span class="ri-icon">〰️</span>
-                            <div class="ri-info">
-                                <span class="ri-label">Movement Activity</span>
-                                <span class="ri-value" id="ri-motion-val">No activity detected</span>
+                            <div class="ri-card" id="ri-blood">
+                                <i data-lucide="droplet" style="width:16px;height:16px;color:var(--status-danger);flex-shrink:0;"></i>
+                                <div class="ri-info">
+                                    <div class="ri-label">Bleeding Detection</div>
+                                    <div class="ri-value" id="ri-blood-val">Clear</div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="ri-card" id="ri-fire">
-                            <span class="ri-icon">🔥</span>
-                            <div class="ri-info">
-                                <span class="ri-label">Fire Risk</span>
-                                <span class="ri-value" id="ri-fire-val">No risk detected</span>
+                            <div class="ri-card" id="ri-injury">
+                                <i data-lucide="heart-pulse" style="width:16px;height:16px;color:var(--status-danger);flex-shrink:0;"></i>
+                                <div class="ri-info">
+                                    <div class="ri-label">Injury Severity</div>
+                                    <div class="ri-value" id="ri-injury-val">Not assessed</div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="ri-card" id="ri-smoke">
-                            <span class="ri-icon">💨</span>
-                            <div class="ri-info">
-                                <span class="ri-label">Smoke Condition</span>
-                                <span class="ri-value" id="ri-smoke-val">No signs detected</span>
-                            </div>
-                        </div>
-                        <div class="ri-card" id="ri-gesture">
-                            <span class="ri-icon">🤚</span>
-                            <div class="ri-info">
-                                <span class="ri-label">Gesture Detection</span>
-                                <span class="ri-value" id="ri-gesture-val">No gestures detected</span>
-                            </div>
-                        </div>
-                        <div class="ri-card" id="ri-blood">
-                            <span class="ri-icon">🩸</span>
-                            <div class="ri-info">
-                                <span class="ri-label">Bleeding Detection</span>
-                                <span class="ri-value" id="ri-blood-val">No signs detected</span>
-                            </div>
-                        </div>
-                        <div class="ri-card" id="ri-injury">
-                            <span class="ri-icon">🏥</span>
-                            <div class="ri-info">
-                                <span class="ri-label">Injury Severity</span>
-                                <span class="ri-value" id="ri-injury-val">Not assessed</span>
-                            </div>
-                        </div>
-                        <div class="ri-card ri-card-wide" id="ri-survivor">
-                            <span class="ri-icon">💚</span>
-                            <div class="ri-info">
-                                <span class="ri-label">Survival Probability</span>
+                            <div class="ri-card ri-card-wide" id="ri-survivor">
+                                <div class="ri-label">Survival Probability</div>
                                 <div class="ri-meter-wrap">
-                                    <div class="ri-meter-bar"><div class="ri-meter-fill survivor-fill" id="ri-survivor-fill" style="width:0%"></div></div>
+                                    <div class="ri-meter-bar">
+                                        <div class="ri-meter-fill survivor-fill" id="ri-survivor-fill" style="width:0%"></div>
+                                    </div>
                                     <span class="ri-meter-val" id="ri-survivor-val">0%</span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="ri-card ri-card-wide" id="ri-priority">
-                            <span class="ri-icon">🚨</span>
-                            <div class="ri-info">
-                                <span class="ri-label">Emergency Priority</span>
+                            <div class="ri-card ri-card-wide" id="ri-priority">
+                                <div class="ri-label">Emergency Priority</div>
                                 <div class="ri-meter-wrap">
-                                    <div class="ri-meter-bar"><div class="ri-meter-fill priority-fill" id="ri-priority-fill" style="width:0%"></div></div>
+                                    <div class="ri-meter-bar">
+                                        <div class="ri-meter-fill priority-fill" id="ri-priority-fill" style="width:0%"></div>
+                                    </div>
                                     <span class="ri-meter-val" id="ri-priority-val">Low</span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="ri-card" id="ri-firstaid">
-                            <span class="ri-icon">⛑️</span>
-                            <div class="ri-info">
-                                <span class="ri-label">Medical Assistance Need</span>
-                                <span class="ri-value" id="ri-firstaid-val">Verification needed</span>
+                            <div class="ri-card" id="ri-firstaid">
+                                <i data-lucide="cross" style="width:16px;height:16px;color:var(--status-ok);flex-shrink:0;"></i>
+                                <div class="ri-info">
+                                    <div class="ri-label">Medical Need</div>
+                                    <div class="ri-value" id="ri-firstaid-val">Verification needed</div>
+                                </div>
+                            </div>
+                            <div class="ri-card" id="ri-livestatus">
+                                <i data-lucide="radio" style="width:16px;height:16px;color:var(--accent);flex-shrink:0;"></i>
+                                <div class="ri-info">
+                                    <div class="ri-label">Feed Status</div>
+                                    <div class="ri-value" id="ri-livestatus-val">Monitoring unavailable</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="ri-card" id="ri-livestatus">
-                            <span class="ri-icon">📡</span>
-                            <div class="ri-info">
-                                <span class="ri-label">Feed Status</span>
-                                <span class="ri-value" id="ri-livestatus-val">Monitoring unavailable</span>
+                    </div>
+
+                    <!-- Incident Timeline -->
+                    <div class="cam-sidebar-section">
+                        <div class="section-title-row">
+                            <h3>Incident Timeline</h3>
+                            <button class="section-action-btn" id="btn-clear-timeline">Clear</button>
+                        </div>
+                        <div class="timeline-list" id="timeline-list">
+                            <div class="timeline-empty">
+                                <i data-lucide="clock" style="width:20px;height:20px;opacity:0.3;"></i>
+                                <span>No incidents logged</span>
                             </div>
                         </div>
                     </div>
+
                 </div>
-
-
-
-                <!-- ── INCIDENT TIMELINE ────────────────────────────── -->
-                <div class="cam-sidebar-section">
-                    <div class="section-title-row">
-                        <h3>Incident Timeline</h3>
-                        <button class="section-action-btn" id="btn-clear-timeline">CLEAR</button>
-                    </div>
-                    <div class="timeline-list" id="timeline-list">
-                        <div class="timeline-empty">
-                            <i data-lucide="clock" style="width:20px;height:20px;opacity:0.3;"></i>
-                            <span>No incidents logged</span>
-                        </div>
-                    </div>
-                </div>
-
-
+                <!-- end cam-sidebar -->
 
             </div>
-            <!-- end cam-sidebar -->
+            <!-- end camera-monitoring-container -->
 
         </div>
         <!-- end camera-shell -->
@@ -410,7 +411,8 @@
     <!-- end main-column -->
 
 </div>
-<!-- end app-shell -->
+
+<div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 <script type="module" src="../shared/mqtt-client.js"></script>
@@ -418,7 +420,6 @@
 <script type="module" src="./camera.js"></script>
 <script type="module" src="./ai-backend.js"></script>
 <script>
-    // Lucide icons — runs after all scripts loaded
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
     });
