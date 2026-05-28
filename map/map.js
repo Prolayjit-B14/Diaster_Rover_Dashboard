@@ -15,6 +15,10 @@ const TOOLS = {
     SURVIVOR:     'survivor',
     OBSTACLE:     'obstacle',
     SUPPLIES:     'supplies',
+    FIRE:         'fire',
+    GAS:          'gas',
+    WATER:        'water',
+    CAMERA:       'camera',
 };
 
 // ── LANDMARK CONFIG ──────────────────────────────────────────────────────────
@@ -25,6 +29,10 @@ const LANDMARK_CONFIG = {
     [TOOLS.SURVIVOR]:    { color: '#FF007F', label: 'Survivor SOS', emoji: '🆘' },
     [TOOLS.OBSTACLE]:    { color: '#FFB800', label: 'Obstacle',     emoji: '🚧' },
     [TOOLS.SUPPLIES]:    { color: '#A066FF', label: 'Supplies',     emoji: '📦' },
+    [TOOLS.FIRE]:        { color: '#FF5722', label: 'Fire Source',  emoji: '🔥' },
+    [TOOLS.GAS]:         { color: '#E040FB', label: 'Gas Hazard',   emoji: '💀' },
+    [TOOLS.WATER]:       { color: '#2196F3', label: 'Water Hazard', emoji: '💧' },
+    [TOOLS.CAMERA]:      { color: '#00E676', label: 'Photo Point',  emoji: '📷' },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -186,6 +194,10 @@ class MapDashboard {
             { id: 'btn-survivor',        tool: TOOLS.SURVIVOR                      },
             { id: 'btn-obstacle',        tool: TOOLS.OBSTACLE                      },
             { id: 'btn-supplies',        tool: TOOLS.SUPPLIES                      },
+            { id: 'btn-fire',            tool: TOOLS.FIRE                          },
+            { id: 'btn-gas',             tool: TOOLS.GAS                           },
+            { id: 'btn-water',           tool: TOOLS.WATER                         },
+            { id: 'btn-camera',          tool: TOOLS.CAMERA                        },
         ];
 
         toolBtns.forEach(({ id, tool, followToggle }) => {
@@ -415,6 +427,10 @@ class MapDashboard {
             [TOOLS.SURVIVOR]:    'btn-survivor',
             [TOOLS.OBSTACLE]:    'btn-obstacle',
             [TOOLS.SUPPLIES]:    'btn-supplies',
+            [TOOLS.FIRE]:        'btn-fire',
+            [TOOLS.GAS]:         'btn-gas',
+            [TOOLS.WATER]:       'btn-water',
+            [TOOLS.CAMERA]:      'btn-camera',
         };
         const activeBtnId = toolBtnIds[this.activeTool];
         if (activeBtnId) {

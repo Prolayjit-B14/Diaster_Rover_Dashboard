@@ -5,7 +5,7 @@
 /* ── MAP SHELL LAYOUT ────────────────────────────────────────── */
 .map-shell {
     display: grid;
-    grid-template-columns: 260px 1fr;
+    grid-template-columns: 1fr;
     height: calc(100vh - var(--nav-h));
     overflow: hidden;
 }
@@ -33,28 +33,25 @@
 /* ── TOOL BUTTONS ────────────────────────────────────────────── */
 .map-tool-btn {
     width: 100%;
+    aspect-ratio: 1 / 1;
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    padding: 8px 10px;
+    justify-content: center;
+    padding: 8px;
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
     color: var(--text-secondary);
-    font-size: var(--text-sm);
-    font-weight: var(--fw-medium);
     cursor: pointer;
     transition: background-color var(--t-fast), border-color var(--t-fast), color var(--t-fast);
-    text-align: left;
     font-family: var(--font-body);
-    letter-spacing: 0.01em;
     box-shadow: var(--shadow-inset);
 }
 
 .map-tool-btn svg,
 .map-tool-btn i {
-    width: 14px;
-    height: 14px;
+    width: 18px;
+    height: 18px;
     flex-shrink: 0;
 }
 
@@ -387,6 +384,12 @@
     gap: var(--space-1);
 }
 
+.map-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-2);
+}
+
 .tool-panel-section {
     display: flex;
     flex-direction: column;
@@ -402,4 +405,62 @@
     .map-tools-panel {
         display: none;
     }
+}
+
+/* ── FLOATING OVERLAYS ───────────────────────────────────────── */
+.map-floating-tools {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: rgba(11, 15, 25, 0.90);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    width: 196px;
+    pointer-events: auto;
+    z-index: 1000;
+}
+
+.map-floating-coords {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 20px !important;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    border-radius: 99px !important;
+    pointer-events: auto !important;
+}
+
+.map-floating-coords .coord-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.map-floating-coords .coord-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+}
+
+.map-floating-coords .coord-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.map-floating-coords .coord-divider {
+    color: var(--border-subtle);
+    font-weight: 300;
+}
+
+.map-floating-coords .gps-pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--status-ok);
+    animation: pulseOnline 2.5s ease-in-out infinite;
 }

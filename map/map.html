@@ -101,99 +101,67 @@
         <!-- MAP SHELL -->
         <div class="map-shell">
 
-            <!-- ── LEFT: TOOLS PANEL ──────────────────────────── -->
-            <div class="map-tools-panel">
-
-                <!-- Mission Tools -->
-                <div class="tool-panel-section">
-                    <div class="map-tools-title">Mission Tools</div>
-                    <div class="map-tools-group">
-                        <button class="map-tool-btn active" id="btn-follow">
-                            <i data-lucide="crosshair"></i>
-                            Follow Rover
-                        </button>
-                        <button class="map-tool-btn" id="btn-safe">
-                            <i data-lucide="shield"></i>
-                            Safe Zone
-                        </button>
-                        <button class="map-tool-btn" id="btn-danger">
-                            <i data-lucide="alert-triangle"></i>
-                            Danger Zone
-                        </button>
-                        <button class="map-tool-btn" id="btn-base-station">
-                            <i data-lucide="radio"></i>
-                            Base Station
-                        </button>
-                        <button class="map-tool-btn" id="btn-survivor">
-                            <i data-lucide="heart"></i>
-                            Survivor (SOS)
-                        </button>
-                        <button class="map-tool-btn" id="btn-obstacle">
-                            <i data-lucide="construction"></i>
-                            Obstacle
-                        </button>
-                        <button class="map-tool-btn" id="btn-supplies">
-                            <i data-lucide="package"></i>
-                            Supplies
-                        </button>
-                        <button class="map-tool-btn" id="btn-clear-path">
-                            <i data-lucide="trash-2"></i>
-                            Clear Path
-                        </button>
-                    </div>
-                </div>
-
-                <div class="tools-divider"></div>
-
-                <!-- Layer Toggle -->
-                <div class="tool-panel-section">
-                    <div class="map-tools-title">Map Layer</div>
-                    <div class="layer-toggle-row">
-                        <button class="layer-btn active" id="btn-street">Street</button>
-                        <button class="layer-btn" id="btn-satellite">Satellite</button>
-                    </div>
-                </div>
-
-                <div class="tools-divider"></div>
-
-                <!-- Coordinate Display -->
-                <div class="tool-panel-section">
-                    <div class="map-tools-title">Live Telemetry</div>
-                    <div class="coord-display-panel">
-                        <div class="coord-row">
-                            <span class="coord-key">Lat</span>
-                            <span class="coord-value" id="lat-display">0.000000°</span>
-                        </div>
-                        <div class="coord-sep"></div>
-                        <div class="coord-row">
-                            <span class="coord-key">Lng</span>
-                            <span class="coord-value" id="lng-display">0.000000°</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tools-divider"></div>
-
-                <!-- Landmarks -->
-                <div class="tool-panel-section" style="flex:1;">
-                    <div class="map-tools-title">Field Markers</div>
-                    <div class="landmark-list" id="landmark-list">
-                        <div class="landmark-placeholder">Click map to add markers</div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- ── RIGHT: MAP AREA ────────────────────────────── -->
+            <!-- ── MAP AREA (FULL SCREEN) ────────────────────────────── -->
             <div class="map-main-area">
 
                 <!-- Leaflet Map -->
                 <div id="map-canvas"></div>
 
-                <!-- HUD Top: Tracking Status -->
-                <div class="map-hud-overlay map-hud-top">
-                    <span style="color:var(--text-muted);">Active Track &mdash;</span>
-                    &thinsp;Live Mission Coordinates
+                <!-- Floating Tactical Tools HUD -->
+                <div class="map-hud-overlay map-floating-tools">
+                    <div class="map-tools-title" style="margin-bottom: 8px; font-size: 10px; font-weight: 600; text-align: center; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase;">Tools</div>
+                    <div class="map-tools-grid">
+                        <button class="map-tool-btn active" id="btn-follow" title="Follow Rover">
+                            <i data-lucide="crosshair"></i>
+                        </button>
+                        <button class="map-tool-btn" id="btn-safe" title="Safe Zone">
+                            <i data-lucide="shield"></i>
+                        </button>
+                        <button class="map-tool-btn" id="btn-danger" title="Danger Zone">
+                            <i data-lucide="alert-triangle"></i>
+                        </button>
+                        <button class="map-tool-btn" id="btn-base-station" title="Base Station">
+                            <i data-lucide="radio"></i>
+                        </button>
+                        <button class="map-tool-btn" id="btn-survivor" title="Survivor (SOS)">
+                            <i data-lucide="heart"></i>
+                        </button>
+                        <button class="map-tool-btn" id="btn-obstacle" title="Obstacle">
+                            <i data-lucide="construction"></i>
+                        </button>
+                        <button class="map-tool-btn" id="btn-supplies" title="Supplies">
+                            <i data-lucide="package"></i>
+                        </button>
+                        <button class="map-tool-btn" id="btn-fire" title="Fire Source">
+                            <i data-lucide="flame"></i>
+                        </button>
+                        <button class="map-tool-btn" id="btn-gas" title="Gas Hazard">
+                            <i data-lucide="skull"></i>
+                        </button>
+                        <button class="map-tool-btn" id="btn-water" title="Water Hazard">
+                            <i data-lucide="droplet"></i>
+                        </button>
+                        <button class="map-tool-btn" id="btn-camera" title="Photo Point">
+                            <i data-lucide="camera"></i>
+                        </button>
+                        <button class="map-tool-btn" id="btn-clear-path" title="Clear Path">
+                            <i data-lucide="trash-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Floating GPS Telemetry Box (Top Center) -->
+                <div class="map-hud-overlay map-hud-top map-floating-coords">
+                    <span class="gps-pulse-dot"></span>
+                    <span class="coord-group">
+                        <span class="coord-label">LAT</span>
+                        <span id="lat-display" class="coord-value">0.000000°</span>
+                    </span>
+                    <span class="coord-divider">|</span>
+                    <span class="coord-group">
+                        <span class="coord-label">LNG</span>
+                        <span id="lng-display" class="coord-value">0.000000°</span>
+                    </span>
                 </div>
 
                 <!-- HUD Bottom: Stats Cards -->
@@ -230,10 +198,8 @@
                 </div>
 
             </div>
-            <!-- end .map-main-area -->
 
         </div>
-        <!-- end .map-shell -->
 
     </div>
     <!-- end .main-column -->
