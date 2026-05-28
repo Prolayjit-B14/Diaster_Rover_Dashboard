@@ -73,6 +73,22 @@ document.addEventListener('DOMContentLoaded', () => {
             navContainer.innerHTML = innerHTML;
             const rightSection = topNavbar.querySelector('.nav-right');
             topNavbar.insertBefore(navContainer, rightSection);
+
+            // Inject brand name and logo in top-left of top navbar
+            const navLeft = topNavbar.querySelector('.nav-left');
+            if (navLeft && !navLeft.querySelector('.nav-brand')) {
+                const brandLink = document.createElement('a');
+                brandLink.href = homePrefix;
+                brandLink.className = 'nav-brand';
+                brandLink.style.textDecoration = 'none';
+                brandLink.innerHTML = `
+                    <div class="nav-logo">
+                        <img src="${prefix}assets/logo.png" alt="RescueBOT">
+                    </div>
+                    <span class="nav-brand-name">RescueBOT</span>
+                `;
+                navLeft.appendChild(brandLink);
+            }
         }
 
         // Render dynamic Lucide icons inside the injected navbar
