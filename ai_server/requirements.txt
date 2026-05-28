@@ -1,0 +1,41 @@
+# ============================================================
+# RescueBOT AI Inference Server — Python Requirements
+# ============================================================
+# Install via:  pip install -r requirements.txt
+# Or run:       python init_project.py  (handles everything)
+
+# ── Core ML / Deep Learning ──────────────────────────────────
+ultralytics>=8.3.0          # YOLOv8 / YOLO11 — person, fire, smoke, pose detection
+torch>=2.1.0                # PyTorch — disaster classifier (MobileNetV3), tensor ops
+torchvision>=0.16.0         # PyTorch vision transforms and pretrained models
+
+# ── Computer Vision ───────────────────────────────────────────
+opencv-python>=4.8.0        # ESP32-CAM MJPEG streaming, MOG2 motion, HSV fallback
+mediapipe>=0.10.9           # Hand landmarks (gesture/wave/SOS), Pose estimation
+
+# ── Numerical / Scientific ────────────────────────────────────
+numpy>=1.24.0               # Array operations for AI logic fusion
+scipy>=1.10.0               # Signal processing, probability scoring
+
+# ── Web / API / MQTT ─────────────────────────────────────────
+fastapi>=0.110.0            # REST API for AI alerts → dashboard
+uvicorn>=0.27.0             # ASGI server for FastAPI
+websockets>=12.0            # WebSocket support for real-time dashboard feed
+paho-mqtt>=1.6.1            # MQTT publish/subscribe (EMQX Cloud broker)
+
+# ── Image Processing ──────────────────────────────────────────
+Pillow>=10.1.0              # Image I/O, snapshot processing
+
+# ── Utilities / Diagnostics ───────────────────────────────────
+matplotlib>=3.7.0           # Benchmark plots, confidence charts
+pandas>=2.0.0               # CSV logs, telemetry data frames
+pyyaml>=6.0                 # config.yaml parsing
+requests>=2.31.0            # Model downloads with progress
+tqdm>=4.65.0                # Download progress bars
+psutil>=5.9.0               # RAM/CPU/GPU diagnostics
+colorama>=0.4.6             # Colored terminal output (Windows compatible)
+
+# ── Optional: GPU Acceleration ───────────────────────────────
+# If CUDA is available, torch will auto-use GPU.
+# For CUDA 12.x: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+# For CPU-only:  pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu

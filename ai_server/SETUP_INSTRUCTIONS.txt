@@ -1,0 +1,76 @@
+# RescueBOT AI Server — Setup Instructions
+# =========================================
+# This file documents all commands needed for manual setup.
+# For automated setup, just run: python init_project.py
+
+## WINDOWS QUICK START (Recommended)
+##------------------------------------
+# Option A — Automated (one command):
+cd ai_server
+python init_project.py
+
+# Option B — Batch installer (double-click):
+# Double-click: ai_server/install.bat
+
+## LINUX / macOS QUICK START
+## --------------------------
+cd ai_server
+chmod +x install.sh
+./install.sh
+
+## MANUAL STEP-BY-STEP
+## --------------------
+
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Download all models
+python download_models.py
+
+# 3. Verify setup
+python verify_environment.py
+
+# 4. Start inference server
+python inference_server.py
+
+## CONFIGURE ESP32-CAM IP
+## -----------------------
+# Edit ai_server/config.yaml:
+#   camera:
+#     esp32_ip: "192.168.YOUR.IP"
+# OR set from dashboard UI (Camera tab → Manual IP)
+
+## CONFIGURE MQTT BROKER
+## ----------------------
+# Edit ai_server/config.yaml:
+#   mqtt:
+#     broker: "your.emqx.host"
+#     username: "your_user"
+#     password: "your_pass"
+
+## RE-DOWNLOAD MODELS (force)
+## ---------------------------
+python download_models.py --force
+
+## TRAIN CUSTOM BLOOD DETECTOR
+## ----------------------------
+# Create dataset structure:
+python backend/training/train_blood_classifier.py --create-structure
+# Add images, then train:
+python backend/training/train_blood_classifier.py --data models/datasets/blood/ --epochs 50
+
+## API ENDPOINTS (once server is running)
+## ----------------------------------------
+# GET http://localhost:8000/api/status      — server + model status
+# GET http://localhost:8000/api/detections  — latest detection results
+# GET http://localhost:8000/api/models      — model registry
+# GET http://localhost:8000/api/health      — health check
+
+## GPU ACCELERATION (optional, recommended)
+## -----------------------------------------
+# CUDA 12.x:
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+# CUDA 11.8:
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+# CPU only (default):
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu

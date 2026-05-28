@@ -1,0 +1,100 @@
+blood:
+  hsv_lower:
+  - 0
+  - 120
+  - 70
+  hsv_upper:
+  - 10
+  - 255
+  - 255
+  method: hsv
+  min_area_px2: 800
+camera:
+  capture_url: http://{ip}/capture
+  esp32_ip: 192.168.1.100
+  reconnect_interval_sec: 5
+  stream_url: http://{ip}:81/stream
+  timeout_sec: 10
+detection:
+  alert_clear_sec: 5
+  fusion:
+    human_weight: 0.4
+    motion_weight: 0.25
+    posture_weight: 0.2
+    sensor_weight: 0.15
+  motion_min_contour_area: 500
+  posture_scores:
+    fallen: 0.85
+    sitting: 0.75
+    sos_wave: 0.95
+    standing: 0.6
+  survivor_threshold: 0.6
+inference:
+  device: cpu
+  half_precision: false
+  imgsz: 640
+  max_detections: 20
+  target_fps: 10
+logging:
+  level: INFO
+  log_dir: models/logs
+  max_log_files: 30
+  save_detections: true
+  save_snapshots: false
+models:
+  disaster_classifier:
+    num_classes: 4
+    path: models/weights/injury/mobilenetv3_disaster.pt
+    source: pytorch_pretrained
+  fire:
+    conf_threshold: 0.4
+    fallback: hsv
+    iou_threshold: 0.45
+    path: models/weights/fire/fire_yolov8n.pt
+    source: github_best_effort
+  person:
+    conf_threshold: 0.45
+    iou_threshold: 0.45
+    path: models/weights/person/yolo11n.pt
+    source: ultralytics
+  pose:
+    conf_threshold: 0.45
+    path: models/weights/pose/yolo11n-pose.pt
+    source: ultralytics
+  smoke:
+    conf_threshold: 0.35
+    fallback: hsv
+    iou_threshold: 0.4
+    path: models/weights/smoke/smoke_yolov8n.pt
+    source: github_best_effort
+motion:
+  detect_shadows: true
+  history: 500
+  method: MOG2
+  var_threshold: 16
+mqtt:
+  broker: broker.emqx.io
+  client_id: rescuebot_ai_server
+  password: ''
+  port: 1883
+  topics:
+    alerts: ares1/Robot/alerts
+    camera: ares1/Robot/camera
+    commands: ares1/Robot/commands
+    gps: ares1/Robot/gps
+    telemetry: ares1/Robot/telemetry
+  username: ''
+  ws_port: 8083
+  wss_port: 8084
+project:
+  name: RescueBOT AI Inference Server
+  team: BOT THINGS
+  version: 2.0.0
+server:
+  api_port: 8000
+  cors_origins:
+  - http://localhost:5173
+  - http://localhost:3000
+  - http://127.0.0.1:5173
+  host: 0.0.0.0
+  port: 8765

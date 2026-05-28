@@ -1,0 +1,28 @@
+# ── Model weights (large binaries — do not commit) ──────────
+ai_server/models/weights/**/*.pt
+ai_server/models/weights/**/*.pth
+ai_server/models/weights/**/*.onnx
+ai_server/models/weights/**/*.tflite
+ai_server/models/weights/**/*.bin
+
+# ── Keep .gitkeep placeholders ───────────────────────────────
+!ai_server/models/weights/**/.gitkeep
+
+# ── Runtime / Cache / Logs ───────────────────────────────────
+ai_server/models/cache/
+ai_server/models/downloads/
+ai_server/models/logs/*.log
+ai_server/models/logs/benchmark_results.json
+ai_server/models/logs/device_info.json
+ai_server/models/logs/verify_report.json
+
+# ── Python cache ─────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+
+# ── Temp download artifacts ───────────────────────────────────
+*.tmp
+*.part

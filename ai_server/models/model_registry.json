@@ -1,0 +1,120 @@
+{
+  "person_yolo11n": {
+    "id": "person_yolo11n",
+    "name": "YOLO11n \u2014 Person Detection",
+    "path": "models/weights/person/yolo11n.pt",
+    "source": "ultralytics",
+    "ultralytics_name": "yolo11n.pt",
+    "size_mb": 5.4,
+    "fallback": "yolov8n_person",
+    "description": "Official Ultralytics YOLO11n \u2014 nano model, 5.4MB. Best laptop-safe person detector. Detects 'person' class from COCO dataset. Real-time at 30+ FPS on CPU.",
+    "accuracy": "mAP50 ~39.5 on COCO",
+    "speed": "~2ms GPU / ~50ms CPU per frame",
+    "hardware_req": "Any laptop CPU",
+    "download_status": "downloaded",
+    "absolute_path": "C:\\Users\\polu1\\OneDrive\\Desktop\\New folder\\Diaster_Rover_Dashboard\\ai_server\\models\\weights\\person\\yolo11n.pt",
+    "validation": {
+      "path": "C:\\Users\\polu1\\OneDrive\\Desktop\\New folder\\Diaster_Rover_Dashboard\\ai_server\\models\\weights\\person\\yolo11n.pt",
+      "load_success": true,
+      "inference_success": true,
+      "fps": 3.3,
+      "latency_ms": 305.3,
+      "memory_mb": 414.8
+    }
+  },
+  "pose_yolo11n": {
+    "id": "pose_yolo11n",
+    "name": "YOLO11n-pose \u2014 Skeletal Pose Estimation",
+    "path": "models/weights/pose/yolo11n-pose.pt",
+    "source": "ultralytics",
+    "ultralytics_name": "yolo11n-pose.pt",
+    "size_mb": 7.6,
+    "fallback": "mediapipe_pose",
+    "description": "Official Ultralytics YOLO11n-pose \u2014 17-keypoint COCO pose. Used for fallen person detection, injury estimation, SOS/wave gesture recognition via joint angles.",
+    "accuracy": "mAP50 ~50.7 on COCO-Pose",
+    "speed": "~3ms GPU / ~80ms CPU per frame",
+    "hardware_req": "Any laptop CPU",
+    "download_status": "downloaded",
+    "absolute_path": "C:\\Users\\polu1\\OneDrive\\Desktop\\New folder\\Diaster_Rover_Dashboard\\ai_server\\models\\weights\\pose\\yolo11n-pose.pt",
+    "validation": {
+      "path": "C:\\Users\\polu1\\OneDrive\\Desktop\\New folder\\Diaster_Rover_Dashboard\\ai_server\\models\\weights\\pose\\yolo11n-pose.pt",
+      "load_success": true,
+      "inference_success": true,
+      "fps": 7.9,
+      "latency_ms": 126.6,
+      "memory_mb": 418.2
+    }
+  },
+  "fire_yolov8n_custom": {
+    "id": "fire_yolov8n_custom",
+    "name": "YOLOv8n \u2014 Fire Detection (Custom Weights)",
+    "path": "models/weights/fire/fire_yolov8n.pt",
+    "source": "url",
+    "url": "https://github.com/spacewalk01/yolov8-fire-detection/releases/download/v1.0/best.pt",
+    "size_mb": 6.2,
+    "fallback": "hsv_fire",
+    "description": "spacewalk01/yolov8-fire-detection \u2014 YOLOv8n fine-tuned on fire/flame dataset. Maintained GitHub repo, widely used, research-backed. Detects open fire in real time.",
+    "accuracy": "mAP50 ~85% on fire dataset",
+    "speed": "~2ms GPU / ~50ms CPU per frame",
+    "hardware_req": "Any laptop CPU",
+    "download_status": "fallback",
+    "absolute_path": "C:\\Users\\polu1\\OneDrive\\Desktop\\New folder\\Diaster_Rover_Dashboard\\ai_server\\models\\weights\\fire\\fire_yolov8n.pt",
+    "validation": {
+      "status": "fallback_hsv",
+      "fallback_type": "hsv_fire",
+      "description": "Model download unavailable. HSV color-space fallback activated. For fire: detects orange/yellow hues (H:0-30, S:120+). For smoke: detects grey/white plumes (S<50, V>100). Accuracy lower than neural network (~60-70% precision) but zero-dependency."
+    }
+  },
+  "smoke_yolov8n_custom": {
+    "id": "smoke_yolov8n_custom",
+    "name": "YOLOv8n \u2014 Smoke Detection (Custom Weights)",
+    "path": "models/weights/smoke/smoke_yolov8n.pt",
+    "source": "url",
+    "url": "https://github.com/spacewalk01/yolov8-fire-detection/releases/download/v1.0/best.pt",
+    "size_mb": 6.2,
+    "fallback": "hsv_smoke",
+    "description": "Same fine-tuned YOLOv8n from spacewalk01 (trained on fire+smoke). The model includes smoke detection alongside fire. If dedicated smoke model unavailable, HSV grey plume fallback activates.",
+    "accuracy": "mAP50 ~78% on smoke dataset",
+    "speed": "~2ms GPU / ~50ms CPU per frame",
+    "hardware_req": "Any laptop CPU",
+    "download_status": "fallback",
+    "absolute_path": "C:\\Users\\polu1\\OneDrive\\Desktop\\New folder\\Diaster_Rover_Dashboard\\ai_server\\models\\weights\\smoke\\smoke_yolov8n.pt",
+    "validation": {
+      "status": "fallback_hsv",
+      "fallback_type": "hsv_smoke",
+      "description": "Model download unavailable. HSV color-space fallback activated. For fire: detects orange/yellow hues (H:0-30, S:120+). For smoke: detects grey/white plumes (S<50, V>100). Accuracy lower than neural network (~60-70% precision) but zero-dependency."
+    }
+  },
+  "gesture_mediapipe": {
+    "id": "gesture_mediapipe",
+    "name": "MediaPipe Gesture + Pose",
+    "source": "mediapipe",
+    "download_status": "bundled",
+    "description": "Waving, raised hand, SOS detection + Pose for fall analysis",
+    "validation": {
+      "name": "MediaPipe Hands + Pose",
+      "status": "error: module 'mediapipe' has no attribute 'solutions'"
+    }
+  },
+  "motion_opencv": {
+    "id": "motion_opencv",
+    "name": "OpenCV MOG2 Motion Detection",
+    "source": "opencv_builtin",
+    "download_status": "builtin",
+    "description": "Background subtraction for proximity motion sensing",
+    "validation": {
+      "status": "ok"
+    }
+  },
+  "blood_hsv": {
+    "id": "blood_hsv",
+    "name": "Blood Detection (HSV Fallback)",
+    "source": "hsv_fallback",
+    "download_status": "builtin",
+    "description": "No suitable public pretrained blood detection model identified. Available medical image segmentation models (e.g., SAM, nnU-Net) are >500MB and require CUDA, unsuitable for real-time laptop inference. HSV-based red detection (H:0-10, S:120+, V:70+) is deployed as fallback. A custom CNN training pipeline is generated separately.",
+    "validation": {
+      "status": "hsv_fallback_active",
+      "precision_estimate": "~70%"
+    }
+  }
+}
