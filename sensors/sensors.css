@@ -11,10 +11,8 @@
 
 /* ── SENSOR CARD ─────────────────────────────────────────────── */
 .sensor-card {
-    background: rgba(14, 21, 32, 0.45) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-subtle) !important;
     border-radius: var(--radius-md) !important;
     padding: 10px 12px !important;
     display: flex;
@@ -24,7 +22,7 @@
     transition: border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
     position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 20px -8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    box-shadow: var(--shadow-sm) !important;
 }
 
 /* Color glowing background drop */
@@ -34,8 +32,6 @@
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
-    box-shadow: 0 0 18px -4px var(--card-color);
-    opacity: 0.08;
     transition: opacity var(--t-fast);
 }
 
@@ -45,34 +41,30 @@
 }
 
 .sensor-card:hover {
-    border-color: rgba(255, 255, 255, 0.12) !important;
-    box-shadow: 0 8px 30px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    border-color: var(--card-color, var(--border-strong)) !important;
+    box-shadow: var(--shadow-md) !important;
     transform: translateY(-1.5px);
 }
 
 .sensor-card:hover::after {
-    opacity: 0.2;
+    opacity: 0.1;
 }
 
 /* Alarm States */
 .sensor-card.alert-state {
-    border-color: rgba(239, 68, 68, 0.4) !important;
-    background: rgba(239, 68, 68, 0.04) !important;
-    box-shadow: 0 0 24px -6px rgba(239, 68, 68, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+    border-color: var(--status-danger) !important;
+    background: var(--status-danger-bg) !important;
 }
 .sensor-card.alert-state::after {
-    box-shadow: 0 0 24px -2px #EF4444;
-    opacity: 0.25;
+    display: none;
 }
 
 .sensor-card.warning-state {
-    border-color: rgba(245, 158, 11, 0.4) !important;
-    background: rgba(245, 158, 11, 0.04) !important;
-    box-shadow: 0 0 24px -6px rgba(245, 158, 11, 0.2) , inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+    border-color: var(--status-warn) !important;
+    background: var(--status-warn-bg) !important;
 }
 .sensor-card.warning-state::after {
-    box-shadow: 0 0 24px -2px #F59E0B;
-    opacity: 0.2;
+    display: none;
 }
 
 /* ── CARD HEADER ─────────────────────────────────────────────── */
@@ -294,13 +286,12 @@
     width: 54px;
     height: 54px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: radial-gradient(circle, rgba(236,72,153,0.03) 0%, rgba(0,0,0,0.3) 100%);
+    border: 1px solid var(--border-default);
+    background: var(--bg-elevated);
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6);
 }
 
 .bubble-crosshair-v, .bubble-crosshair-h {
@@ -325,14 +316,13 @@
 .bubble-level-ring.ring-2 { width: 38px; height: 38px; }
 
 .bubble-dot {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background: radial-gradient(circle, #ff60b5 0%, #d81b60 100%);
-    box-shadow: 0 0 6px rgba(236, 72, 153, 0.8);
+    background: var(--accent);
     position: absolute;
-    top: calc(50% - 3px);
-    left: calc(50% - 3px);
+    top: calc(50% - 4px);
+    left: calc(50% - 4px);
     transition: transform 0.25s cubic-bezier(0.1, 0.8, 0.3, 1) !important;
 }
 
@@ -404,7 +394,7 @@
 
 .seismic-bar {
     width: 5%;
-    background: linear-gradient(180deg, #10B981 0%, rgba(16, 185, 129, 0.2) 100%);
+    background: var(--status-ok);
     border-radius: 1px 1px 0 0;
     min-height: 2px;
     transition: height 0.15s cubic-bezier(0.1, 0.8, 0.3, 1) !important;
@@ -447,13 +437,11 @@
 
 .sensor-card.alert-state .fire-icon-pulsar {
     background: rgba(239, 68, 68, 0.15) !important;
-    border-color: #EF4444 !important;
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
-    animation: firePulse 0.8s ease-in-out infinite alternate;
+    border-color: var(--status-danger) !important;
 }
 
 .sensor-card.alert-state .fire-icon-pulsar::after {
-    animation: fireRippleOut 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+    display: none;
 }
 
 @keyframes firePulse {
@@ -510,12 +498,11 @@
     width: 54px; /* Compressed radar size */
     height: 54px;
     border-radius: 50%;
-    border: 1px solid rgba(6, 182, 212, 0.15);
-    background: radial-gradient(circle, rgba(6,182,212,0.02) 0%, rgba(0,0,0,0.3) 100%);
+    border: 1px solid rgba(6, 182, 212, 0.25);
+    background: var(--bg-elevated);
     position: relative;
     overflow: hidden;
     margin: 0 auto;
-    box-shadow: inset 0 0 8px rgba(0,0,0,0.6);
 }
 
 .radar-sweep-line {
@@ -618,20 +605,20 @@
 
 .proximity-arch.arch-green {
     width: 50px; height: 50px;
-    border-top-color: #10B981;
-    border-right-color: #10B981;
+    border-top-color: var(--status-ok);
+    border-right-color: var(--status-ok);
     top: 10px;
 }
 .proximity-arch.arch-amber {
     width: 36px; height: 36px;
-    border-top-color: #F59E0B;
-    border-right-color: #F59E0B;
+    border-top-color: var(--status-warn);
+    border-right-color: var(--status-warn);
     top: 18px;
 }
 .proximity-arch.arch-red {
     width: 22px; height: 22px;
-    border-top-color: #EF4444;
-    border-right-color: #EF4444;
+    border-top-color: var(--status-danger);
+    border-right-color: var(--status-danger);
     top: 25px;
 }
 

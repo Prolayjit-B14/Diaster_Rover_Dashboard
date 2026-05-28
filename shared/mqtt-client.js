@@ -149,8 +149,28 @@ class MqttController {
         try {
             const data = JSON.parse(payload);
             switch (topic) {
-                case this.config.topics.telemetry: this.emit('telemetry', data);      break;
-                case this.config.topics.gps:       this.emit('gps', data);            break;
+                case this.config.topics.telemetry:
+                    this.emit('telemetry', data);
+                    // Bridge GPS sensor values published over telemetry topic
+                    if (data && data.sensor === 'gps' && data.value) {
+                        const val = data.value;
+                        const gpsData = {
+                            lat: parseFloat(val.lat),
+                            lng: parseFloat(val.lng),
+                            speed: parseFloat(val.speed) || 0,
+                            heading: parseFloat(val.heading) || 0,
+                            satellites: val.sats !== undefined ? val.sats : val.satellites,
+                            accuracy: parseFloat(val.accuracy) || 0,
+                            status: val.status || '3D FIX'
+                        };
+                        if (!isNaN(gpsData.lat) && !isNaN(gpsData.lng)) {
+                            this.emit('gps', gpsData);
+                        }
+                    }
+                    break;
+                case this.config.topics.gps:
+                    this.emit('gps', data);
+                    break;
                 case this.config.topics.camera:    this.emit('camera', data);         break;
                 case this.config.topics.alerts:    this.emit('alerts', data);         break;
                 case this.config.topics.status:    this.emit('hardwareStatus', data); break;

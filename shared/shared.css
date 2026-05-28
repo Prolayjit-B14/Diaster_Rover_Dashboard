@@ -560,8 +560,7 @@ html, body {
 .nav-item:hover svg,
 .nav-item:hover i {
   color: var(--accent-bright) !important;
-  filter: drop-shadow(0 0 6px rgba(96, 165, 250, 0.4));
-  transform: scale(1.05);
+  transform: scale(1.03);
 }
 
 .nav-item.active {
@@ -573,7 +572,6 @@ html, body {
 .nav-item.active svg,
 .nav-item.active i {
   color: var(--accent-bright) !important;
-  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
 }
 
 .nav-label  { display: none; }
@@ -1316,6 +1314,8 @@ html, body {
   .nav-breadcrumb { display: none !important; }
 }
 
+/* Theme toggle elements are displayed by default using their parent classes (.icon-btn, etc.) */
 #theme-toggle, #landing-theme-toggle, .theme-toggle-btn, .nav-theme-btn {
-  display: none !important;
+  display: flex !important;
 }
+

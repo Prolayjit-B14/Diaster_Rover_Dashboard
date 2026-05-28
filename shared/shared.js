@@ -9,25 +9,29 @@
  */
 
 /* ── THEME INIT (run immediately, before DOMContentLoaded)
-       Enforces dark theme and disables light mode          ── */
+       Enforces user selected or default dark theme         ── */
 ;(function applyThemeEarly() {
-    document.documentElement.setAttribute('data-theme', 'dark');
-    localStorage.setItem('rescuebot-theme', 'dark');
+    const savedTheme = localStorage.getItem('rescuebot-theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
 })();
 
 /* ── HELPERS ─────────────────────────────────────────────────── */
 
 function getCurrentTheme() {
-    return 'dark';
+    return document.documentElement.getAttribute('data-theme') || 'dark';
 }
 
 function setTheme(theme) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-    localStorage.setItem('rescuebot-theme', 'dark');
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('rescuebot-theme', theme);
+    updateThemeIcons(theme);
+    window.dispatchEvent(new CustomEvent('ares:themeChanged', { detail: theme }));
 }
 
 function toggleTheme() {
-    // Disabled - dark theme only
+    const current = getCurrentTheme();
+    const next = current === 'dark' ? 'light' : 'dark';
+    setTheme(next);
 }
 
 function updateThemeIcons(theme) {
@@ -35,17 +39,16 @@ function updateThemeIcons(theme) {
     // In light mode → show moon icon (to switch to dark)
     const iconName = theme === 'dark' ? 'sun' : 'moon';
 
-    document.querySelectorAll('[id="theme-toggle"], .theme-toggle-btn').forEach(btn => {
-        const icon = btn.querySelector('i[data-lucide], svg');
-        if (icon && icon.tagName === 'I') {
-            icon.setAttribute('data-lucide', iconName);
-            if (window.lucide) window.lucide.createIcons({ nodes: [icon] });
-        }
+    document.querySelectorAll('[id="theme-toggle"], [id="landing-theme-toggle"], .theme-toggle-btn, .nav-theme-btn').forEach(btn => {
+        btn.innerHTML = `<i data-lucide="${iconName}"></i>`;
+        if (window.lucide) window.lucide.createIcons({ nodes: [btn] });
+        
         const label = theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode';
         btn.setAttribute('title', label);
         btn.setAttribute('aria-label', label);
     });
 }
+
 
 /* ── MAIN DOM READY ─────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
@@ -76,9 +79,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* ── THEME TOGGLE BUTTON ─────────────────────────────────── */
-    document.querySelectorAll('#theme-toggle, .theme-toggle-btn').forEach(btn => {
+    document.querySelectorAll('#theme-toggle, #landing-theme-toggle, .theme-toggle-btn, .nav-theme-btn').forEach(btn => {
         btn.addEventListener('click', toggleTheme);
     });
+
 
     /* ── SIDEBAR COLLAPSE (not used in icon-only mode) ─────────── */
     const collapseBtn = document.getElementById('sidebar-collapse-btn');
@@ -160,9 +164,17 @@ window.RESCUEBOT_UI = {
 
     toast(message, type = 'info') {
         const isLight = getCurrentTheme() === 'light';
-        const bg      = isLight ? '#FFFFFF' : '#1E2840';
-        const color   = isLight ? '#0F172A' : '#F1F5F9';
-        const border  = isLight ? '#E2E8F0' : 'rgba(255,255,255,0.1)';
+        const bg      = isLight ? '#FFFFFF' : '#0E1520';
+        const color   = isLight ? '#0F172A' : '#EFF2F7';
+        const border  = isLight ? '#E2E8F0' : 'rgba(255,255,255,0.08)';
+
+        const accentColors = {
+            success: '#22C55E',
+            error: '#EF4444',
+            warning: '#F59E0B',
+            info: '#3B82F6'
+        };
+        const accent = accentColors[type] || accentColors.info;
 
         // Remove existing toast of same type to prevent stacking
         const existing = document.querySelector(`.rescuebot-toast[data-type="${type}"]`);
@@ -173,12 +185,12 @@ window.RESCUEBOT_UI = {
         toast.dataset.type = type;
         toast.style.cssText = `
             position:fixed; bottom:24px; right:24px; z-index:9999;
-            background:${bg}; border:1px solid ${border};
-            color:${color}; padding:12px 20px; border-radius:8px;
-            font-family:'Inter',system-ui,sans-serif; font-size:13px; font-weight:500;
-            box-shadow:0 4px 20px rgba(0,0,0,0.25);
+            background:${bg}; border:1px solid ${border}; border-left: 4px solid ${accent};
+            color:${color}; padding:12px 18px; border-radius:6px;
+            font-family:var(--font-body),sans-serif; font-size:12.5px; font-weight:500;
+            box-shadow:0 4px 12px rgba(0,0,0,0.15);
             max-width:320px; opacity:0; transform:translateY(8px);
-            transition:opacity 0.25s ease, transform 0.25s ease;
+            transition:opacity 0.22s ease, transform 0.22s ease;
             pointer-events:none;
         `;
         toast.textContent = message;

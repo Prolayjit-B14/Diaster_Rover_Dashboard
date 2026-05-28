@@ -22,7 +22,7 @@
             height: 52px;
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 36px;
-            background: rgba(9, 13, 23, 0.96);
+            background: var(--navbar-bg);
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
             border-bottom: 1px solid var(--border-subtle);
@@ -144,9 +144,7 @@
         }
 
         .hero-title .accent {
-            background: linear-gradient(135deg, var(--accent-bright) 0%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--accent);
             display: inline-block;
         }
 
@@ -183,8 +181,8 @@
         .cta-primary:hover {
             background: var(--accent-dim);
             border-color: var(--accent-dim);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px -8px rgba(59, 130, 246, 0.5);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
         }
 
         .cta-primary svg { width: 16px; height: 16px; }
@@ -205,8 +203,8 @@
             background: var(--bg-card);
             border-color: var(--border-strong);
             color: var(--text-primary);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.3);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-xs);
         }
 
         .cta-secondary svg { width: 16px; height: 16px; }
@@ -313,7 +311,7 @@
         }
 
         .feature-card {
-            background: rgba(30, 35, 45, 0.6);
+            background: var(--bg-card);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border-subtle);
@@ -323,7 +321,7 @@
             cursor: default;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-sm);
         }
 
         .feature-card::after {
@@ -417,26 +415,15 @@
 
         .landing-footer strong { color: var(--text-secondary); font-weight: 500; }
 
-        /* ── SUBTLE GRID BG + ORB ────────────────────────────────────── */
+        /* ── SUBTLE GRID BG ────────────────────────────────────── */
         .grid-bg {
             position: fixed; inset: 0; z-index: 0;
-            background-color: var(--bg-default);
+            background-color: var(--bg-base);
             background-image:
-                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+                linear-gradient(var(--border-subtle) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
             background-size: 64px 64px;
             pointer-events: none;
-        }
-
-        .grid-bg::after {
-            content: '';
-            position: absolute;
-            top: 20%; left: 50%;
-            width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
-            transform: translate(-50%, -50%);
-            filter: blur(60px);
-            animation: pulseOrb 8s ease-in-out infinite alternate;
         }
 
         /* ── ANIMATIONS ──────────────────────────────────────────── */
@@ -716,18 +703,7 @@
         
         document.querySelectorAll('.counter').forEach(c => counterObserver.observe(c));
 
-        // ── THEME TOGGLE ─────────────────────────────────────────
-        const themeBtn = document.getElementById('landing-theme-toggle');
-        function applyTheme(t) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            localStorage.setItem('rescuebot-theme', 'dark');
-        }
-        applyTheme('dark');
-        if (themeBtn) {
-            themeBtn.addEventListener('click', () => {
-                applyTheme('dark');
-            });
-        }
     </script>
+    <script type="module" src="./shared/shared.js"></script>
 </body>
 </html>

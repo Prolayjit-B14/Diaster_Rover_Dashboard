@@ -1,7 +1,356 @@
-/* 
- * RescueBOT — Tactical Map CSS (Deprecated)
- * 
- * NOTE: This file has been migrated directly into map.html to satisfy the requirement
- * for a single, complete, copy-pasteable HTML file. All map layout, styles, and logic
- * now reside inside map.html.
- */
+/* ============================================================
+   TACTICAL GIS MAP PAGE — Premium Clean HUD Redesign
+   ============================================================ */
+
+/* ── EMERGENCY ALERT RED FLASH OVERLAY ──────────────────────────────── */
+.emergency-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    pointer-events: none;
+    opacity: 0;
+    box-shadow: inset 0 0 100px rgba(239, 68, 68, 0);
+    transition: opacity 0.5s ease;
+}
+.emergency-overlay.active {
+    opacity: 1;
+    animation: pulseRedFlash 1.8s infinite;
+}
+@keyframes pulseRedFlash {
+    0%, 100% { box-shadow: inset 0 0 80px rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.03); }
+    50% { box-shadow: inset 0 0 140px rgba(239, 68, 68, 0.7); background: rgba(239, 68, 68, 0.12); }
+}
+
+/* Flashing warning banner */
+.geofence-alert-banner {
+    position: absolute;
+    top: 66px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(239, 68, 68, 0.95);
+    color: #ffffff;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 8px 24px;
+    border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+    z-index: 99998;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-transform: uppercase;
+}
+.geofence-alert-banner.active {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.geofence-alert-banner i {
+    animation: pulseIcon 1s infinite alternate;
+}
+@keyframes pulseIcon {
+    from { transform: scale(1); }
+    to { transform: scale(1.2); }
+}
+
+/* ── MAP LAYOUT STRUCTURE ───────────────────────────────────────────── */
+.map-shell {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+#map-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* ── FLOATING TACTICAL TOOLBAR (TOP MIDDLE HUD STRIP) ───────────────── */
+.map-floating-tools {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background: rgba(11, 15, 25, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: var(--space-1);
+    gap: var(--space-1);
+    pointer-events: auto;
+    z-index: 1000;
+    box-shadow: var(--shadow-md);
+}
+[data-theme="light"] .map-floating-tools {
+    background: rgba(255, 255, 255, 0.94);
+}
+
+.map-tool-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--border-subtle);
+    align-self: center;
+    margin: 0 4px;
+    flex-shrink: 0;
+}
+
+/* ── TOOL STRIP BUTTONS ────────────────────────────────────────────── */
+.map-tool-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--btn-color, var(--text-secondary));
+    cursor: pointer;
+    transition: var(--t-fast);
+    flex-shrink: 0;
+    position: relative;
+}
+.map-tool-btn svg,
+.map-tool-btn i {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+.map-tool-btn:hover {
+    color: #ffffff;
+    background: var(--btn-color, var(--accent)) !important;
+}
+[data-theme="light"] .map-tool-btn:hover {
+    color: #ffffff !important;
+}
+.map-tool-btn.active {
+    color: #ffffff !important;
+    background: var(--btn-color, var(--accent)) !important;
+}
+
+/* ── CUSTOM TACTICAL TOOLTIPS ───────────────────────────────────────── */
+.map-tool-btn::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    background: rgba(11, 15, 25, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-default);
+    color: var(--text-primary);
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+}
+.map-tool-btn::before {
+    content: '';
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent var(--border-default) transparent;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 9999;
+}
+.map-tool-btn:hover::after,
+.map-tool-btn:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
+/* ── HUD BOTTOM COORDINATES PANELS ───────────────────────────────────── */
+.map-hud-bottom {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: var(--space-3);
+    pointer-events: auto;
+}
+.map-hud-card {
+    background: rgba(11, 15, 25, 0.90);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 10px 16px;
+    text-align: center;
+    min-width: 90px;
+    transition: border-color var(--t-fast);
+    box-shadow: var(--shadow-sm);
+}
+[data-theme="light"] .map-hud-card {
+    background: rgba(255, 255, 255, 0.94);
+}
+.map-hud-card:hover {
+    border-color: var(--border-accent);
+}
+.hud-card-val {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1;
+    white-space: nowrap;
+}
+.hud-card-lbl {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* ── RIGHT ZOOM & RECENTER CONTROLS (UNIFIED HUD STRIP) ──────────────── */
+.map-tools-right {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    background: rgba(11, 15, 25, 0.88);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: var(--space-1);
+    gap: var(--space-1);
+    pointer-events: auto;
+    z-index: 1000;
+    box-shadow: var(--shadow-md);
+}
+[data-theme="light"] .map-tools-right {
+    background: rgba(255, 255, 255, 0.94);
+}
+
+.map-zoom-btn {
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--btn-color, var(--text-secondary));
+    transition: var(--t-fast);
+}
+.map-zoom-btn svg,
+.map-zoom-btn i {
+    width: 14px;
+    height: 14px;
+}
+.map-zoom-btn:hover {
+    color: #ffffff;
+    background: var(--btn-color, var(--accent)) !important;
+}
+[data-theme="light"] .map-zoom-btn:hover {
+    color: #ffffff !important;
+}
+.map-zoom-btn.active {
+    color: #ffffff !important;
+    background: var(--btn-color, var(--accent)) !important;
+}
+
+.map-zoom-divider {
+    height: 1px;
+    background: var(--border-subtle);
+    margin: 2px 4px;
+}
+
+/* ── LEAFLET CUSTOM POPUPS OVERRIDES ────────────────────────────────── */
+.leaflet-popup-content-wrapper {
+    background: #101624 !important;
+    color: #EFF2F7 !important;
+    border: 1px solid var(--border-default) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-lg) !important;
+    padding: 2px !important;
+}
+[data-theme="light"] .leaflet-popup-content-wrapper {
+    background: #ffffff !important;
+    color: #0F172A !important;
+    border: 1px solid var(--border-default) !important;
+}
+.leaflet-popup-tip {
+    background: #101624 !important;
+}
+[data-theme="light"] .leaflet-popup-tip {
+    background: #ffffff !important;
+}
+.leaflet-popup-close-button {
+    color: var(--text-muted) !important;
+    font-size: 14px !important;
+    padding: 4px 8px !important;
+}
+.leaflet-popup-close-button:hover {
+    color: var(--accent) !important;
+}
+
+/* ── COMPASS NEEDLE GLOW FOR ROVER ──────────────────────────────────── */
+@keyframes pulseCompass {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3), 0 0 4px rgba(59, 130, 246, 0.6); }
+    50%       { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0), 0 0 10px rgba(59, 130, 246, 0.7); }
+}
+.rover-pulse-ring {
+    width: 18px; height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 2.5px solid #ffffff;
+    box-shadow: 0 0 6px rgba(59, 130, 246, 0.7);
+    animation: pulseCompass 2s ease-in-out infinite;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2;
+}
+.rover-pulse-dot {
+    width: 5px; height: 5px;
+    background: #ffffff;
+    border-radius: 50%;
+}
+.rover-compass-heading {
+    position: absolute;
+    top: -6px; left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 8px solid var(--accent);
+    z-index: 3;
+    transition: transform 0.15s ease;
+}
+
+/* Mobile adjustment for HUD overlays */
+@media (max-width: 900px) {
+    .map-floating-tools {
+        max-width: calc(100vw - 32px);
+        overflow-x: auto;
+        white-space: nowrap;
+        justify-content: flex-start;
+        padding: 4px;
+    }
+}

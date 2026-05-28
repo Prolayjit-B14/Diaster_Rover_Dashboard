@@ -256,21 +256,20 @@
     border-radius: var(--radius-sm);
     min-width: 120px;
     pointer-events: none;
-    animation: bboxFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 0 12px var(--hud-glow-color, rgba(59, 130, 246, 0.45));
+    animation: bboxFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes bboxFadeIn {
-    from { opacity: 0; transform: scale(0.96); }
+    from { opacity: 0; transform: scale(0.97); }
     to   { opacity: 1; transform: scale(1); }
 }
 
-.hud-bbox.human  { border-color: var(--status-ok); --hud-glow-color: rgba(34, 197, 94, 0.45); }
-.hud-bbox.hazard { border-color: var(--status-warn); --hud-glow-color: rgba(245, 158, 11, 0.45); }
-.hud-bbox.fire   { border-color: var(--status-danger); --hud-glow-color: rgba(239, 68, 68, 0.55); }
-.hud-bbox.motion { border-color: var(--accent); --hud-glow-color: rgba(59, 130, 246, 0.45); }
-.hud-bbox.smoke-box { border-color: #f97316; --hud-glow-color: rgba(249, 115, 22, 0.45); }
-.hud-bbox.face-box  { border-color: #3b82f6; --hud-glow-color: rgba(59, 130, 246, 0.45); }
+.hud-bbox.human  { border-color: var(--status-ok); }
+.hud-bbox.hazard { border-color: var(--status-warn); }
+.hud-bbox.fire   { border-color: var(--status-danger); }
+.hud-bbox.motion { border-color: var(--accent); }
+.hud-bbox.smoke-box { border-color: #f97316; }
+.hud-bbox.face-box  { border-color: #3b82f6; }
 
 .bbox-label {
     position: absolute;
@@ -433,13 +432,46 @@
 }
 
 .tuning-input {
+    -webkit-appearance: none;
+    appearance: none;
     width: 100%;
-    accent-color: var(--accent);
-    height: 3px;
-    cursor: pointer;
-    background: var(--bg-elevated);
-    border-radius: 2px;
+    height: 4px;
+    background: var(--border-default);
+    border-radius: var(--radius-full);
     outline: none;
+    cursor: pointer;
+    transition: background var(--t-fast);
+}
+
+.tuning-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2.5px solid var(--bg-surface);
+    transition: transform var(--t-fast), background var(--t-fast);
+}
+
+.tuning-input::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    background: var(--accent-bright);
+}
+
+.tuning-input::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2.5px solid var(--bg-surface);
+    transition: transform var(--t-fast), background var(--t-fast);
+    cursor: pointer;
+}
+
+.tuning-input::-moz-range-thumb:hover {
+    transform: scale(1.15);
+    background: var(--accent-bright);
 }
 
 .tuning-select,
@@ -713,19 +745,12 @@ details[open] summary .chevron-icon {
    7-STAGE AI PIPELINE COMPONENT STYLES
    ============================================================ */
 
-/* ── HAZARD BANNER ─────────────────────────────────────────── */
 .scene-hazard-banner {
     display: none; /* Shown dynamically via JS */
     background: var(--status-danger-bg);
-    border-bottom: 1px solid var(--status-danger-bd);
+    border-bottom: 2px solid var(--status-danger-bd);
     padding: 10px var(--space-5);
-    animation: bannerPulse 1.6s ease-in-out infinite alternate;
     z-index: 10;
-}
-
-@keyframes bannerPulse {
-    0%   { background-color: rgba(239, 68, 68, 0.12); box-shadow: inset 0 0 12px rgba(239, 68, 68, 0.15); }
-    100% { background-color: rgba(239, 68, 68, 0.32); box-shadow: inset 0 0 24px rgba(239, 68, 68, 0.35); }
 }
 
 .scene-hazard-banner.hazard-critical {
@@ -888,13 +913,11 @@ details[open] summary .chevron-icon {
 
 .detection-tile.triggered {
     border-color: var(--accent);
-    box-shadow: 0 0 10px rgba(79, 70, 229, 0.25);
     transform: translateY(-1px);
 }
 
 .detection-tile.danger-triggered {
     border-color: var(--status-danger);
-    box-shadow: 0 0 10px rgba(239, 68, 68, 0.25);
     transform: translateY(-1px);
 }
 
@@ -1047,7 +1070,6 @@ details[open] summary .chevron-icon {
 /* ── Bounding Box Customizations ────────────────────────────── */
 .hud-bbox.smoke-box {
     border-color: rgba(156, 163, 175, 0.85);
-    box-shadow: 0 0 8px rgba(156, 163, 175, 0.4);
 }
 
 .hud-bbox.smoke-box .bbox-label {
@@ -1055,12 +1077,7 @@ details[open] summary .chevron-icon {
 }
 
 .hud-bbox.fire {
-    animation: fireGlow 1.5s ease-in-out infinite alternate;
-}
-
-@keyframes fireGlow {
-    from { box-shadow: 0 0 4px rgba(239, 68, 68, 0.4); }
-    to { box-shadow: 0 0 16px rgba(239, 68, 68, 0.8); }
+    border-color: var(--status-danger);
 }
 
 /* ── ENVIRONMENTAL RISK PANEL ────────────────────────────────── */

@@ -23,418 +23,7 @@
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <style>
-        /* ── EMBEDDED COMPACT DESIGN SYSTEM & LAYOUT OVERRIDES ──────────────── */
-        :root {
-            --bg-base: #090D17;
-            --bg-deep: #0C1120;
-            --bg-surface: #101624;
-            --bg-card: #151C2C;
-            --bg-elevated: #1A2236;
-            --accent: #3B82F6;
-            --accent-muted: rgba(59, 130, 246, 0.1);
-            --border-subtle: rgba(255, 255, 255, 0.045);
-            --border-default: rgba(255, 255, 255, 0.08);
-            --border-accent: rgba(59, 130, 246, 0.28);
-            --text-primary: #EFF2F7;
-            --text-secondary: #8E9BB5;
-            --text-muted: #4B5570;
-            --radius-sm: 5px;
-            --radius-md: 7px;
-            --radius-lg: 10px;
-            --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-            --font-mono: 'JetBrains Mono', 'Courier New', monospace;
-            --shadow-md: 0 4px 14px rgba(0,0,0,0.5);
-            --shadow-lg: 0 8px 28px rgba(0,0,0,0.6);
-            --sidebar-w: 52px;
-            --nav-h: 52px;
-            
-            /* Spacing & Transitions */
-            --space-1: 4px;
-            --space-2: 8px;
-            --space-3: 12px;
-            --space-4: 16px;
-            --space-5: 20px;
-            --t-fast: 150ms ease;
-            --t-med: 220ms cubic-bezier(0.4, 0, 0.2, 1);
-        }
 
-        [data-theme="light"] {
-            --bg-base: #F5F7FA;
-            --bg-deep: #EEF1F7;
-            --bg-surface: #FFFFFF;
-            --bg-card: #FFFFFF;
-            --bg-elevated: #F0F4FA;
-            --accent: #2563EB;
-            --accent-muted: rgba(37, 99, 235, 0.07);
-            --border-subtle: rgba(0, 0, 0, 0.05);
-            --border-default: rgba(0, 0, 0, 0.09);
-            --border-accent: rgba(37, 99, 235, 0.22);
-            --text-primary: #0F172A;
-            --text-secondary: #374151;
-            --text-muted: #9CA3AF;
-        }
-
-        /* Full screen layout resets */
-        html, body {
-            margin: 0; padding: 0;
-            height: 100%; width: 100%;
-            overflow: hidden;
-            background-color: var(--bg-base);
-            color: var(--text-primary);
-            font-family: var(--font-body);
-        }
-
-        /* ── EMERGENCY ALERT RED FLASH OVERLAY ──────────────────────────────── */
-        .emergency-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 99999;
-            pointer-events: none;
-            opacity: 0;
-            box-shadow: inset 0 0 100px rgba(239, 68, 68, 0);
-            transition: opacity 0.5s ease;
-        }
-        .emergency-overlay.active {
-            opacity: 1;
-            animation: pulseRedFlash 1.8s infinite;
-        }
-        @keyframes pulseRedFlash {
-            0%, 100% { box-shadow: inset 0 0 80px rgba(239, 68, 68, 0.45); background: rgba(239, 68, 68, 0.03); }
-            50% { box-shadow: inset 0 0 140px rgba(239, 68, 68, 0.7); background: rgba(239, 68, 68, 0.12); }
-        }
-
-        /* Flashing warning banner */
-        .geofence-alert-banner {
-            position: absolute;
-            top: 66px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-20px);
-            background: rgba(239, 68, 68, 0.95);
-            color: #ffffff;
-            font-family: var(--font-mono);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            padding: 8px 24px;
-            border-radius: 4px;
-            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
-            z-index: 99998;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-transform: uppercase;
-        }
-        .geofence-alert-banner.active {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-        .geofence-alert-banner i {
-            animation: pulseIcon 1s infinite alternate;
-        }
-        @keyframes pulseIcon {
-            from { transform: scale(1); }
-            to { transform: scale(1.2); }
-        }
-
-
-
-        /* ── MAP LAYOUT STRUCTURE ───────────────────────────────────────────── */
-        .map-shell {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-        #map-canvas {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-
-        /* ── FLOATING TACTICAL TOOLBAR (LEFT SIDEBAR HUD) ────────────────────── */
-        .map-hud-overlay {
-            position: absolute;
-            z-index: 1000;
-            pointer-events: none;
-        }
-        .map-floating-tools {
-            position: absolute;
-            top: 14px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: row;
-            gap: 6px;
-            pointer-events: auto;
-            z-index: 1000;
-        }
-        .map-tool-divider {
-            width: 1px;
-            height: 20px;
-            background: var(--border-subtle);
-            align-self: center;
-            margin: 0 4px;
-            flex-shrink: 0;
-        }
-
-        /* ── TOOL STRIP BUTTONS ────────────────────────────────────────────── */
-        .map-tool-btn {
-            width: 34px;
-            height: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(11, 15, 25, 0.88);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-sm);
-            color: var(--btn-color, var(--text-secondary));
-            cursor: pointer;
-            transition: var(--t-fast);
-            flex-shrink: 0;
-        }
-        [data-theme="light"] .map-tool-btn {
-            background: rgba(255, 255, 255, 0.94);
-        }
-        .map-tool-btn svg,
-        .map-tool-btn i {
-            width: 14px;
-            height: 14px;
-            flex-shrink: 0;
-        }
-        .map-tool-btn:hover {
-            border-color: var(--btn-color, var(--border-accent));
-            color: #0B0F19;
-            background: var(--btn-color, var(--accent)) !important;
-            box-shadow: 0 0 10px var(--btn-color);
-        }
-        .map-tool-btn.active {
-            border-color: var(--btn-color, var(--border-accent)) !important;
-            color: #0B0F19 !important;
-            background: var(--btn-color, var(--accent)) !important;
-            box-shadow: 0 0 14px var(--btn-color) !important;
-        }
-
-        /* ── CUSTOM TACTICAL TOOLTIPS ───────────────────────────────────────── */
-        .map-tool-btn {
-            position: relative;
-        }
-        .map-tool-btn::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            top: calc(100% + 8px);
-            left: 50%;
-            transform: translateX(-50%) scale(0.9);
-            background: rgba(11, 15, 25, 0.95);
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--btn-color, var(--border-default));
-            color: var(--text-primary);
-            padding: 6px 10px;
-            font-size: 11px;
-            font-weight: 500;
-            border-radius: var(--radius-sm);
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.15s ease, transform 0.15s ease;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 4px var(--btn-color);
-            z-index: 9999;
-        }
-        .map-tool-btn::before {
-            content: '';
-            position: absolute;
-            top: calc(100% + 2px);
-            left: 50%;
-            transform: translateX(-50%) scale(0.9);
-            border-width: 5px;
-            border-style: solid;
-            border-color: transparent transparent var(--btn-color, var(--border-default)) transparent;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.15s ease, transform 0.15s ease;
-            z-index: 9999;
-        }
-        .map-tool-btn:hover::after,
-        .map-tool-btn:hover::before {
-            opacity: 1;
-            transform: translateX(-50%) scale(1);
-        }
-
-        /* ── HUD BOTTOM COORDINATES PANELS ───────────────────────────────────── */
-        .map-hud-bottom {
-            position: absolute;
-            bottom: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: var(--space-3);
-            pointer-events: auto;
-        }
-        .map-hud-card {
-            background: rgba(11, 15, 25, 0.90);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-md);
-            padding: 10px 16px;
-            text-align: center;
-            min-width: 90px;
-            transition: border-color var(--t-fast);
-            box-shadow: var(--shadow-sm);
-        }
-        [data-theme="light"] .map-hud-card {
-            background: rgba(255, 255, 255, 0.94);
-        }
-        .map-hud-card:hover {
-            border-color: var(--border-accent);
-        }
-        .hud-card-val {
-            font-family: var(--font-mono);
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-primary);
-            line-height: 1;
-            white-space: nowrap;
-        }
-        .hud-card-lbl {
-            font-size: 9px;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        /* ── RIGHT ZOOM & RECENTER CONTROLS ─────────────────────────────────── */
-        .map-tools-right {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-1);
-            pointer-events: auto;
-            z-index: 1000;
-        }
-        .map-zoom-btn {
-            width: 34px;
-            height: 34px;
-            background: rgba(11, 15, 25, 0.88);
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--btn-color, var(--text-secondary));
-            transition: var(--t-fast);
-        }
-        [data-theme="light"] .map-zoom-btn {
-            background: rgba(255, 255, 255, 0.94);
-        }
-        .map-zoom-btn svg,
-        .map-zoom-btn i {
-            width: 14px;
-            height: 14px;
-        }
-        .map-zoom-btn:hover {
-            border-color: var(--btn-color, var(--border-accent));
-            color: #0B0F19;
-            background: var(--btn-color, var(--accent)) !important;
-            box-shadow: 0 0 10px var(--btn-color);
-        }
-        .map-zoom-btn.active {
-            border-color: var(--btn-color, var(--border-accent));
-            color: #0B0F19 !important;
-            background: var(--btn-color, var(--accent)) !important;
-            box-shadow: 0 0 14px var(--btn-color);
-        }
-        .map-zoom-divider {
-            height: 1px;
-            background: var(--border-subtle);
-            margin: 2px 4px;
-        }
-
-        /* ── LEAFLET CUSTOM POPUPS OVERRIDES ────────────────────────────────── */
-        .leaflet-popup-content-wrapper {
-            background: #151C2C !important;
-            color: #EFF2F7 !important;
-            border: 1px solid rgba(59, 130, 246, 0.25) !important;
-            border-radius: var(--radius-md) !important;
-            box-shadow: var(--shadow-lg) !important;
-            padding: 2px !important;
-        }
-        [data-theme="light"] .leaflet-popup-content-wrapper {
-            background: #ffffff !important;
-            color: #0F172A !important;
-            border: 1px solid rgba(37, 99, 235, 0.15) !important;
-        }
-        .leaflet-popup-tip {
-            background: #151C2C !important;
-        }
-        [data-theme="light"] .leaflet-popup-tip {
-            background: #ffffff !important;
-        }
-        .leaflet-popup-close-button {
-            color: var(--text-muted) !important;
-            font-size: 14px !important;
-            padding: 4px 8px !important;
-        }
-        .leaflet-popup-close-button:hover {
-            color: var(--accent) !important;
-        }
-
-        /* ── COMPASS NEEDLE GLOW FOR ROVER ──────────────────────────────────── */
-        @keyframes pulseCompass {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.4), 0 0 10px rgba(0, 212, 255, 0.8); }
-            50%       { box-shadow: 0 0 0 10px rgba(0, 212, 255, 0), 0 0 18px rgba(0, 212, 255, 0.9); }
-        }
-        .rover-pulse-ring {
-            width: 18px; height: 18px;
-            background: #00D4FF;
-            border-radius: 50%;
-            border: 2.5px solid #ffffff;
-            box-shadow: 0 0 10px rgba(0,212,255,0.8);
-            animation: pulseCompass 2s ease-in-out infinite;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 2;
-        }
-        .rover-pulse-dot {
-            width: 5px; height: 5px;
-            background: #ffffff;
-            border-radius: 50%;
-        }
-        .rover-compass-heading {
-            position: absolute;
-            top: -6px; left: 50%;
-            transform: translateX(-50%);
-            width: 0; height: 0;
-            border-left: 4px solid transparent;
-            border-right: 4px solid transparent;
-            border-bottom: 8px solid #00D4FF;
-            z-index: 3;
-            transition: transform 0.15s ease;
-        }
-        
-        /* Mobile adjustment for HUD overlays */
-        @media (max-width: 900px) {
-            .map-floating-tools {
-                max-width: calc(100vw - 32px);
-                overflow-x: auto;
-                white-space: nowrap;
-                justify-content: flex-start;
-                padding: 4px;
-            }
-        }
-    </style>
 </head>
 <body>
 
@@ -644,7 +233,30 @@
         initializeMap(); // Initialize Leaflet map directly, no keys/wizards needed
     });
 
-    // ── INITIALIZE LEAFLET MAP ───────────────────────────────────────────────
+    // ── INITIALIZE LEAFLET MAP & THEME SWAP ──────────────────────────────────
+    function updateMapLayerForTheme(theme) {
+        if (!map) return;
+        
+        const showSatellite = activeLayerName === 'satellite';
+        
+        if (osmLayer && map.hasLayer(osmLayer)) {
+            map.removeLayer(osmLayer);
+        }
+        
+        const streetUrl = theme === 'light'
+            ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+            : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+            
+        osmLayer = L.tileLayer(streetUrl, {
+            subdomains: 'abcd',
+            maxZoom: 20
+        });
+        
+        if (!showSatellite) {
+            osmLayer.addTo(map);
+        }
+    }
+
     function initializeMap() {
         try {
             map = L.map('map-canvas', {
@@ -652,18 +264,19 @@
                 attributionControl: false
             }).setView([20.5937, 78.9629], 16); // Center on Nagoya/India initially
             
-            // Free standard OpenStreetMap vector tiles (requires no API keys)
-            osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19
-            });
-            
             // Free Esri satellite imagery tiles (requires no API keys)
             esriLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 maxZoom: 19
             });
             
-            // Add default base layer
-            osmLayer.addTo(map);
+            // Add default base layer based on current theme
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            updateMapLayerForTheme(currentTheme);
+
+            // Listen to dynamic theme changes
+            window.addEventListener('ares:themeChanged', (e) => {
+                updateMapLayerForTheme(e.detail);
+            });
             
             // Sync style switcher status on layer switch via native control (if added)
             map.on('baselayerchange', (e) => {
@@ -710,10 +323,6 @@
 
     // ── CORE FUNCTION: updateRoverLocation (lat, lng parameter order) ──
     window.updateRoverLocation = function(lat, lng) {
-        // Rover GPS location has been updated
-
-
-
         currentPos = [lat, lng];
         
         // Update Bottom Coordinates display
@@ -726,11 +335,10 @@
             breadcrumbCoords.shift();
         }
 
-
         // Update breadcrumb trails on the Leaflet map
         if (!pathLine) {
             pathGlow = L.polyline(breadcrumbCoords, {
-                color: '#00D4FF',
+                color: '#3B82F6',
                 weight: 8,
                 opacity: 0.25,
                 lineCap: 'round',
@@ -738,7 +346,7 @@
             }).addTo(map);
 
             pathLine = L.polyline(breadcrumbCoords, {
-                color: '#00D4FF',
+                color: '#3B82F6',
                 weight: 3.5,
                 opacity: 0.95,
                 lineCap: 'round',
@@ -800,7 +408,7 @@
             if (!map.hasLayer(osmLayer)) osmLayer.addTo(map);
             activeLayerName = 'streets';
             if (btn) btn.classList.remove('active');
-            window.RESCUEBOT_UI?.toast('Switched to Vector Map', 'success');
+            window.RESCUEBOT_UI?.toast('Switched to Tactical Vector Map', 'success');
         }
     }
 
@@ -967,7 +575,27 @@
     function setupMqttConnector() {
         const mqttCtrl = window.mqttController;
         if (mqttCtrl) {
-            // Subscribing to telemetry data streams
+            // Subscribe to both 'telemetry' (for legacy sensor GPS format) and 'gps' (normalized event)
+            mqttCtrl.on('gps', (d) => {
+                if (d) {
+                    const lat = parseFloat(d.lat);
+                    const lng = parseFloat(d.lng);
+                    roverHeading = parseFloat(d.heading) || 0;
+                    
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        updateRoverLocation(lat, lng);
+                        
+                        // Update GPS status indicators on valid coordinate arrival
+                        const gpsDot = document.getElementById('gps-dot');
+                        const gpsTxt = document.getElementById('gps-status');
+                        if (gpsDot && gpsTxt) {
+                            gpsDot.className = 'status-dot';
+                            gpsTxt.textContent = d.status || '3D GPS FIX';
+                        }
+                    }
+                }
+            });
+
             mqttCtrl.on('telemetry', (d) => {
                 if (d && d.sensor === 'gps' && d.value) {
                     const lat = parseFloat(d.value.lat);
@@ -975,7 +603,15 @@
                     roverHeading = parseFloat(d.value.heading) || 0;
                     
                     if (!isNaN(lat) && !isNaN(lng)) {
-                        updateRoverLocation(lat, lng); // Latitude first parameter order
+                        updateRoverLocation(lat, lng);
+                        
+                        // Update GPS status indicators on valid coordinate arrival
+                        const gpsDot = document.getElementById('gps-dot');
+                        const gpsTxt = document.getElementById('gps-status');
+                        if (gpsDot && gpsTxt) {
+                            gpsDot.className = 'status-dot';
+                            gpsTxt.textContent = d.value.status || '3D GPS FIX';
+                        }
                     }
                 }
             });
@@ -990,11 +626,13 @@
                 const gpsTxt = document.getElementById('gps-status');
                 if (gpsDot && gpsTxt) {
                     if (status === 'CONNECTED') {
-                        gpsDot.className = 'status-dot';
-                        gpsTxt.textContent = '3D GPS FIX';
+                        if (!currentPos) {
+                            gpsDot.className = 'status-dot warning';
+                            gpsTxt.textContent = 'ACQUIRING...';
+                        }
                     } else if (status === 'CONNECTING') {
                         gpsDot.className = 'status-dot warning';
-                        gpsTxt.textContent = 'ACQUIRING...';
+                        gpsTxt.textContent = 'CONNECTING...';
                     } else {
                         gpsDot.className = 'status-dot offline';
                         gpsTxt.textContent = 'GPS OFFLINE';
@@ -1049,8 +687,9 @@
         const themeBtn = document.getElementById('theme-toggle');
         if (themeBtn) {
             themeBtn.addEventListener('click', () => {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('rescuebot-theme', 'dark');
+                if (window.RESCUEBOT_UI) {
+                    window.RESCUEBOT_UI.toggleTheme();
+                }
             });
         }
     }

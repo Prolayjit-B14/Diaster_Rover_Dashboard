@@ -17,8 +17,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const mqttCtrl = window.mqttController;
 
     // ── MINI MAP INIT ─────────────────────────────────────────
-    let miniMap = null, roverMarker = null;
+    let miniMap = null, roverMarker = null, tileLayer = null;
     const mapContainer = document.getElementById('mini-map-container');
+    
+    function setMapTileLayer(theme) {
+        if (!miniMap || typeof L === 'undefined') return;
+        if (tileLayer) miniMap.removeLayer(tileLayer);
+        
+        const tileUrl = theme === 'light'
+            ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+            : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+            
+        tileLayer = L.tileLayer(tileUrl, {
+            subdomains: 'abcd',
+            maxZoom:    20
+        }).addTo(miniMap);
+    }
+
     if (mapContainer && typeof L !== 'undefined') {
         miniMap = L.map('mini-map-container', {
             zoomControl:      false,
@@ -27,14 +42,16 @@ document.addEventListener('DOMContentLoaded', () => {
             dragging:        false
         }).setView([0, 0], 2);
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            subdomains: 'abcd',
-            maxZoom:    20
-        }).addTo(miniMap);
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        setMapTileLayer(currentTheme);
+
+        window.addEventListener('ares:themeChanged', (e) => {
+            setMapTileLayer(e.detail);
+        });
 
         const roverIcon = L.divIcon({
             className: '',
-            html: `<div style="width:14px;height:14px;background:#00D4FF;border-radius:50%;border:2px solid white;box-shadow:0 0 12px #00D4FF;"></div>`,
+            html: `<div style="width:14px;height:14px;background:#3B82F6;border-radius:50%;border:2px solid white;box-shadow:0 0 8px rgba(59, 130, 246, 0.5);"></div>`,
             iconSize:   [14, 14],
             iconAnchor: [7, 7]
         });
@@ -51,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const clamped = Math.max(0, Math.min(100, pct));
         const offset  = CIRC - (clamped / 100) * CIRC;
         ring.style.strokeDashoffset = offset;
-        ring.style.stroke = clamped > 50 ? '#00FF88' : clamped > 20 ? '#FFB800' : '#FF2D55';
+        ring.style.stroke = clamped > 50 ? 'var(--status-ok)' : clamped > 20 ? 'var(--status-warn)' : 'var(--status-danger)';
         valEl.textContent = `${Math.round(clamped)}%`;
     }
 
