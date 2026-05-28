@@ -106,67 +106,217 @@
             <!-- SENSOR GRID -->
             <div class="sensor-grid">
 
-                <!-- ① TEMPERATURE -->
-                <div class="sensor-card" id="card-temp" style="--card-color:#EF4444;">
-                    <div class="sensor-card-header">
-                        <div class="sensor-icon-label">
-                            <div class="sensor-icon" style="background:rgba(239,68,68,0.08);">
-                                <i data-lucide="thermometer" style="color:#EF4444;"></i>
-                            </div>
-                            <div>
-                                <div class="sensor-name">Temperature</div>
-                                <div class="sensor-model">DHT11</div>
-                            </div>
-                        </div>
-                        <span class="badge badge-green" id="status-temp">Nominal</span>
-                    </div>
-                    <div class="sensor-value-section">
-                        <div>
-                            <span class="sensor-big-val" id="val-temp">--</span>
-                            <span class="sensor-unit">°C</span>
-                        </div>
-                        <div class="sensor-bar-wrap">
-                            <div class="sensor-bar" id="bar-temp" style="width:0%;"></div>
-                        </div>
-                    </div>
-                    <div class="sensor-footer">
-                        <span class="sensor-footer-key">Operating Range</span>
-                        <span class="sensor-footer-val">0 – 50 °C</span>
-                    </div>
-                </div>
-
-                <!-- ② HUMIDITY -->
-                <div class="sensor-card" id="card-humidity" style="--card-color:#3B82F6;">
+                <!-- ① CAMERA STREAM VIEWPORT -->
+                <div class="sensor-card camera-card" id="card-cam" style="--card-color:#3B82F6;">
                     <div class="sensor-card-header">
                         <div class="sensor-icon-label">
                             <div class="sensor-icon" style="background:rgba(59,130,246,0.08);">
-                                <i data-lucide="droplets" style="color:#3B82F6;"></i>
+                                <i data-lucide="video" style="color:#3B82F6;"></i>
                             </div>
                             <div>
-                                <div class="sensor-name">Humidity</div>
-                                <div class="sensor-model">DHT11</div>
+                                <div class="sensor-name">Camera Stream</div>
+                                <div class="sensor-model">ESP32-CAM</div>
                             </div>
                         </div>
-                        <span class="badge badge-green" id="status-humidity">Nominal</span>
+                        <span class="badge badge-green" id="status-cam">Streaming</span>
                     </div>
                     <div class="sensor-value-section">
-                        <div class="circular-ring-wrap">
-                            <svg viewBox="0 0 80 80">
-                                <circle class="circular-ring-bg" cx="40" cy="40" r="32" stroke-width="6"/>
-                                <circle class="circular-ring-fill" cx="40" cy="40" r="32" stroke-width="6"
-                                    stroke-dasharray="201.06" stroke-dashoffset="201.06" id="ring-humidity"/>
-                            </svg>
-                            <div class="circular-center" id="val-humidity">-- %</div>
+                        <div class="camera-viewport-wrap">
+                            <div class="camera-scanlines"></div>
+                            <div class="camera-crosshairs"></div>
+                            <div class="camera-rec-dot"></div>
+                            <img src="../assets/cam_feed.png" id="camera-stream-img" class="camera-stream-img" alt="Rover Live Stream">
+                        </div>
+                        <div class="camera-meta-grid">
+                            <div class="meta-item">
+                                <span class="meta-label">Uptime Stats</span>
+                                <span class="meta-val" id="val-fps">-- FPS</span>
+                            </div>
+                            <div class="meta-item" style="text-align:right;">
+                                <span class="meta-label">Resolution</span>
+                                <span class="meta-val">VGA 640×480</span>
+                            </div>
                         </div>
                     </div>
                     <div class="sensor-footer">
-                        <span class="sensor-footer-key">Operating Range</span>
-                        <span class="sensor-footer-val">0 – 100 %</span>
+                        <span class="sensor-footer-key">Bus / Port</span>
+                        <span class="sensor-footer-val">CSI / GPIO 4</span>
                     </div>
                 </div>
 
-                <!-- ③ GAS SENSOR -->
-                <div class="sensor-card" id="card-gas" style="--card-color:#F59E0B;">
+                <!-- ② GPS NAVIGATION HUD -->
+                <div class="sensor-card gps-card" id="card-gps" style="--card-color:#A78BFA;">
+                    <div class="sensor-card-header">
+                        <div class="sensor-icon-label">
+                            <div class="sensor-icon" style="background:rgba(167,139,250,0.08);">
+                                <i data-lucide="satellite" style="color:#A78BFA;"></i>
+                            </div>
+                            <div>
+                                <div class="sensor-name">GPS Navigation</div>
+                                <div class="sensor-model">NEO-6M</div>
+                            </div>
+                        </div>
+                        <span class="badge badge-green" id="status-gps">Fixed</span>
+                    </div>
+                    <div class="sensor-value-section">
+                        <div class="gps-coordinates-hud">
+                            <div class="coord-row">
+                                <span class="coord-label">LATITUDE</span>
+                                <span class="coord-val font-mono" id="val-gps-lat">37.77492° N</span>
+                            </div>
+                            <div class="coord-row">
+                                <span class="coord-label">LONGITUDE</span>
+                                <span class="coord-val font-mono" id="val-gps-lng">-122.41941° W</span>
+                            </div>
+                        </div>
+                        <div class="gps-stats-grid">
+                            <div class="gps-stat">
+                                <span class="gps-stat-lbl">Satellites</span>
+                                <span class="gps-stat-val" id="val-gps-sats">--</span>
+                            </div>
+                            <div class="gps-stat">
+                                <span class="gps-stat-lbl">Fix Mode</span>
+                                <span class="gps-stat-val" id="val-gps-status">3D Fix</span>
+                            </div>
+                            <div class="gps-stat" style="text-align:right;">
+                                <span class="gps-stat-lbl">HDOP</span>
+                                <span class="gps-stat-val">1.2</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sensor-footer">
+                        <span class="sensor-footer-key">Serial Link</span>
+                        <span class="sensor-footer-val">UART / NMEA</span>
+                    </div>
+                </div>
+
+                <!-- ③ MPU-6050 6-DOF IMU -->
+                <div class="sensor-card mpu-card" id="card-mpu" style="--card-color:#EC4899;">
+                    <div class="sensor-card-header">
+                        <div class="sensor-icon-label">
+                            <div class="sensor-icon" style="background:rgba(236,72,153,0.08);">
+                                <i data-lucide="rotate-3d" style="color:#EC4899;"></i>
+                            </div>
+                            <div>
+                                <div class="sensor-name">MPU-6050 IMU</div>
+                                <div class="sensor-model">6-Axis Motion</div>
+                            </div>
+                        </div>
+                        <span class="badge badge-green" id="status-mpu">Level</span>
+                    </div>
+                    <div class="sensor-value-section mpu-layout">
+                        <div class="bubble-level-wrap">
+                            <div class="bubble-crosshair-v"></div>
+                            <div class="bubble-crosshair-h"></div>
+                            <div class="bubble-level-ring ring-1"></div>
+                            <div class="bubble-level-ring ring-2"></div>
+                            <div class="bubble-dot" id="bubble-level-dot"></div>
+                        </div>
+                        <div class="mpu-measurements">
+                            <div class="mpu-group">
+                                <span class="mpu-group-label">Attitude (Tilt)</span>
+                                <div class="mpu-sub-grid">
+                                    <div>Pitch: <span class="val" id="val-pitch">--°</span></div>
+                                    <div>Roll: <span class="val" id="val-roll">--°</span></div>
+                                </div>
+                            </div>
+                            <div class="mpu-group">
+                                <span class="mpu-group-label">3-Axis Gyro (°/s)</span>
+                                <div class="mpu-sub-grid-3">
+                                    <div>X: <span class="val" id="val-gyro-x">--</span></div>
+                                    <div>Y: <span class="val" id="val-gyro-y">--</span></div>
+                                    <div>Z: <span class="val" id="val-gyro-z">--</span></div>
+                                </div>
+                            </div>
+                            <div class="mpu-group">
+                                <span class="mpu-group-label">3-Axis Accel (g)</span>
+                                <div class="mpu-sub-grid-3">
+                                    <div>X: <span class="val" id="val-accel-x">--</span></div>
+                                    <div>Y: <span class="val" id="val-accel-y">--</span></div>
+                                    <div>Z: <span class="val" id="val-accel-z">--</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sensor-footer">
+                        <span class="sensor-footer-key">Bus Address</span>
+                        <span class="sensor-footer-val">I2C / 0x68</span>
+                    </div>
+                </div>
+
+                <!-- ④ SEISMIC / VIBRATION SENSOR -->
+                <div class="sensor-card vib-card" id="card-vib" style="--card-color:#10B981;">
+                    <div class="sensor-card-header">
+                        <div class="sensor-icon-label">
+                            <div class="sensor-icon" style="background:rgba(16,185,129,0.08);">
+                                <i data-lucide="activity" style="color:#10B981;"></i>
+                            </div>
+                            <div>
+                                <div class="sensor-name">Seismic Vibration</div>
+                                <div class="sensor-model">Piezo Sensor</div>
+                            </div>
+                        </div>
+                        <span class="badge badge-green" id="status-vib">Stable</span>
+                    </div>
+                    <div class="sensor-value-section">
+                        <div class="vib-value-row">
+                            <span class="sensor-big-val" id="val-vib">--</span>
+                            <span class="sensor-unit">g Force</span>
+                        </div>
+                        <div class="seismic-wave-wrap" id="seismic-wave-wrap">
+                            <div class="seismic-bar" style="height: 15%"></div>
+                            <div class="seismic-bar" style="height: 20%"></div>
+                            <div class="seismic-bar" style="height: 12%"></div>
+                            <div class="seismic-bar" style="height: 25%"></div>
+                            <div class="seismic-bar" style="height: 30%"></div>
+                            <div class="seismic-bar" style="height: 15%"></div>
+                            <div class="seismic-bar" style="height: 8%"></div>
+                            <div class="seismic-bar" style="height: 20%"></div>
+                            <div class="seismic-bar" style="height: 40%"></div>
+                            <div class="seismic-bar" style="height: 22%"></div>
+                            <div class="seismic-bar" style="height: 35%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
+                            <div class="seismic-bar" style="height: 15%"></div>
+                            <div class="seismic-bar" style="height: 25%"></div>
+                            <div class="seismic-bar" style="height: 5%"></div>
+                        </div>
+                    </div>
+                    <div class="sensor-footer">
+                        <span class="sensor-footer-key">ADC Port</span>
+                        <span class="sensor-footer-val">Analog / GPIO 13</span>
+                    </div>
+                </div>
+
+                <!-- ⑤ IR FLAME DETECTOR -->
+                <div class="sensor-card fire-card" id="card-fire" style="--card-color:#EF4444;">
+                    <div class="sensor-card-header">
+                        <div class="sensor-icon-label">
+                            <div class="sensor-icon" style="background:rgba(239,68,68,0.08);">
+                                <i data-lucide="flame" style="color:#EF4444;"></i>
+                            </div>
+                            <div>
+                                <div class="sensor-name">IR Flame Sensor</div>
+                                <div class="sensor-model">Thermal IR</div>
+                            </div>
+                        </div>
+                        <span class="badge badge-green" id="status-fire">Clear</span>
+                    </div>
+                    <div class="sensor-value-section">
+                        <div class="fire-threat-wrap">
+                            <div class="fire-icon-pulsar" id="fire-icon-pulsar">
+                                <i data-lucide="flame" style="color:#EF4444; width:28px; height:28px;"></i>
+                            </div>
+                            <div class="fire-text-status" id="val-fire">CLEAR</div>
+                        </div>
+                    </div>
+                    <div class="sensor-footer">
+                        <span class="sensor-footer-key">Logic Type</span>
+                        <span class="sensor-footer-val">Digital / GPIO 15</span>
+                    </div>
+                </div>
+
+                <!-- ⑥ MQ-2 COMBUSTIBLE GAS -->
+                <div class="sensor-card gas-card" id="card-gas" style="--card-color:#F59E0B;">
                     <div class="sensor-card-header">
                         <div class="sensor-icon-label">
                             <div class="sensor-icon" style="background:rgba(245,158,11,0.08);">
@@ -174,57 +324,43 @@
                             </div>
                             <div>
                                 <div class="sensor-name">Combustible Gas</div>
-                                <div class="sensor-model">MQ-2</div>
+                                <div class="sensor-model">MQ-2 Sensor</div>
                             </div>
                         </div>
                         <span class="badge badge-green" id="status-gas">Normal</span>
                     </div>
                     <div class="sensor-value-section">
-                        <div>
+                        <div class="gas-value-row">
                             <span class="sensor-big-val" id="val-gas">--</span>
                             <span class="sensor-unit">ppm</span>
                         </div>
-                        <div class="sensor-bar-wrap">
-                            <div class="sensor-bar" id="bar-gas" style="width:0%;"></div>
+                        <div class="gas-equalizer" id="gas-equalizer">
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
+                            <div class="eq-segment"></div>
                         </div>
                     </div>
                     <div class="sensor-footer">
-                        <span class="sensor-footer-key">ADC Range</span>
-                        <span class="sensor-footer-val">0 – 4095</span>
+                        <span class="sensor-footer-key">ADC Port</span>
+                        <span class="sensor-footer-val">Analog / GPIO 12</span>
                     </div>
                 </div>
 
-                <!-- ④ ULTRASONIC -->
-                <div class="sensor-card" id="card-ultrasonic" style="--card-color:#6366F1;">
-                    <div class="sensor-card-header">
-                        <div class="sensor-icon-label">
-                            <div class="sensor-icon" style="background:rgba(99,102,241,0.08);">
-                                <i data-lucide="move-horizontal" style="color:#6366F1;"></i>
-                            </div>
-                            <div>
-                                <div class="sensor-name">Proximity</div>
-                                <div class="sensor-model">HC-SR04</div>
-                            </div>
-                        </div>
-                        <span class="badge badge-green" id="status-ultrasonic">Clear</span>
-                    </div>
-                    <div class="sensor-value-section">
-                        <div>
-                            <span class="sensor-big-val" id="val-ultrasonic">--</span>
-                            <span class="sensor-unit">cm</span>
-                        </div>
-                        <div class="sensor-bar-wrap">
-                            <div class="sensor-bar" id="bar-ultrasonic" style="width:0%;"></div>
-                        </div>
-                    </div>
-                    <div class="sensor-footer">
-                        <span class="sensor-footer-key">Detection Range</span>
-                        <span class="sensor-footer-val">2 – 400 cm</span>
-                    </div>
-                </div>
-
-                <!-- ⑤ PIR MOTION -->
-                <div class="sensor-card" id="card-pir" style="--card-color:#06B6D4;">
+                <!-- ⑦ PIR MOTION SENSOR -->
+                <div class="sensor-card pir-card" id="card-pir" style="--card-color:#06B6D4;">
                     <div class="sensor-card-header">
                         <div class="sensor-icon-label">
                             <div class="sensor-icon" style="background:rgba(6,182,212,0.08);">
@@ -238,227 +374,85 @@
                         <span class="badge badge-green" id="status-pir">Clear</span>
                     </div>
                     <div class="sensor-value-section">
-                        <div class="pir-wrap">
-                            <div class="pulse-ring" id="pir-pulse" style="border-color:rgba(6,182,212,0.3);">
-                                <i data-lucide="eye" style="width:22px;height:22px;color:#06B6D4;"></i>
-                            </div>
-                            <div class="pir-status-text" id="val-pir">Clear</div>
+                        <div class="radar-sweep-wrap">
+                            <div class="radar-sweep-line"></div>
+                            <div class="radar-crosshair-v"></div>
+                            <div class="radar-crosshair-h"></div>
+                            <div class="radar-dot" id="radar-target-dot"></div>
+                            <i data-lucide="user" class="radar-icon" id="radar-user-icon"></i>
+                        </div>
+                        <div class="pir-presence-bar">
+                            <span class="presence-label">RADAR SCANNER:</span>
+                            <span class="presence-val" id="val-pir">ABSENT</span>
                         </div>
                     </div>
                     <div class="sensor-footer">
-                        <span class="sensor-footer-key">Detection Angle</span>
-                        <span class="sensor-footer-val">110° / 3 m</span>
+                        <span class="sensor-footer-key">Logic Type</span>
+                        <span class="sensor-footer-val">Digital / GPIO 14</span>
                     </div>
                 </div>
 
-                <!-- ⑥ VIBRATION -->
-                <div class="sensor-card" id="card-vib" style="--card-color:#10B981;">
+                <!-- ⑧ ULTRASONIC RANGE SENSOR -->
+                <div class="sensor-card ultrasonic-card" id="card-ultrasonic" style="--card-color:#6366F1;">
                     <div class="sensor-card-header">
                         <div class="sensor-icon-label">
-                            <div class="sensor-icon" style="background:rgba(16,185,129,0.08);">
-                                <i data-lucide="activity" style="color:#10B981;"></i>
+                            <div class="sensor-icon" style="background:rgba(99,102,241,0.08);">
+                                <i data-lucide="move-horizontal" style="color:#6366F1;"></i>
                             </div>
                             <div>
-                                <div class="sensor-name">Vibration</div>
-                                <div class="sensor-model">MPU6050</div>
+                                <div class="sensor-name">Proximity Range</div>
+                                <div class="sensor-model">HC-SR04</div>
                             </div>
                         </div>
-                        <span class="badge badge-green" id="status-vib">Stable</span>
+                        <span class="badge badge-green" id="status-ultrasonic">Clear</span>
                     </div>
                     <div class="sensor-value-section">
-                        <div>
-                            <span class="sensor-big-val" id="val-vib">-.-</span>
-                            <span class="sensor-unit">g</span>
+                        <div class="proximity-visual-container">
+                            <div class="proximity-arch arch-red" id="arch-red"></div>
+                            <div class="proximity-arch arch-amber" id="arch-amber"></div>
+                            <div class="proximity-arch arch-green" id="arch-green"></div>
+                            <div class="proximity-rover-symbol">
+                                <i data-lucide="shield" style="width:20px;height:20px;color:var(--text-muted);"></i>
+                            </div>
                         </div>
-                        <div class="sensor-bar-wrap">
-                            <div class="sensor-bar" id="bar-vib" style="width:0%;"></div>
+                        <div class="proximity-value-display">
+                            <span class="sensor-big-val" id="val-ultrasonic">--</span>
+                            <span class="sensor-unit">cm Range</span>
                         </div>
                     </div>
                     <div class="sensor-footer">
-                        <span class="sensor-footer-key">Axes</span>
-                        <span class="sensor-footer-val">X · Y · Z</span>
+                        <span class="sensor-footer-key">Logic Pins</span>
+                        <span class="sensor-footer-val">TRIG 2 · ECHO 16</span>
                     </div>
                 </div>
 
-                <!-- ⑦ TILT -->
-                <div class="sensor-card" id="card-tilt" style="--card-color:#F59E0B;">
+                <!-- ⑨ DHT11 TEMPERATURE SENSOR -->
+                <div class="sensor-card temp-card" id="card-temp" style="--card-color:#EF4444;">
                     <div class="sensor-card-header">
                         <div class="sensor-icon-label">
-                            <div class="sensor-icon" style="background:rgba(245,158,11,0.08);">
-                                <i data-lucide="rotate-3d" style="color:#F59E0B;"></i>
+                            <div class="sensor-icon" style="background:rgba(239,68,68,0.08);">
+                                <i data-lucide="thermometer" style="color:#EF4444;"></i>
                             </div>
                             <div>
-                                <div class="sensor-name">Tilt Angle</div>
-                                <div class="sensor-model">MPU6050</div>
+                                <div class="sensor-name">Temperature</div>
+                                <div class="sensor-model">DHT11 Sensor</div>
                             </div>
                         </div>
-                        <span class="badge badge-green" id="status-tilt">Level</span>
+                        <span class="badge badge-green" id="status-temp">Optimal</span>
                     </div>
                     <div class="sensor-value-section">
-                        <div>
-                            <span class="sensor-big-val" id="val-tilt">--</span>
-                            <span class="sensor-unit">°</span>
+                        <div class="temp-value-row">
+                            <span class="sensor-big-val" id="val-temp">--</span>
+                            <span class="sensor-unit">°C</span>
                         </div>
-                        <div class="sensor-bar-wrap">
-                            <div class="sensor-bar" id="bar-tilt" style="width:0%;"></div>
+                        <div class="temp-track-wrap">
+                            <div class="temp-track-fill" id="temp-track-fill" style="width: 0%;"></div>
+                            <div class="temp-track-indicator" id="temp-track-indicator" style="left: 0%;"></div>
                         </div>
                     </div>
                     <div class="sensor-footer">
-                        <span class="sensor-footer-key">Full Scale</span>
-                        <span class="sensor-footer-val">0 – 180 °</span>
-                    </div>
-                </div>
-
-                <!-- ⑧ GYROSCOPE -->
-                <div class="sensor-card" id="card-gyro" style="--card-color:#8B5CF6;">
-                    <div class="sensor-card-header">
-                        <div class="sensor-icon-label">
-                            <div class="sensor-icon" style="background:rgba(139,92,246,0.08);">
-                                <i data-lucide="circle-dot" style="color:#8B5CF6;"></i>
-                            </div>
-                            <div>
-                                <div class="sensor-name">Gyroscope</div>
-                                <div class="sensor-model">MPU6050</div>
-                            </div>
-                        </div>
-                        <span class="badge badge-green" id="status-gyro">Nominal</span>
-                    </div>
-                    <div class="sensor-value-section">
-                        <div>
-                            <span class="sensor-big-val" id="val-gyro">--</span>
-                            <span class="sensor-unit">°/s</span>
-                        </div>
-                        <div class="sensor-bar-wrap">
-                            <div class="sensor-bar" id="bar-gyro" style="width:0%;"></div>
-                        </div>
-                    </div>
-                    <div class="sensor-footer">
-                        <span class="sensor-footer-key">Full Scale</span>
-                        <span class="sensor-footer-val">± 250 °/s</span>
-                    </div>
-                </div>
-
-                <!-- ⑨ GPS MODULE -->
-                <div class="sensor-card" id="card-gps" style="--card-color:#EC4899;">
-                    <div class="sensor-card-header">
-                        <div class="sensor-icon-label">
-                            <div class="sensor-icon" style="background:rgba(236,72,153,0.08);">
-                                <i data-lucide="satellite" style="color:#EC4899;"></i>
-                            </div>
-                            <div>
-                                <div class="sensor-name">GPS Module</div>
-                                <div class="sensor-model">NEO-6M</div>
-                            </div>
-                        </div>
-                        <span class="badge badge-green" id="status-gps">Fixed</span>
-                    </div>
-                    <div class="sensor-value-section">
-                        <div>
-                            <span class="sensor-big-val" style="font-size:1.4rem;" id="val-gps-status">Acquiring</span>
-                        </div>
-                        <div class="gps-row" style="margin-top:var(--space-1);">
-                            <div class="gps-row-item">
-                                <div class="sensor-footer-key">Satellites</div>
-                                <div class="sensor-footer-val" id="val-gps-sats">--</div>
-                            </div>
-                            <div class="gps-row-item">
-                                <div class="sensor-footer-key">Fix Type</div>
-                                <div class="sensor-footer-val">3D</div>
-                            </div>
-                            <div class="gps-row-item">
-                                <div class="sensor-footer-key">HDOP</div>
-                                <div class="sensor-footer-val">1.2</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="sensor-footer">
-                        <span class="sensor-footer-key">Protocol</span>
-                        <span class="sensor-footer-val">NMEA 0183</span>
-                    </div>
-                </div>
-
-                <!-- ⑩ BATTERY -->
-                <div class="sensor-card" id="card-batt" style="--card-color:#10B981;">
-                    <div class="sensor-card-header">
-                        <div class="sensor-icon-label">
-                            <div class="sensor-icon" style="background:rgba(16,185,129,0.08);">
-                                <i data-lucide="battery-charging" style="color:#10B981;"></i>
-                            </div>
-                            <div>
-                                <div class="sensor-name">Battery</div>
-                                <div class="sensor-model">LiPo 3S</div>
-                            </div>
-                        </div>
-                        <span class="badge badge-green" id="status-batt">Nominal</span>
-                    </div>
-                    <div class="sensor-value-section">
-                        <div class="circular-ring-wrap">
-                            <svg viewBox="0 0 80 80">
-                                <circle class="circular-ring-bg" cx="40" cy="40" r="32" stroke-width="6"/>
-                                <circle class="circular-ring-fill" cx="40" cy="40" r="32" stroke-width="6"
-                                    stroke-dasharray="201.06" stroke-dashoffset="201.06" id="ring-battery"/>
-                            </svg>
-                            <div class="circular-center" id="val-battery">-- %</div>
-                        </div>
-                    </div>
-                    <div class="sensor-footer">
-                        <span class="sensor-footer-key">Pack Voltage</span>
-                        <span class="sensor-footer-val" id="val-batt-voltage">-- V</span>
-                    </div>
-                </div>
-
-                <!-- ⑪ WIFI SIGNAL -->
-                <div class="sensor-card" id="card-wifi" style="--card-color:#3B82F6;">
-                    <div class="sensor-card-header">
-                        <div class="sensor-icon-label">
-                            <div class="sensor-icon" style="background:rgba(59,130,246,0.08);">
-                                <i data-lucide="wifi" style="color:#3B82F6;"></i>
-                            </div>
-                            <div>
-                                <div class="sensor-name">Wi-Fi Signal</div>
-                                <div class="sensor-model">ESP32</div>
-                            </div>
-                        </div>
-                        <span class="badge badge-green" id="status-wifi">Strong</span>
-                    </div>
-                    <div class="sensor-value-section">
-                        <div>
-                            <span class="sensor-big-val" id="val-wifi">--</span>
-                            <span class="sensor-unit">dBm</span>
-                        </div>
-                        <div class="sensor-bar-wrap">
-                            <div class="sensor-bar" id="bar-wifi" style="width:0%;"></div>
-                        </div>
-                    </div>
-                    <div class="sensor-footer">
-                        <span class="sensor-footer-key">Signal Range</span>
-                        <span class="sensor-footer-val">-100 → -30 dBm</span>
-                    </div>
-                </div>
-
-                <!-- ⑫ CAMERA FPS -->
-                <div class="sensor-card" id="card-cam" style="--card-color:#10B981;">
-                    <div class="sensor-card-header">
-                        <div class="sensor-icon-label">
-                            <div class="sensor-icon" style="background:rgba(16,185,129,0.08);">
-                                <i data-lucide="video" style="color:#10B981;"></i>
-                            </div>
-                            <div>
-                                <div class="sensor-name">Camera Module</div>
-                                <div class="sensor-model">ESP32-CAM</div>
-                            </div>
-                        </div>
-                        <span class="badge badge-green" id="status-cam">Streaming</span>
-                    </div>
-                    <div class="sensor-value-section">
-                        <div>
-                            <span class="sensor-big-val" id="val-fps">--</span>
-                            <span class="sensor-unit">FPS</span>
-                        </div>
-                    </div>
-                    <div class="sensor-footer">
-                        <span class="sensor-footer-key">Resolution</span>
-                        <span class="sensor-footer-val">VGA 640×480</span>
+                        <span class="sensor-footer-key">Logic Pin</span>
+                        <span class="sensor-footer-val">Digital / GPIO 19</span>
                     </div>
                 </div>
 
