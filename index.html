@@ -144,7 +144,10 @@
         }
 
         .hero-title .accent {
-            color: var(--accent);
+            background: linear-gradient(135deg, var(--accent-bright) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
         }
 
         .hero-tagline {
@@ -180,6 +183,8 @@
         .cta-primary:hover {
             background: var(--accent-dim);
             border-color: var(--accent-dim);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px -8px rgba(59, 130, 246, 0.5);
         }
 
         .cta-primary svg { width: 16px; height: 16px; }
@@ -200,6 +205,8 @@
             background: var(--bg-card);
             border-color: var(--border-strong);
             color: var(--text-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.3);
         }
 
         .cta-secondary svg { width: 16px; height: 16px; }
@@ -306,15 +313,17 @@
         }
 
         .feature-card {
-            background: var(--bg-card);
+            background: rgba(30, 35, 45, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
             padding: 24px;
-            transition: border-color var(--t-fast), box-shadow var(--t-med), transform var(--t-med);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             cursor: default;
             position: relative;
             overflow: hidden;
-            box-shadow: var(--shadow-xs);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .feature-card::after {
@@ -328,9 +337,9 @@
         }
 
         .feature-card:hover {
-            border-color: var(--border-strong);
-            box-shadow: var(--shadow-md), 0 10px 24px -10px rgba(59, 130, 246, 0.12);
-            transform: translateY(-3.5px);
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 12px 32px -12px rgba(59, 130, 246, 0.25);
+            transform: translateY(-5px);
         }
 
         .feature-card:hover::after {
@@ -408,18 +417,34 @@
 
         .landing-footer strong { color: var(--text-secondary); font-weight: 500; }
 
-        /* ── SUBTLE GRID BG ────────────────────────────────────── */
+        /* ── SUBTLE GRID BG + ORB ────────────────────────────────────── */
         .grid-bg {
             position: fixed; inset: 0; z-index: 0;
+            background-color: var(--bg-default);
             background-image:
-                linear-gradient(var(--border-subtle) 1px, transparent 1px),
-                linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
             background-size: 64px 64px;
             pointer-events: none;
-            opacity: 0.25;
+        }
+
+        .grid-bg::after {
+            content: '';
+            position: absolute;
+            top: 20%; left: 50%;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            filter: blur(60px);
+            animation: pulseOrb 8s ease-in-out infinite alternate;
         }
 
         /* ── ANIMATIONS ──────────────────────────────────────────── */
+        @keyframes pulseOrb {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+        }
+
         @keyframes fadeInDown {
             from { opacity: 0; transform: translateY(-12px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -518,15 +543,15 @@
             <div class="stat-lbl">Mission Uptime</div>
         </div>
         <div class="stat-item">
-            <div class="stat-num">12</div>
+            <div class="stat-num counter" data-target="12" data-suffix="">0</div>
             <div class="stat-lbl">Active Sensors</div>
         </div>
         <div class="stat-item">
-            <div class="stat-num">&lt;100ms</div>
+            <div class="stat-num counter" data-target="100" data-prefix="&lt;" data-suffix="ms">0</div>
             <div class="stat-lbl">MQTT Latency</div>
         </div>
         <div class="stat-item">
-            <div class="stat-num">30 FPS</div>
+            <div class="stat-num counter" data-target="30" data-suffix=" FPS">0</div>
             <div class="stat-lbl">Camera Stream</div>
         </div>
         <div class="stat-item">
@@ -645,7 +670,7 @@
             document.getElementById('stat-uptime').textContent = `${h}:${m}:${s}`;
         }, 1000);
 
-        // ── SCROLL FADE-IN ───────────────────────────────────────
+        // ── SCROLL FADE-IN & STAGGERED CHIPS ───────────────────────
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(e => {
                 if (e.isIntersecting) {
@@ -655,12 +680,41 @@
             });
         }, { threshold: 0.08 });
 
-        document.querySelectorAll('.feature-card').forEach((el, i) => {
+        document.querySelectorAll('.feature-card, .tech-chip').forEach((el, i) => {
             el.style.opacity = '0';
             el.style.transform = 'translateY(20px)';
-            el.style.transition = `opacity 0.4s ${i * 0.06}s ease, transform 0.4s ${i * 0.06}s ease`;
+            const delay = el.classList.contains('tech-chip') ? (i % 10) * 0.05 : i * 0.06;
+            el.style.transition = `opacity 0.4s ${delay}s ease, transform 0.4s ${delay}s ease, border-color 0.2s, box-shadow 0.3s, color 0.2s`;
             observer.observe(el);
         });
+
+        // ── COUNTER ANIMATION ────────────────────────────────────
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting && !e.target.classList.contains('counted')) {
+                    e.target.classList.add('counted');
+                    const target = +e.target.getAttribute('data-target');
+                    const prefix = e.target.getAttribute('data-prefix') || '';
+                    const suffix = e.target.getAttribute('data-suffix') || '';
+                    const duration = 1500;
+                    const startTime = performance.now();
+                    
+                    const updateCounter = (currentTime) => {
+                        const elapsed = currentTime - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                        const currentVal = Math.floor(easeOutQuart * target);
+                        
+                        e.target.textContent = prefix + currentVal + suffix;
+                        if (progress < 1) requestAnimationFrame(updateCounter);
+                        else e.target.textContent = prefix + target + suffix;
+                    };
+                    requestAnimationFrame(updateCounter);
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        document.querySelectorAll('.counter').forEach(c => counterObserver.observe(c));
 
         // ── THEME TOGGLE ─────────────────────────────────────────
         const themeBtn = document.getElementById('landing-theme-toggle');

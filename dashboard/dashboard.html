@@ -85,298 +85,152 @@
             </div>
         </header>
 
-        <!-- PAGE CONTENT -->
-        <main class="page-content page-enter">
-
-            <!-- ROW 1: 4 STATUS CARDS -->
-            <div class="widget-grid-top">
-
-                <!-- Rover Status -->
-                <div class="glass-card status-card">
-                    <div class="status-icon-row">
-                        <div class="status-icon" style="background:var(--status-ok-bg);border-color:var(--status-ok-bd);">
-                            <i data-lucide="cpu" style="color:var(--status-ok);"></i>
-                        </div>
-                        <div class="status-beacon" id="rover-beacon"></div>
-                    </div>
-                    <div>
-                        <div class="status-title" id="rover-status-text">Rover Online</div>
-                        <div class="status-sub">ESP32-CAM &middot; Unit ARES-1</div>
-                    </div>
-                    <div class="status-badges-row">
-                        <span class="badge badge-green" id="rover-badge">Online</span>
-                        <span class="badge badge-blue">MQTT Linked</span>
-                    </div>
-                    <div class="data-stamp">
-                        <i data-lucide="timer"></i>
-                        Mission: <span class="mono-val" id="mission-timer" style="color:var(--accent);">00:00:00</span>
-                    </div>
-                </div>
-
-                <!-- GPS Card -->
-                <div class="glass-card gps-card">
-                    <div class="card-header">
-                        <span class="card-label">GPS Position</span>
-                        <span class="badge badge-green">3D Fix</span>
-                    </div>
-                    <div class="gps-coord-row">
-                        <div class="coord-box">
-                            <div class="coord-label-sm">Latitude</div>
-                            <div class="coord-val" id="val-lat">--</div>
-                        </div>
-                        <div class="coord-box">
-                            <div class="coord-label-sm">Longitude</div>
-                            <div class="coord-val" id="val-lng">--</div>
-                        </div>
-                    </div>
-                    <div class="gps-bottom">
-                        <div class="gps-mini-stat">
-                            <div class="coord-label-sm">Speed</div>
-                            <div class="coord-val" id="val-speed">0.0 <span style="font-size:9px;color:var(--text-muted);">km/h</span></div>
-                        </div>
-                        <div class="gps-mini-stat">
-                            <div class="coord-label-sm">Satellites</div>
-                            <div class="coord-val" id="val-sats">0</div>
-                        </div>
-                        <div class="gps-mini-stat">
-                            <div class="coord-label-sm">Accuracy</div>
-                            <div class="coord-val" id="val-accuracy">-- m</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Power System Card -->
-                <div class="glass-card battery-card">
-                    <div class="card-header" style="width:100%">
-                        <span class="card-label">Power System</span>
-                        <span class="badge badge-green" id="batt-status">Nominal</span>
-                    </div>
-                    <div class="battery-body">
-                        <div class="battery-ring-wrap">
-                            <svg width="80" height="80" viewBox="0 0 100 100">
-                                <circle class="battery-ring-bg" cx="50" cy="50" r="40" fill="none" stroke-width="8"/>
-                                <circle class="battery-ring-fill" cx="50" cy="50" r="40" fill="none" stroke-width="8"
-                                    stroke-dasharray="251.2" stroke-dashoffset="62.8" id="batt-ring"/>
-                            </svg>
-                            <div class="battery-center-text">
-                                <span class="battery-pct" id="val-battery">75%</span>
-                                <span class="battery-label-sm">Charge</span>
-                            </div>
-                        </div>
-                        <div class="battery-meta">
-                            <div class="battery-info-row">
-                                <div class="batt-info-item">
-                                    <span class="batt-info-lbl">Voltage</span>
-                                    <span class="batt-info-val" id="val-voltage">-- V</span>
-                                </div>
-                                <div class="batt-info-item">
-                                    <span class="batt-info-lbl">Wi-Fi RSSI</span>
-                                    <span class="batt-info-val" id="val-rssi">-- dBm</span>
-                                </div>
-                                <div class="batt-info-item">
-                                    <span class="batt-info-lbl">Cell</span>
-                                    <span class="batt-info-val">LiPo 3S</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Active Alerts -->
-                <div class="glass-card alert-mini-card">
-                    <div class="card-header">
-                        <span class="card-label">Active Alerts</span>
-                        <a href="../alerts/alerts.html" style="color:var(--accent);font-size:var(--text-xs);text-decoration:none;font-weight:var(--fw-medium);">View all</a>
-                    </div>
-                    <div class="alert-mini-list">
-                        <div class="alert-mini-item ok">
-                            <i data-lucide="thermometer" style="width:13px;height:13px;color:var(--status-ok);flex-shrink:0;"></i>
-                            <span class="alert-mini-text">Temperature Normal</span>
-                            <span class="badge badge-green">OK</span>
-                        </div>
-                        <div class="alert-mini-item ok">
-                            <i data-lucide="wind" style="width:13px;height:13px;color:var(--status-ok);flex-shrink:0;"></i>
-                            <span class="alert-mini-text" id="alert-gas-text">Gas Level Normal</span>
-                            <span class="badge badge-green" id="alert-gas-badge">OK</span>
-                        </div>
-                        <div class="alert-mini-item ok">
-                            <i data-lucide="flame" style="width:13px;height:13px;color:var(--status-ok);flex-shrink:0;"></i>
-                            <span class="alert-mini-text" id="alert-fire-text">No Fire Detected</span>
-                            <span class="badge badge-green" id="alert-fire-badge">Clear</span>
-                        </div>
-                        <div class="alert-mini-item ok">
-                            <i data-lucide="eye" style="width:13px;height:13px;color:var(--status-ok);flex-shrink:0;"></i>
-                            <span class="alert-mini-text" id="alert-pir-text">Motion: Clear</span>
-                            <span class="badge badge-green" id="alert-pir-badge">Clear</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ROW 2: MINI MAP + MINI CAM -->
-            <div class="widget-grid-mid">
-                <div class="glass-card mini-map-card">
-                    <div class="mini-map-header">
-                        <span class="mini-map-header-title">
-                            <i data-lucide="map-pin"></i>
-                            Live GPS Position
-                        </span>
-                        <a href="../map/map.html" class="btn btn-ghost" style="padding:4px 10px;font-size:var(--text-xs);">
-                            <i data-lucide="external-link"></i>
-                            Full Map
-                        </a>
-                    </div>
-                    <div id="mini-map-container"></div>
-                </div>
-
-                <div class="glass-card mini-cam-card">
-                    <div class="mini-cam-header">
+        <main class="page-content page-enter" style="padding: 0;">
+            <div class="bento-grid">
+                
+                <!-- CAMERA (Large) -->
+                <div class="bento-card bento-cam">
+                    <div class="bento-header-overlay">
                         <div class="live-indicator">
                             <div class="live-dot standby" id="cam-live-dot"></div>
-                            <span id="cam-live-label">Standby</span>
+                            <span id="cam-live-label" style="font-weight: 600; font-size: 11px; letter-spacing: 0.05em;">STANDBY</span>
                         </div>
-                        <a href="../camera/camera.html" class="btn btn-ghost" style="padding:4px 10px;font-size:var(--text-xs);">
-                            <i data-lucide="external-link"></i>
-                            Open Feed
-                        </a>
+                        <a href="../camera/camera.html" class="bento-action-icon" title="Full Camera"><i data-lucide="external-link"></i></a>
                     </div>
-                    <div class="cam-body">
+                    <div class="bento-body-full">
                         <img id="cam-stream-thumb" src="" alt="Camera Stream" crossorigin="anonymous" style="display:none;width:100%;height:100%;object-fit:cover;">
                         <div class="cam-placeholder" id="cam-placeholder">
                             <i data-lucide="video-off"></i>
-                            <span>Awaiting camera signal</span>
+                            <span>Awaiting feed...</span>
                         </div>
                     </div>
                 </div>
+
+                <!-- MAP (Large) -->
+                <div class="bento-card bento-map">
+                    <div class="bento-header-overlay">
+                        <div class="header-title" style="display: flex; align-items: center; gap: 8px; color: white; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">
+                            <i data-lucide="map-pin" style="color: var(--accent);"></i> Live Position
+                        </div>
+                        <a href="../map/map.html" class="bento-action-icon" title="Full Map"><i data-lucide="maximize-2"></i></a>
+                    </div>
+                    <div id="mini-map-container" class="bento-body-full"></div>
+                </div>
+
+                <!-- ROVER STATUS -->
+                <div class="bento-card bento-status">
+                    <div class="bento-header">
+                        <span class="bento-title">System Status</span>
+                        <i data-lucide="cpu" style="color: var(--status-ok);"></i>
+                    </div>
+                    <div class="bento-content centered-content">
+                        <div class="status-orb" id="rover-beacon"></div>
+                        <h3 id="rover-status-text">Rover Online</h3>
+                        <p class="subtitle">Unit ARES-1 &middot; ESP32-CAM</p>
+                        <div class="badges">
+                            <span class="badge badge-green" id="rover-badge">Online</span>
+                            <span class="badge badge-blue">MQTT</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- POWER SYSTEM -->
+                <div class="bento-card bento-power">
+                    <div class="bento-header">
+                        <span class="bento-title">Power Core</span>
+                        <span class="badge badge-green" id="batt-status">Nominal</span>
+                    </div>
+                    <div class="bento-content row-content">
+                        <div class="batt-ring-container">
+                            <svg width="60" height="60" viewBox="0 0 100 100">
+                                <circle class="batt-bg" cx="50" cy="50" r="42" fill="none" stroke-width="8"/>
+                                <circle class="batt-fill" id="batt-ring" cx="50" cy="50" r="42" fill="none" stroke-width="8" stroke-dasharray="263.89" stroke-dashoffset="65.97"/>
+                            </svg>
+                            <div class="batt-val" id="val-battery">75%</div>
+                        </div>
+                        <div class="batt-stats">
+                            <div class="stat-line"><span class="lbl">Volts</span><span class="val" id="val-voltage">-- V</span></div>
+                            <div class="stat-line"><span class="lbl">RSSI</span><span class="val" id="val-rssi">-- dBm</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ENVIRONMENTAL -->
+                <div class="bento-card bento-env">
+                    <div class="bento-header">
+                        <span class="bento-title">Environment</span>
+                        <i data-lucide="thermometer-sun" style="color: var(--accent);"></i>
+                    </div>
+                    <div class="bento-content list-content">
+                        <div class="env-row">
+                            <i data-lucide="thermometer" style="color: var(--status-danger);"></i>
+                            <span class="env-lbl">Temp</span>
+                            <span class="env-val"><span id="val-temp">--</span>°C</span>
+                        </div>
+                        <div class="env-row">
+                            <i data-lucide="droplets" style="color: var(--accent);"></i>
+                            <span class="env-lbl">Hum</span>
+                            <span class="env-val"><span id="val-humidity">--</span>%</span>
+                        </div>
+                        <div class="env-row">
+                            <i data-lucide="wind" style="color: var(--status-warn);"></i>
+                            <span class="env-lbl">Gas</span>
+                            <span class="env-val"><span id="val-gas">--</span> ppm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TELEMETRY / KINEMATICS -->
+                <div class="bento-card bento-telemetry">
+                    <div class="bento-header">
+                        <span class="bento-title">Kinematics</span>
+                        <i data-lucide="compass" style="color: #8B5CF6;"></i>
+                    </div>
+                    <div class="bento-content list-content">
+                         <div class="env-row">
+                            <span class="env-lbl">Speed</span>
+                            <span class="env-val" id="val-speed">0.0 <small>km/h</small></span>
+                        </div>
+                        <div class="env-row">
+                            <span class="env-lbl">Tilt</span>
+                            <span class="env-val"><span id="val-tilt">0</span>°</span>
+                        </div>
+                        <div class="env-row">
+                            <span class="env-lbl">Proximity</span>
+                            <span class="env-val"><span id="val-ultrasonic">--</span> cm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUICK ACTIONS -->
+                <div class="bento-card bento-actions">
+                    <div class="bento-header">
+                        <span class="bento-title">Command Dispatch</span>
+                        <i data-lucide="terminal" style="color: var(--text-muted);"></i>
+                    </div>
+                    <div class="bento-content actions-grid">
+                        <button class="bento-btn estop" id="btn-estop"><i data-lucide="octagon"></i> E-Stop</button>
+                        <button class="bento-btn auto" id="btn-auto"><i data-lucide="cpu"></i> Auto Mode</button>
+                        <button class="bento-btn home" id="btn-home"><i data-lucide="home"></i> Return Base</button>
+                    </div>
+                </div>
+
+                <!-- ACTIVE ALERTS -->
+                <div class="bento-card bento-alerts">
+                    <div class="bento-header">
+                        <span class="bento-title">Active Alerts</span>
+                        <a href="../alerts/alerts.html" class="view-all">View All</a>
+                    </div>
+                    <div class="bento-content alerts-list">
+                        <div class="alert-pill ok"><i data-lucide="check-circle-2"></i> <span id="alert-gas-text">Gas Normal</span></div>
+                        <div class="alert-pill ok"><i data-lucide="check-circle-2"></i> <span id="alert-fire-text">No Fire</span></div>
+                        <div class="alert-pill ok"><i data-lucide="check-circle-2"></i> <span id="alert-pir-text">Motion Clear</span></div>
+                    </div>
+                </div>
+
             </div>
-
-            <!-- ROW 3: ENVIRONMENT + QUICK ACTIONS + TELEMETRY -->
-            <div class="widget-grid-bottom">
-
-                <!-- Environment -->
-                <div class="glass-card env-card">
-                    <div class="card-header">
-                        <span class="card-label">Environmental</span>
-                        <span class="badge badge-blue">Live</span>
-                    </div>
-                    <div class="env-items">
-                        <div class="env-item">
-                            <div class="env-icon" style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);">
-                                <i data-lucide="thermometer" style="color:var(--status-danger);"></i>
-                            </div>
-                            <div class="env-info">
-                                <div class="env-name">Temperature</div>
-                                <div class="env-val-row">
-                                    <span class="env-value" id="val-temp">--</span>
-                                    <span class="env-unit">°C</span>
-                                </div>
-                                <div class="env-bar"><div class="env-bar-fill" id="bar-temp" style="width:40%;background:var(--status-danger);"></div></div>
-                            </div>
-                        </div>
-                        <div class="env-item">
-                            <div class="env-icon" style="background:var(--accent-muted);border-color:var(--accent-border);">
-                                <i data-lucide="droplets" style="color:var(--accent);"></i>
-                            </div>
-                            <div class="env-info">
-                                <div class="env-name">Humidity</div>
-                                <div class="env-val-row">
-                                    <span class="env-value" id="val-humidity">--</span>
-                                    <span class="env-unit">%</span>
-                                </div>
-                                <div class="env-bar"><div class="env-bar-fill" id="bar-hum" style="width:60%;background:var(--accent);"></div></div>
-                            </div>
-                        </div>
-                        <div class="env-item">
-                            <div class="env-icon" style="background:var(--status-warn-bg);border-color:var(--status-warn-bd);">
-                                <i data-lucide="wind" style="color:var(--status-warn);"></i>
-                            </div>
-                            <div class="env-info">
-                                <div class="env-name">Gas Level (MQ-2)</div>
-                                <div class="env-val-row">
-                                    <span class="env-value" id="val-gas">--</span>
-                                    <span class="env-unit">ppm</span>
-                                </div>
-                                <div class="env-bar"><div class="env-bar-fill" id="bar-gas" style="width:15%;background:var(--status-warn);"></div></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="glass-card quick-actions-card">
-                    <div class="card-header">
-                        <span class="card-label">Command Dispatch</span>
-                    </div>
-                    <!-- E-STOP: Prominent, Full-width -->
-                    <button class="estop-btn" id="btn-estop">
-                        <i data-lucide="octagon"></i>
-                        Emergency Stop
-                    </button>
-                    <div class="actions-grid">
-                        <button class="action-btn primary" id="btn-auto">
-                            <i data-lucide="cpu"></i>
-                            Auto Mode
-                        </button>
-                        <button class="action-btn" id="btn-cam">
-                            <i data-lucide="video"></i>
-                            Camera
-                        </button>
-                        <button class="action-btn" id="btn-home" style="grid-column: span 2;">
-                            <i data-lucide="home"></i>
-                            Return to Base
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Motion + Proximity -->
-                <div class="glass-card tele-card">
-                    <div class="tele-icon-label">
-                        <div class="tele-icon" style="background:var(--accent-muted);border-color:var(--accent-border);">
-                            <i data-lucide="eye" style="color:var(--accent);"></i>
-                        </div>
-                        <span class="tele-label">Motion / PIR</span>
-                    </div>
-                    <div class="tele-val" id="val-pir" style="color:var(--status-ok);">Clear</div>
-                    <hr class="card-divider">
-                    <div class="tele-sub">Proximity Distance</div>
-                    <div class="tele-val" style="font-size:var(--text-xl);margin-top:3px;">
-                        <span id="val-ultrasonic">--</span>
-                        <span class="tele-unit">cm</span>
-                    </div>
-                    <div class="data-stamp" style="margin-top:var(--space-2);">
-                        <i data-lucide="timer"></i>
-                        HC-SR04 &middot; HC-SR501
-                    </div>
-                </div>
-
-                <!-- Vibration + IMU -->
-                <div class="glass-card tele-card">
-                    <div class="tele-icon-label">
-                        <div class="tele-icon" style="background:rgba(139,92,246,0.1);border-color:rgba(139,92,246,0.22);">
-                            <i data-lucide="activity" style="color:#8B5CF6;"></i>
-                        </div>
-                        <span class="tele-label">IMU &middot; MPU6050</span>
-                    </div>
-                    <div class="tele-val">
-                        <span id="val-vib">-.-</span>
-                        <span class="tele-unit">g</span>
-                    </div>
-                    <hr class="card-divider">
-                    <div class="tele-sub">Orientation</div>
-                    <div style="display:flex;gap:var(--space-4);margin-top:4px;">
-                        <div>
-                            <div class="tele-val" style="font-size:var(--text-lg);"><span id="val-tilt">0</span><span class="tele-unit">°</span></div>
-                            <div class="tele-sub">Tilt</div>
-                        </div>
-                        <div>
-                            <div class="tele-val" style="font-size:var(--text-lg);"><span id="val-gyro">0</span><span class="tele-unit">°/s</span></div>
-                            <div class="tele-sub">Gyro</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </main>
+
     </div>
 </div>
 

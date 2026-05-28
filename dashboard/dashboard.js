@@ -196,30 +196,36 @@ document.addEventListener('DOMContentLoaded', () => {
         setBar('bar-gas', (v / 4095) * 100);
         const isBad       = v > 2500;
         const alertText   = document.getElementById('alert-gas-text');
-        const alertBadge  = document.getElementById('alert-gas-badge');
-        const alertItem   = alertBadge?.closest('.alert-mini-item');
-        if (alertText)  alertText.textContent  = isBad ? 'HIGH GAS LEVEL!' : 'Gas Level Normal';
-        if (alertBadge) {
-            alertBadge.className   = 'alert-mini-badge badge ' + (isBad ? 'badge-red' : 'badge-green');
-            alertBadge.textContent = isBad ? 'ALERT' : 'OK';
-        }
-        if (alertItem) {
-            alertItem.className = 'alert-mini-item ' + (isBad ? 'critical' : 'ok');
+        
+        if (alertText) {
+            alertText.textContent = isBad ? 'HIGH GAS LEVEL!' : 'Gas Level Normal';
+            const alertPill = alertText.closest('.alert-pill');
+            if (alertPill) {
+                alertPill.className = 'alert-pill ' + (isBad ? 'critical' : 'ok');
+                const icon = alertPill.querySelector('i, svg');
+                if (icon) {
+                    icon.setAttribute('data-lucide', isBad ? 'alert-triangle' : 'check-circle-2');
+                    if (window.lucide) window.lucide.createIcons({nodes: [alertPill]});
+                }
+            }
         }
     }
 
     function updateFire(val) {
         const detected   = val === 'FIRE DETECTED' || val === true || val === 'true' || val === 1;
         const alertText  = document.getElementById('alert-fire-text');
-        const alertBadge = document.getElementById('alert-fire-badge');
-        const alertItem  = alertBadge?.closest('.alert-mini-item');
-        if (alertText)  alertText.textContent  = detected ? '🔥 FIRE DETECTED!' : 'No Fire Detected';
-        if (alertBadge) {
-            alertBadge.className   = 'alert-mini-badge badge ' + (detected ? 'badge-red' : 'badge-green');
-            alertBadge.textContent = detected ? 'CRITICAL' : 'CLEAR';
-        }
-        if (alertItem) {
-            alertItem.className = 'alert-mini-item ' + (detected ? 'critical' : 'ok');
+        
+        if (alertText) {
+            alertText.textContent = detected ? 'FIRE DETECTED!' : 'No Fire Detected';
+            const alertPill = alertText.closest('.alert-pill');
+            if (alertPill) {
+                alertPill.className = 'alert-pill ' + (detected ? 'critical' : 'ok');
+                const icon = alertPill.querySelector('i, svg');
+                if (icon) {
+                    icon.setAttribute('data-lucide', detected ? 'flame' : 'check-circle-2');
+                    if (window.lucide) window.lucide.createIcons({nodes: [alertPill]});
+                }
+            }
         }
     }
 
@@ -231,12 +237,19 @@ document.addEventListener('DOMContentLoaded', () => {
         setText('val-pir', detected ? 'DETECTED' : 'CLEAR');
         const pirEl = document.getElementById('val-pir');
         if (pirEl) pirEl.style.color = detected ? 'var(--amber)' : 'var(--green)';
+        
         const alertText  = document.getElementById('alert-pir-text');
-        const alertBadge = document.getElementById('alert-pir-badge');
-        if (alertText)  alertText.textContent  = detected ? 'Motion Detected!' : 'Motion: Clear';
-        if (alertBadge) {
-            alertBadge.className   = 'alert-mini-badge badge ' + (detected ? 'badge-amber' : 'badge-green');
-            alertBadge.textContent = detected ? 'MOTION' : 'CLEAR';
+        if (alertText) {
+            alertText.textContent = detected ? 'Motion Detected!' : 'Motion Clear';
+            const alertPill = alertText.closest('.alert-pill');
+            if (alertPill) {
+                alertPill.className = 'alert-pill ' + (detected ? 'critical' : 'ok');
+                const icon = alertPill.querySelector('i, svg');
+                if (icon) {
+                    icon.setAttribute('data-lucide', detected ? 'eye' : 'check-circle-2');
+                    if (window.lucide) window.lucide.createIcons({nodes: [alertPill]});
+                }
+            }
         }
     }
 
