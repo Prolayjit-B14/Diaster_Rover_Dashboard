@@ -1049,13 +1049,15 @@
         const mqttCtrl = window.mqttController;
         if (mqttCtrl) {
             // Subscribing to telemetry data streams
-            mqttCtrl.on('gps', (d) => {
-                const lat = parseFloat(d.lat);
-                const lng = parseFloat(d.lng);
-                roverHeading = parseFloat(d.heading) || 0;
-                
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    updateRoverLocation(lat, lng); // Latitude first parameter order
+            mqttCtrl.on('telemetry', (d) => {
+                if (d && d.sensor === 'gps' && d.value) {
+                    const lat = parseFloat(d.value.lat);
+                    const lng = parseFloat(d.value.lng);
+                    roverHeading = parseFloat(d.value.heading) || 0;
+                    
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        updateRoverLocation(lat, lng); // Latitude first parameter order
+                    }
                 }
             });
 
