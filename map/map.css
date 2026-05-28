@@ -62,19 +62,25 @@
     position: relative;
     width: 100%;
     height: 100%;
+    padding: var(--space-4);
+    background: var(--bg-base);
 }
 #map-canvas {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    top: var(--space-4);
+    bottom: var(--space-4);
+    left: var(--space-4);
+    right: var(--space-4);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
     z-index: 1;
+    overflow: hidden;
 }
 
 /* ── FLOATING TACTICAL TOOLBAR (TOP MIDDLE HUD STRIP) ───────────────── */
 .map-floating-tools {
     position: absolute;
-    top: 14px;
+    top: calc(var(--space-4) + 12px);
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -183,7 +189,7 @@
 /* ── HUD BOTTOM COORDINATES PANELS ───────────────────────────────────── */
 .map-hud-bottom {
     position: absolute;
-    bottom: 16px;
+    bottom: calc(var(--space-4) + 12px);
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -228,7 +234,7 @@
 /* ── RIGHT ZOOM & RECENTER CONTROLS (UNIFIED HUD STRIP) ──────────────── */
 .map-tools-right {
     position: absolute;
-    right: 14px;
+    right: calc(var(--space-4) + 12px);
     top: 50%;
     transform: translateY(-50%);
     display: flex;

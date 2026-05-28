@@ -53,14 +53,16 @@
 
 .bento-header-overlay {
     position: absolute;
-    top: 0; left: 0; right: 0;
-    padding: 16px 20px;
+    top: var(--space-4); left: var(--space-4); right: var(--space-4);
+    padding: var(--space-3) var(--space-4);
     display: flex;
     align-items: center;
     justify-content: space-between;
     z-index: 10;
-    background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+    background: linear-gradient(180deg, rgba(0,0,0,0.75) 0%, transparent 100%);
     pointer-events: none;
+    border-top-left-radius: var(--radius-md);
+    border-top-right-radius: var(--radius-md);
 }
 
 .bento-action-icon {
@@ -95,6 +97,9 @@
     background: #000;
     position: relative;
     display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-default);
+    overflow: hidden;
 }
 
 /* Centered status content */
@@ -244,8 +249,8 @@
 .view-all:hover { text-decoration: underline; }
 
 /* ── SPECIFIC GRID PLACEMENTS ────────────────────────────── */
-.bento-cam { grid-column: span 6; grid-row: span 2; padding: 0; min-height: 280px; }
-.bento-map { grid-column: span 6; grid-row: span 2; padding: 0; min-height: 280px; }
+.bento-cam { grid-column: span 6; grid-row: span 2; padding: var(--space-4); min-height: 280px; }
+.bento-map { grid-column: span 6; grid-row: span 2; padding: var(--space-4); min-height: 280px; }
 .bento-status { grid-column: span 3; }
 .bento-power { grid-column: span 3; }
 .bento-env { grid-column: span 3; }
