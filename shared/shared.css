@@ -1314,8 +1314,55 @@ html, body {
   .nav-breadcrumb { display: none !important; }
 }
 
-/* Theme toggle elements are displayed by default using their parent classes (.icon-btn, etc.) */
 #theme-toggle, #landing-theme-toggle, .theme-toggle-btn, .nav-theme-btn {
   display: flex !important;
+}
+
+/* ── TOP NAVBAR TELEMETRY & BREADCRUMBS REDESIGN ─────────────────── */
+.nav-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+}
+.nav-breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+.status-group {
+  display: flex;
+  align-items: center;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
+  box-shadow: var(--shadow-xs);
+}
+[data-theme="light"] .status-group {
+  background: var(--bg-elevated);
+}
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-right: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+.status-item:last-child {
+  border-right: none;
+}
+.status-item svg, .status-item i {
+  flex-shrink: 0;
 }
 

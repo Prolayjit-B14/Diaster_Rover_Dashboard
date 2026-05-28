@@ -80,17 +80,22 @@
                 <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open navigation">
                     <i data-lucide="menu"></i>
                 </button>
-                <span class="nav-page-title">Incident Map</span>
+                <div class="nav-title-group">
+                    <span class="nav-breadcrumb">RescueBOT / Operations</span>
+                    <h1 class="nav-page-title">Incident Map</h1>
+                </div>
             </div>
             <div class="nav-right">
-                <div class="status-pill">
-                    <div class="status-dot offline" id="gps-dot"></div>
-                    <i data-lucide="satellite" id="gps-icon" style="width:12px;height:12px;color:#EF4444;margin-right:2px;"></i>
-                    <span id="gps-status" style="font-family:var(--font-mono);font-size:10px;">Waiting for GPS...</span>
-                </div>
-                <div class="status-pill">
-                    <i data-lucide="clock" style="width:10px;height:10px;"></i>
-                    <span id="mission-clock" style="font-family:var(--font-mono);font-size:10px;">--:--:--</span>
+                <div class="status-group">
+                    <div class="status-item">
+                        <div class="status-dot offline" id="gps-dot"></div>
+                        <i data-lucide="satellite" id="gps-icon" style="width:12px;height:12px;color:#EF4444;margin-right:2px;"></i>
+                        <span id="gps-status" style="font-family:var(--font-mono);font-size:10px;">Waiting for GPS...</span>
+                    </div>
+                    <div class="status-item">
+                        <i data-lucide="clock" style="width:11px;height:11px;color:var(--text-muted);"></i>
+                        <span id="mission-clock" style="font-family:var(--font-mono);font-size:10px;">--:--:--</span>
+                    </div>
                 </div>
                 <button class="icon-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
                     <i data-lucide="moon"></i>

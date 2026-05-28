@@ -67,16 +67,21 @@
                 <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open navigation">
                     <i data-lucide="menu"></i>
                 </button>
-                <span class="nav-page-title">Live Monitoring</span>
+                <div class="nav-title-group">
+                    <span class="nav-breadcrumb">RescueBOT / Operations</span>
+                    <h1 class="nav-page-title">Live Monitoring</h1>
+                </div>
             </div>
             <div class="nav-right">
-                <div class="live-indicator">
-                    <div class="live-dot standby" id="cam-rec-dot"></div>
-                    <span id="cam-rec-label">Standby</span>
-                </div>
-                <div class="status-pill">
-                    <i data-lucide="clock" style="width:11px;height:11px;"></i>
-                    <span id="mission-clock" style="font-family:var(--font-mono);">--:--:--</span>
+                <div class="status-group">
+                    <div class="status-item">
+                        <div class="live-dot standby" id="cam-rec-dot" style="margin-right:0px;"></div>
+                        <span id="cam-rec-label" style="font-family:var(--font-mono);font-size:10px;">STANDBY</span>
+                    </div>
+                    <div class="status-item">
+                        <i data-lucide="clock" style="width:11px;height:11px;color:var(--text-muted);"></i>
+                        <span id="mission-clock" style="font-family:var(--font-mono);font-size:10px;">--:--:--</span>
+                    </div>
                 </div>
                 <button class="icon-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
                     <i data-lucide="moon"></i>

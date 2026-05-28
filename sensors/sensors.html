@@ -67,21 +67,27 @@
                 <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open navigation">
                     <i data-lucide="menu"></i>
                 </button>
-                <span class="nav-page-title">Field Sensor Telemetry</span>
+                <div class="nav-title-group">
+                    <span class="nav-breadcrumb">RescueBOT / Operations</span>
+                    <h1 class="nav-page-title">Field Sensors</h1>
+                </div>
             </div>
             <div class="nav-right">
-                <span class="badge badge-blue" style="font-size:10px; padding:3px 8px;">12 Modules Active</span>
-                <div class="live-indicator" style="display:flex; align-items:center; gap:6px; font-size:10px; color:var(--text-secondary); font-weight:500; background:var(--bg-elevated); border:1px solid var(--border-subtle); padding:3px 8px; border-radius:99px; height:22px;">
-                    <div class="live-dot" style="width:6px; height:6px; border-radius:50%; background:var(--status-ok); animation:pulseOnline 2.5s ease-in-out infinite;"></div>
-                    <span>Live</span>
-                </div>
-                <div class="status-pill">
-                    <div class="status-dot"></div>
-                    <span style="font-family:var(--font-mono);font-size:10px;">Unit ARES-1</span>
-                </div>
-                <div class="status-pill">
-                    <i data-lucide="clock" style="width:10px;height:10px;"></i>
-                    <span id="mission-clock" style="font-family:var(--font-mono);font-size:10px;">--:--:--</span>
+                <div class="status-group">
+                    <div class="status-item">
+                        <span class="badge badge-blue" style="font-size: 9px; padding: 2px 6px; border: none; background: var(--accent-muted); color: var(--accent-bright); line-height: 1;">12 Modules</span>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-dot" style="animation: pulseOnline 2.5s ease-in-out infinite;"></div>
+                        <span>LIVE</span>
+                    </div>
+                    <div class="status-item">
+                        <span>ARES-1</span>
+                    </div>
+                    <div class="status-item">
+                        <i data-lucide="clock" style="width:11px;height:11px;color:var(--text-muted);"></i>
+                        <span id="mission-clock" style="font-family:var(--font-mono);font-size:10px;">--:--:--</span>
+                    </div>
                 </div>
                 <button class="icon-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
                     <i data-lucide="moon"></i>

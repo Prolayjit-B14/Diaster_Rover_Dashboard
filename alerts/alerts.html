@@ -66,17 +66,23 @@
                 <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open navigation">
                     <i data-lucide="menu"></i>
                 </button>
-                <span class="nav-page-title">Alert Center</span>
-                <span class="badge badge-red" id="critical-count-badge" style="display:none; font-size:10px; padding:3px 8px; margin-left:8px;">0 Critical</span>
+                <div class="nav-title-group">
+                    <span class="nav-breadcrumb">RescueBOT / Operations</span>
+                    <h1 class="nav-page-title">Alert Center</h1>
+                </div>
             </div>
             <div class="nav-right">
-                <div class="status-pill">
-                    <div class="status-dot"></div>
-                    <span style="font-family:var(--font-mono);font-size:10px;">Unit ARES-1</span>
-                </div>
-                <div class="status-pill">
-                    <i data-lucide="clock" style="width:10px;height:10px;"></i>
-                    <span id="mission-clock" style="font-family:var(--font-mono);font-size:10px;">--:--:--</span>
+                <div class="status-group">
+                    <div class="status-item" id="critical-count-badge" style="display:none; color:var(--status-danger);">
+                        0 CRITICAL
+                    </div>
+                    <div class="status-item">
+                        <span>ARES-1</span>
+                    </div>
+                    <div class="status-item">
+                        <i data-lucide="clock" style="width:11px;height:11px;color:var(--text-muted);"></i>
+                        <span id="mission-clock" style="font-family:var(--font-mono);font-size:10px;">--:--:--</span>
+                    </div>
                 </div>
                 <button class="icon-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
                     <i data-lucide="moon"></i>
