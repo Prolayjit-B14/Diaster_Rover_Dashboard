@@ -6,7 +6,7 @@
 .sensor-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr); /* Enforces 3x3 on desktop */
-    gap: 8px !important;
+    gap: 16px !important; /* Slightly increased gap for premium spacious layout */
 }
 
 /* ── SENSOR CARD ─────────────────────────────────────────────── */

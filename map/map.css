@@ -77,6 +77,24 @@
     overflow: hidden;
 }
 
+/* RGB variables mapped to IDs for alpha-blended glows */
+#btn-follow { --btn-rgb: 0, 212, 255; }
+#btn-safe { --btn-rgb: 0, 255, 136; }
+#btn-danger { --btn-rgb: 255, 45, 85; }
+#btn-base-station { --btn-rgb: 0, 212, 255; }
+#btn-survivor { --btn-rgb: 255, 0, 127; }
+#btn-obstacle { --btn-rgb: 255, 184, 0; }
+#btn-supplies { --btn-rgb: 160, 102, 255; }
+#btn-fire { --btn-rgb: 255, 87, 34; }
+#btn-gas { --btn-rgb: 224, 64, 251; }
+#btn-water { --btn-rgb: 33, 150, 243; }
+#btn-clear-path { --btn-rgb: 139, 164, 192; }
+
+#btn-zoom-in { --btn-rgb: 0, 255, 136; }
+#btn-zoom-out { --btn-rgb: 255, 45, 85; }
+#btn-recenter { --btn-rgb: 255, 184, 0; }
+#btn-layers { --btn-rgb: 160, 102, 255; }
+
 /* ── FLOATING TACTICAL TOOLBAR (TOP MIDDLE HUD STRIP) ───────────────── */
 .map-floating-tools {
     position: absolute;
@@ -86,19 +104,26 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    background: rgba(11, 15, 25, 0.88);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-md);
-    padding: var(--space-1);
-    gap: var(--space-1);
+    background: rgba(11, 15, 25, 0.45) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 6px 12px !important;
+    border-radius: 9999px !important; /* Premium capsule layout */
+    gap: 6px !important;
     pointer-events: auto;
     z-index: 1000;
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    transition: all var(--t-med) !important;
 }
 [data-theme="light"] .map-floating-tools {
-    background: rgba(255, 255, 255, 0.94);
+    background: rgba(255, 255, 255, 0.65) !important;
+    border-color: rgba(15, 23, 42, 0.09) !important;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05), 0 0 1px rgba(0, 0, 0, 0.05) !important;
+}
+.map-floating-tools:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
 .map-tool-divider {
@@ -112,36 +137,43 @@
 
 /* ── TOOL STRIP BUTTONS ────────────────────────────────────────────── */
 .map-tool-btn {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: transparent;
-    border: none;
-    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    border-radius: 50% !important; /* Circular premium buttons */
     color: var(--btn-color, var(--text-secondary));
     cursor: pointer;
-    transition: var(--t-fast);
+    transition: all var(--t-fast) cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
     position: relative;
 }
 .map-tool-btn svg,
 .map-tool-btn i {
-    width: 14px;
-    height: 14px;
+    width: 15px;
+    height: 15px;
     flex-shrink: 0;
+    transition: transform var(--t-fast) ease;
 }
 .map-tool-btn:hover {
-    color: #ffffff;
-    background: var(--btn-color, var(--accent)) !important;
+    color: var(--btn-color) !important;
+    background: rgba(var(--btn-rgb, 59, 130, 246), 0.12) !important;
+    border-color: rgba(var(--btn-rgb, 59, 130, 246), 0.25) !important;
+    box-shadow: 0 0 12px rgba(var(--btn-rgb, 59, 130, 246), 0.2) !important;
 }
-[data-theme="light"] .map-tool-btn:hover {
-    color: #ffffff !important;
+.map-tool-btn:hover svg,
+.map-tool-btn:hover i {
+    transform: scale(1.12);
 }
 .map-tool-btn.active {
-    color: #ffffff !important;
-    background: var(--btn-color, var(--accent)) !important;
+    color: var(--btn-color) !important;
+    background: rgba(var(--btn-rgb, 59, 130, 246), 0.22) !important;
+    border-color: var(--btn-color) !important;
+    box-shadow: 0 0 15px rgba(var(--btn-rgb, 59, 130, 246), 0.35), 
+                inset 0 0 8px rgba(var(--btn-rgb, 59, 130, 246), 0.2) !important;
 }
 
 /* ── CUSTOM TACTICAL TOOLTIPS ───────────────────────────────────────── */
@@ -239,54 +271,111 @@
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
-    background: rgba(11, 15, 25, 0.88);
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-md);
-    padding: var(--space-1);
-    gap: var(--space-1);
+    background: rgba(11, 15, 25, 0.45) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 6px !important;
+    border-radius: 9999px !important; /* Premium capsule vertical layout */
+    gap: 6px !important;
     pointer-events: auto;
     z-index: 1000;
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    transition: all var(--t-med) !important;
 }
 [data-theme="light"] .map-tools-right {
-    background: rgba(255, 255, 255, 0.94);
+    background: rgba(255, 255, 255, 0.65) !important;
+    border-color: rgba(15, 23, 42, 0.09) !important;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05), 0 0 1px rgba(0, 0, 0, 0.05) !important;
+}
+.map-tools-right:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
 .map-zoom-btn {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     background: transparent;
-    border: none;
-    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    border-radius: 50% !important; /* Circular buttons */
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     color: var(--btn-color, var(--text-secondary));
-    transition: var(--t-fast);
+    transition: all var(--t-fast) cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
 }
 .map-zoom-btn svg,
 .map-zoom-btn i {
-    width: 14px;
-    height: 14px;
+    width: 15px;
+    height: 15px;
+    transition: transform var(--t-fast) ease;
 }
 .map-zoom-btn:hover {
-    color: #ffffff;
-    background: var(--btn-color, var(--accent)) !important;
+    color: var(--btn-color) !important;
+    background: rgba(var(--btn-rgb, 59, 130, 246), 0.12) !important;
+    border-color: rgba(var(--btn-rgb, 59, 130, 246), 0.25) !important;
+    box-shadow: 0 0 12px rgba(var(--btn-rgb, 59, 130, 246), 0.2) !important;
 }
-[data-theme="light"] .map-zoom-btn:hover {
-    color: #ffffff !important;
+.map-zoom-btn:hover svg,
+.map-zoom-btn:hover i {
+    transform: scale(1.12);
 }
 .map-zoom-btn.active {
-    color: #ffffff !important;
-    background: var(--btn-color, var(--accent)) !important;
+    color: var(--btn-color) !important;
+    background: rgba(var(--btn-rgb, 59, 130, 246), 0.22) !important;
+    border-color: var(--btn-color) !important;
+    box-shadow: 0 0 15px rgba(var(--btn-rgb, 59, 130, 246), 0.35) !important;
 }
 
 .map-zoom-divider {
     height: 1px;
     background: var(--border-subtle);
     margin: 2px 4px;
+}
+
+/* Left-opening custom tooltips for right-aligned dock */
+.map-zoom-btn::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    right: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%) scale(0.9);
+    background: rgba(11, 15, 25, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-default);
+    color: var(--text-primary);
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+}
+.map-zoom-btn::before {
+    content: '';
+    position: absolute;
+    right: calc(100% + 2px);
+    top: 50%;
+    transform: translateY(-50%) scale(0.9);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent transparent var(--border-default);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 9999;
+}
+.map-zoom-btn:hover::after,
+.map-zoom-btn:hover::before {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
 }
 
 /* ── LEAFLET CUSTOM POPUPS OVERRIDES ────────────────────────────────── */
@@ -332,12 +421,37 @@
     animation: pulseCompass 2s ease-in-out infinite;
     display: flex; align-items: center; justify-content: center;
     z-index: 2;
+    position: relative;
 }
 .rover-pulse-dot {
     width: 5px; height: 5px;
     background: #ffffff;
     border-radius: 50%;
 }
+
+/* Radar pulse wave scan effect */
+.rover-pulse-ring::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border: 1px solid rgba(59, 130, 246, 0.5);
+    border-radius: 50%;
+    animation: radarRingScan 2s linear infinite;
+    pointer-events: none;
+}
+@keyframes radarRingScan {
+    0% {
+        transform: scale(0.8);
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+    }
+    100% {
+        transform: scale(2.4);
+        opacity: 0;
+        box-shadow: 0 0 8px 4px rgba(59, 130, 246, 0);
+    }
+}
+
 .rover-compass-heading {
     position: absolute;
     top: -6px; left: 50%;
