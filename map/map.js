@@ -18,7 +18,6 @@ const TOOLS = {
     FIRE:         'fire',
     GAS:          'gas',
     WATER:        'water',
-    CAMERA:       'camera',
 };
 
 // ── LANDMARK CONFIG ──────────────────────────────────────────────────────────
@@ -32,7 +31,6 @@ const LANDMARK_CONFIG = {
     [TOOLS.FIRE]:        { color: '#FF5722', label: 'Fire Source',  emoji: '🔥' },
     [TOOLS.GAS]:         { color: '#E040FB', label: 'Gas Hazard',   emoji: '💀' },
     [TOOLS.WATER]:       { color: '#2196F3', label: 'Water Hazard', emoji: '💧' },
-    [TOOLS.CAMERA]:      { color: '#00E676', label: 'Photo Point',  emoji: '📷' },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -188,6 +186,49 @@ class MapDashboard {
             this.addLandmark(e.latlng.lat, e.latlng.lng, this.activeTool);
         });
 
+        // Turn off follow mode on manual drag
+        this.map.on('dragstart', () => {
+            if (this.isFollowing) {
+                this.isFollowing = false;
+                const btnFollow = document.getElementById('btn-follow');
+                if (btnFollow) btnFollow.classList.remove('active');
+                window.RESCUEBOT_UI?.toast('Follow mode: OFF (manual navigation)', 'info');
+            }
+        });
+
+        // Sync zoom buttons state with Leaflet's zoom limits
+        const syncZoomBtns = () => {
+            const currentZoom = this.map.getZoom();
+            const minZoom = this.map.getMinZoom();
+            const maxZoom = this.map.getMaxZoom();
+            
+            const btnZoomIn = document.getElementById('btn-zoom-in');
+            const btnZoomOut = document.getElementById('btn-zoom-out');
+            
+            if (btnZoomIn) {
+                if (currentZoom >= maxZoom) {
+                    btnZoomIn.style.opacity = '0.4';
+                    btnZoomIn.style.pointerEvents = 'none';
+                } else {
+                    btnZoomIn.style.opacity = '1';
+                    btnZoomIn.style.pointerEvents = 'auto';
+                }
+            }
+            if (btnZoomOut) {
+                if (currentZoom <= minZoom) {
+                    btnZoomOut.style.opacity = '0.4';
+                    btnZoomOut.style.pointerEvents = 'none';
+                } else {
+                    btnZoomOut.style.opacity = '1';
+                    btnZoomOut.style.pointerEvents = 'auto';
+                }
+            }
+        };
+
+        this.map.on('zoomend', syncZoomBtns);
+        // Run once on load to sync initial states
+        setTimeout(syncZoomBtns, 100);
+
         // Tool buttons
         const toolBtns = [
             { id: 'btn-follow',          tool: null,            followToggle: true },
@@ -200,7 +241,6 @@ class MapDashboard {
             { id: 'btn-fire',            tool: TOOLS.FIRE                          },
             { id: 'btn-gas',             tool: TOOLS.GAS                           },
             { id: 'btn-water',           tool: TOOLS.WATER                         },
-            { id: 'btn-camera',          tool: TOOLS.CAMERA                        },
         ];
 
         toolBtns.forEach(({ id, tool, followToggle }) => {
@@ -278,6 +318,10 @@ class MapDashboard {
         document.getElementById('btn-recenter')?.addEventListener('click', () => {
             if (this.currentPos) {
                 this.map.setView(this.currentPos, 20, { animate: true });
+                this.isFollowing = true;
+                const btnFollow = document.getElementById('btn-follow');
+                if (btnFollow) btnFollow.classList.add('active');
+                window.RESCUEBOT_UI?.toast('Recentered & Follow mode: ON', 'success');
             } else {
                 window.RESCUEBOT_UI?.toast('No GPS fix yet', 'warning');
             }
@@ -351,6 +395,10 @@ class MapDashboard {
         const gpsDot = document.getElementById('gps-dot');
         if (gpsDot) {
             gpsDot.className = 'status-dot' + (sats < 4 ? ' warning' : '');
+        }
+        const gpsIcon = document.getElementById('gps-icon');
+        if (gpsIcon) {
+            gpsIcon.style.color = sats >= 4 ? '#00FF88' : sats > 0 ? '#FFB800' : '#FF2D55';
         }
     }
 
@@ -429,7 +477,6 @@ class MapDashboard {
             [TOOLS.FIRE]:        'btn-fire',
             [TOOLS.GAS]:         'btn-gas',
             [TOOLS.WATER]:       'btn-water',
-            [TOOLS.CAMERA]:      'btn-camera',
         };
         const activeBtnId = toolBtnIds[this.activeTool];
         if (activeBtnId) {

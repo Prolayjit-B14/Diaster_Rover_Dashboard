@@ -324,7 +324,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: var(--text-secondary);
+    color: var(--btn-color, var(--text-secondary));
     transition: var(--t-fast);
     font-family: var(--font-body);
 }
@@ -336,15 +336,17 @@
 }
 
 .map-zoom-btn:hover {
-    border-color: var(--border-accent);
-    color: var(--accent);
-    background: rgba(11, 15, 25, 0.95);
+    border-color: var(--btn-color, var(--border-accent));
+    color: #0B0F19;
+    background: var(--btn-color, var(--accent)) !important;
+    box-shadow: 0 0 10px var(--btn-color);
 }
 
 .map-zoom-btn.active {
-    border-color: var(--border-accent);
-    color: var(--accent);
-    background: var(--accent-muted);
+    border-color: var(--btn-color, var(--border-accent));
+    color: #0B0F19 !important;
+    background: var(--btn-color, var(--accent)) !important;
+    box-shadow: 0 0 14px var(--btn-color);
 }
 
 .map-zoom-divider {

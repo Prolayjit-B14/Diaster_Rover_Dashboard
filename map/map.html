@@ -86,6 +86,7 @@
             <div class="nav-right">
                 <div class="status-pill">
                     <div class="status-dot" id="gps-dot"></div>
+                    <i data-lucide="satellite" id="gps-icon" style="width:12px;height:12px;color:#00FF88;margin-right:2px;"></i>
                     <span id="gps-status" style="font-family:var(--font-mono);font-size:10px;">3D GPS Fix</span>
                 </div>
                 <div class="status-pill">
@@ -141,9 +142,6 @@
                         <button class="map-tool-btn" id="btn-water" style="--btn-color: #2196F3;" data-tooltip="Water Hazard">
                             <i data-lucide="droplet"></i>
                         </button>
-                        <button class="map-tool-btn" id="btn-camera" style="--btn-color: #00E676;" data-tooltip="Photo Point">
-                            <i data-lucide="camera"></i>
-                        </button>
                         <button class="map-tool-btn" id="btn-clear-path" style="--btn-color: #8BA4C0;" data-tooltip="Clear Path">
                             <i data-lucide="trash-2"></i>
                         </button>
@@ -176,17 +174,17 @@
 
                 <!-- Right Controls: Zoom / Recenter -->
                 <div class="map-tools-right">
-                    <button class="map-zoom-btn" id="btn-zoom-in" title="Zoom In">
+                    <button class="map-zoom-btn" id="btn-zoom-in" style="--btn-color: #00FF88;" title="Zoom In">
                         <i data-lucide="plus"></i>
                     </button>
-                    <button class="map-zoom-btn" id="btn-zoom-out" title="Zoom Out">
+                    <button class="map-zoom-btn" id="btn-zoom-out" style="--btn-color: #FF2D55;" title="Zoom Out">
                         <i data-lucide="minus"></i>
                     </button>
                     <div class="map-zoom-divider"></div>
-                    <button class="map-zoom-btn" id="btn-recenter" title="Recenter on Rover">
+                    <button class="map-zoom-btn" id="btn-recenter" style="--btn-color: #FFB800;" title="Recenter on Rover">
                         <i data-lucide="crosshair"></i>
                     </button>
-                    <button class="map-zoom-btn" id="btn-layers" title="Toggle Layer">
+                    <button class="map-zoom-btn" id="btn-layers" style="--btn-color: #A066FF;" title="Toggle Layer">
                         <i data-lucide="layers"></i>
                     </button>
                 </div>
