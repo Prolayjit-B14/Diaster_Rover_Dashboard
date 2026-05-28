@@ -125,18 +125,6 @@
                         <div class="header-title-block">
                             <h2 class="monitoring-title">Camera Feed</h2>
                         </div>
-                        <div class="monitoring-meta-bar">
-                            <div class="meta-item">
-                                <span class="meta-dot live" id="rec-badge"></span>
-                                Status: <span class="meta-status">Live</span>
-                            </div>
-                            <div class="meta-item-separator">|</div>
-                            <div class="meta-item">AI Pipeline: <span class="meta-status text-green" id="fps-badge">Active</span></div>
-                            <div class="meta-item-separator">|</div>
-                            <div class="meta-item">Latency: <span class="meta-status" id="latency-badge">-- ms</span></div>
-                            <div class="meta-item-separator">|</div>
-                            <div class="meta-item" id="hud-timestamp">--</div>
-                        </div>
                     </div>
 
                     <!-- Stream Container -->
@@ -191,6 +179,29 @@
                             </h3>
                         </summary>
                         <div class="tuning-row" style="padding-bottom:var(--space-5);">
+                            <!-- Stream Stats Grid -->
+                            <div class="env-risk-grid" style="margin-bottom: var(--space-4); grid-template-columns: repeat(2, 1fr); gap: 6px;">
+                                <div class="env-risk-card" style="padding: 6px 8px;">
+                                    <div class="env-risk-label" style="font-size: 8px;">Stream Status</div>
+                                    <div class="env-risk-value" style="font-size: 11px; display: flex; align-items: center; gap: 4px;">
+                                        <span class="meta-dot live" id="rec-badge" style="width: 5px; height: 5px; border-radius: 50%; background: var(--status-ok);"></span>
+                                        Live
+                                    </div>
+                                </div>
+                                <div class="env-risk-card" style="padding: 6px 8px;">
+                                    <div class="env-risk-label" style="font-size: 8px;">AI Pipeline</div>
+                                    <div class="env-risk-value text-green" id="fps-badge" style="font-size: 11px; font-weight: 600;">Active</div>
+                                </div>
+                                <div class="env-risk-card" style="padding: 6px 8px;">
+                                    <div class="env-risk-label" style="font-size: 8px;">Latency</div>
+                                    <div class="env-risk-value" id="latency-badge" style="font-size: 11px; font-weight: 600;">-- ms</div>
+                                </div>
+                                <div class="env-risk-card" style="padding: 6px 8px;">
+                                    <div class="env-risk-label" style="font-size: 8px;">Timestamp</div>
+                                    <div class="env-risk-value" id="hud-timestamp" style="font-size: 9px; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;">--</div>
+                                </div>
+                            </div>
+
                             <div class="tuning-item">
                                 <div class="tuning-label-row">
                                     <span class="tuning-label">Camera IP Override</span>
