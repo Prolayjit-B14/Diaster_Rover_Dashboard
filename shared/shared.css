@@ -1407,15 +1407,16 @@ html, body {
 .landing-nav .nav-links {
   position: absolute !important;
   left: 50% !important;
-  transform: translateX(-50%) !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
   display: flex !important;
   align-items: center !important;
-  gap: 6px !important;
+  gap: 8px !important;
   background: rgba(11, 15, 25, 0.45) !important;
   backdrop-filter: blur(14px) !important;
   -webkit-backdrop-filter: blur(14px) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  padding: 5px 10px !important;
+  padding: 4px 10px !important;
   border-radius: var(--radius-full) !important;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 1px rgba(255, 255, 255, 0.1) !important;
   transition: all var(--t-med) !important;
@@ -1431,7 +1432,7 @@ html, body {
 
 .nav-links-center:hover,
 .landing-nav .nav-links:hover {
-  transform: translate(-50%, 1.5px) !important;
+  transform: translate(-50%, calc(-50% + 1.5px)) !important;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), 0 0 20px rgba(59, 130, 246, 0.1) !important;
 }
 
@@ -1445,12 +1446,19 @@ html, body {
   display: none !important;
 }
 
+/* Responsive brand title hiding to prevent navbar layout collisions on mobile/tablets */
+@media (max-width: 768px) {
+  .nav-brand-name {
+    display: none !important;
+  }
+}
+
 /* Nav Item styling inside floating dock */
 .nav-link-item,
 .landing-nav .nav-link-item {
   color: var(--text-secondary) !important;
-  width: 34px !important;
-  height: 34px !important;
+  width: 38px !important;
+  height: 38px !important;
   padding: 0 !important;
   justify-content: center !important;
   border-radius: 50% !important; /* Perfect circular buttons */
@@ -1466,8 +1474,8 @@ html, body {
 
 .nav-link-item i,
 .nav-link-item svg {
-  width: 16px !important;
-  height: 16px !important;
+  width: 18px !important;
+  height: 18px !important;
   transition: transform var(--t-fast) ease !important;
 }
 
