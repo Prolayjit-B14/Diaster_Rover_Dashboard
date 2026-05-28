@@ -1,5 +1,5 @@
 /* ============================================================
-   SENSORS PAGE — Field Sensor Monitoring
+   SENSORS PAGE — Field Sensor Telemetry
    ============================================================ */
 
 /* ── SENSOR GRID ─────────────────────────────────────────────── */
@@ -14,28 +14,30 @@
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
-    padding: var(--space-5);
+    padding: var(--space-4) var(--space-5);
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
-    transition: border-color var(--t-fast), box-shadow var(--t-fast);
+    gap: var(--space-3);
+    transition: border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
     position: relative;
     overflow: hidden;
+    box-shadow: var(--shadow-inset), var(--shadow-xs);
 }
 
-/* Top accent line using card color variable */
+/* Left accent line matching card color */
 .sensor-card::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
+    top: 0; left: 0; bottom: 0;
+    width: 2px;
     background: var(--card-color, var(--accent));
-    opacity: 0.6;
+    opacity: 0.7;
 }
 
 .sensor-card:hover {
     border-color: var(--border-default);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-inset), var(--shadow-sm);
+    transform: translateY(-1px);
 }
 
 /* ── SENSOR CARD HEADER ──────────────────────────────────────── */
@@ -49,34 +51,31 @@
 .sensor-icon-label {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-2);
 }
 
 .sensor-icon {
-    width: 36px; height: 36px;
+    width: 32px; height: 32px;
     border-radius: var(--radius-sm);
     display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
     border: 1px solid var(--border-subtle);
     flex-shrink: 0;
 }
 
-.sensor-icon i, .sensor-icon svg {
-    width: 16px; height: 16px;
-}
+.sensor-icon i, .sensor-icon svg { width: 14px; height: 14px; }
 
 .sensor-name {
-    font-size: 13px; font-weight: 600;
+    font-size: var(--text-base); font-weight: var(--fw-semibold);
     color: var(--text-primary);
     letter-spacing: -0.01em;
 }
 
 .sensor-model {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 9px;
     color: var(--text-muted);
     margin-top: 1px;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.03em;
 }
 
 /* ── SENSOR VALUE SECTION ────────────────────────────────────── */
@@ -88,8 +87,8 @@
 
 .sensor-big-val {
     font-family: var(--font-mono);
-    font-size: 2.2rem;
-    font-weight: 600;
+    font-size: 1.75rem;
+    font-weight: var(--fw-semibold);
     color: var(--text-primary);
     line-height: 1;
     letter-spacing: -0.02em;
@@ -97,27 +96,26 @@
 
 .sensor-unit {
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
     color: var(--text-muted);
-    margin-left: 4px;
-    font-weight: 400;
+    margin-left: 3px;
+    font-weight: var(--fw-normal);
 }
 
 .sensor-bar-wrap {
     width: 100%;
     height: 3px;
     background: var(--bg-elevated);
-    border-radius: 99px;
+    border-radius: var(--radius-full);
     overflow: hidden;
-    margin-top: var(--space-2);
 }
 
 .sensor-bar {
     height: 100%;
     background: var(--card-color, var(--accent));
-    border-radius: 99px;
-    transition: width 1s ease;
-    opacity: 0.8;
+    border-radius: var(--radius-full);
+    transition: width 1.2s ease !important;
+    opacity: 0.85;
 }
 
 /* ── SENSOR FOOTER ───────────────────────────────────────────── */
@@ -125,29 +123,37 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: var(--space-3);
+    padding-top: var(--space-2);
     border-top: 1px solid var(--border-subtle);
 }
 
 .sensor-footer-key {
-    font-size: 10px;
+    font-size: 9px;
     color: var(--text-muted);
-    font-weight: 500;
+    font-weight: var(--fw-semibold);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.07em;
 }
 
 .sensor-footer-val {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: var(--text-xs);
     color: var(--text-secondary);
-    font-weight: 500;
+    font-weight: var(--fw-medium);
+}
+
+/* Timestamp inside footer */
+.sensor-timestamp {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.01em;
 }
 
 /* ── CIRCULAR RING (Humidity / Battery) ──────────────────────── */
 .circular-ring-wrap {
-    width: 88px;
-    height: 88px;
+    width: 80px;
+    height: 80px;
     position: relative;
     margin: 0 auto;
 }
@@ -162,7 +168,7 @@
     fill: none;
     stroke: var(--card-color, var(--accent));
     stroke-linecap: round;
-    transition: stroke-dashoffset 1s ease;
+    transition: stroke-dashoffset 1.2s ease !important;
 }
 
 .circular-center {
@@ -172,8 +178,8 @@
     align-items: center;
     justify-content: center;
     font-family: var(--font-mono);
-    font-size: 16px;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--fw-semibold);
     color: var(--text-primary);
 }
 
@@ -186,31 +192,30 @@
 }
 
 .pulse-ring {
-    width: 64px; height: 64px;
+    width: 60px; height: 60px;
     border-radius: 50%;
     border: 2px solid var(--border-default);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
     position: relative;
     transition: border-color var(--t-fast);
 }
 
 .pulse-ring.motion-active {
     border-color: var(--card-color, var(--accent));
-    animation: pirRipple 1.2s ease-out infinite;
+    animation: pirRipple 1.4s ease-out infinite;
 }
 
 @keyframes pirRipple {
-    0%   { box-shadow: 0 0 0 0 rgba(6,182,212,0.4); }
-    100% { box-shadow: 0 0 0 16px rgba(6,182,212,0); }
+    0%   { box-shadow: 0 0 0 0 rgba(6,182,212,0.35); }
+    100% { box-shadow: 0 0 0 14px rgba(6,182,212,0); }
 }
 
 .pir-status-text {
     font-family: var(--font-mono);
-    font-size: 14px;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--fw-semibold);
     color: var(--text-primary);
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -225,7 +230,7 @@
 
 .gps-row-item {
     flex: 1;
-    min-width: 60px;
+    min-width: 56px;
 }
 
 /* ── SECTION HEADER RIGHT ────────────────────────────────────── */

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rescue Intel | Incident Map</title>
+    <meta name="description" content="Live GPS tracking and incident mapping with waypoints, hazard zones and mission telemetry.">
     <link rel="icon" type="image/png" href="../assets/favicon.png">
     <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('rescuebot-theme') || 'dark');</script>
     <link rel="stylesheet" href="../shared/shared.css">
@@ -45,9 +46,9 @@
                 <i data-lucide="activity"></i>
                 <span class="nav-label">Field Sensors</span>
             </a>
-            <a href="../alerts/alerts.html" class="nav-item" data-tooltip="Alerts">
+            <a href="../alerts/alerts.html" class="nav-item" data-tooltip="Alert Center">
                 <i data-lucide="bell-ring"></i>
-                <span class="nav-label">Alerts</span>
+                <span class="nav-label">Alert Center</span>
                 <span class="nav-badge" id="sidebar-alert-count">0</span>
             </a>
 
@@ -56,7 +57,7 @@
                 <i data-lucide="home"></i>
                 <span class="nav-label">Home</span>
             </a>
-            <a href="#" class="nav-item" aria-disabled="true" title="Coming Soon" data-tooltip="Settings" style="opacity:0.35;cursor:not-allowed;pointer-events:none;">
+            <a href="#" class="nav-item" aria-disabled="true" data-tooltip="Settings" style="opacity:0.3;cursor:not-allowed;pointer-events:none;">
                 <i data-lucide="settings"></i>
                 <span class="nav-label">Settings</span>
             </a>
@@ -64,8 +65,8 @@
 
         <div class="sidebar-footer">
             <div class="status-pill" style="width:100%; justify-content:center;">
-                <div class="status-dot mqtt-status-dot" id="mqtt-dot"></div>
-                <span class="mqtt-status-text" id="mqtt-status-text" style="font-family:var(--font-mono);font-size:10px;">CONNECTING</span>
+                <div class="status-dot mqtt-status-dot standby" id="mqtt-dot"></div>
+                <span class="mqtt-status-text" id="mqtt-status-text" style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.04em;">CONNECTING</span>
             </div>
         </div>
     </aside>
@@ -85,16 +86,15 @@
             <div class="nav-right">
                 <div class="status-pill">
                     <div class="status-dot" id="gps-dot"></div>
-                    <span id="gps-status" style="font-family:var(--font-mono);font-size:11px;">3D GPS Fix</span>
+                    <span id="gps-status" style="font-family:var(--font-mono);font-size:10px;">3D GPS Fix</span>
                 </div>
                 <div class="status-pill">
-                    <i data-lucide="clock" style="width:11px;height:11px;"></i>
-                    <span id="mission-clock" style="font-family:var(--font-mono);">--:--:--</span>
+                    <i data-lucide="clock" style="width:10px;height:10px;"></i>
+                    <span id="mission-clock" style="font-family:var(--font-mono);font-size:10px;">--:--:--</span>
                 </div>
                 <button class="icon-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
                     <i data-lucide="moon"></i>
                 </button>
-                <div class="icon-btn" style="background:var(--accent);color:#fff;font-weight:700;font-size:11px;cursor:default;border-color:var(--accent);">PB</div>
             </div>
         </header>
 
@@ -179,7 +179,7 @@
 
                 <!-- Landmarks -->
                 <div class="tool-panel-section" style="flex:1;">
-                    <div class="map-tools-title">Landmarks</div>
+                    <div class="map-tools-title">Field Markers</div>
                     <div class="landmark-list" id="landmark-list">
                         <div class="landmark-placeholder">Click map to add markers</div>
                     </div>
@@ -193,9 +193,10 @@
                 <!-- Leaflet Map -->
                 <div id="map-canvas"></div>
 
-                <!-- HUD Top: Label -->
+                <!-- HUD Top: Tracking Status -->
                 <div class="map-hud-overlay map-hud-top">
-                    Live Mission Coordinates
+                    <span style="color:var(--text-muted);">Active Track &mdash;</span>
+                    &thinsp;Live Mission Coordinates
                 </div>
 
                 <!-- HUD Bottom: Stats Cards -->

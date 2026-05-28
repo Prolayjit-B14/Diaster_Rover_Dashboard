@@ -64,8 +64,8 @@
 
         <div class="sidebar-footer">
             <div class="status-pill" style="width:100%; justify-content:center;">
-                <div class="status-dot" id="mqtt-dot"></div>
-                <span id="mqtt-status-text" style="font-family:var(--font-mono);font-size:10px;">CONNECTING</span>
+                <div class="status-dot standby" id="mqtt-dot"></div>
+                <span id="mqtt-status-text" style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.04em;">CONNECTING</span>
             </div>
         </div>
     </aside>
@@ -292,10 +292,10 @@
                         </div>
                     </details>
 
-                    <!-- Rescue Intelligence -->
+                    <!-- Detection Analysis -->
                     <div class="cam-sidebar-section">
                         <div class="section-title-row">
-                            <h3>Rescue Intelligence</h3>
+                            <h3>Detection Analysis</h3>
                             <span class="badge badge-neutral" id="rescue-priority-badge">Low</span>
                         </div>
                         <div class="rescue-intel-grid">
@@ -350,7 +350,7 @@
                                 </div>
                             </div>
                             <div class="ri-card ri-card-wide" id="ri-survivor">
-                                <div class="ri-label">Survival Probability</div>
+                                <div class="ri-label">Rescue Priority Score</div>
                                 <div class="ri-meter-wrap">
                                     <div class="ri-meter-bar">
                                         <div class="ri-meter-fill survivor-fill" id="ri-survivor-fill" style="width:0%"></div>

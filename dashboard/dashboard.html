@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rescue Intel | Overview</title>
+    <title>Rescue Intel | Operations Overview</title>
+    <meta name="description" content="Real-time operational overview — rover telemetry, GPS tracking, environmental monitoring and alert management.">
     <link rel="icon" type="image/png" href="../assets/favicon.png">
     <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('rescuebot-theme') || 'dark');</script>
     <link rel="stylesheet" href="../shared/shared.css">
@@ -45,9 +46,9 @@
                 <i data-lucide="activity"></i>
                 <span class="nav-label">Field Sensors</span>
             </a>
-            <a href="../alerts/alerts.html" class="nav-item" data-tooltip="Alerts">
+            <a href="../alerts/alerts.html" class="nav-item" data-tooltip="Alert Center">
                 <i data-lucide="bell-ring"></i>
-                <span class="nav-label">Alerts</span>
+                <span class="nav-label">Alert Center</span>
             </a>
 
             <div class="nav-section-label" style="margin-top:8px;">System</div>
@@ -55,7 +56,7 @@
                 <i data-lucide="home"></i>
                 <span class="nav-label">Home</span>
             </a>
-            <a href="#" class="nav-item" aria-disabled="true" title="Coming Soon" data-tooltip="Settings" style="opacity:0.35;cursor:not-allowed;pointer-events:none;">
+            <a href="#" class="nav-item" aria-disabled="true" data-tooltip="Settings" style="opacity:0.3;cursor:not-allowed;pointer-events:none;">
                 <i data-lucide="settings"></i>
                 <span class="nav-label">Settings</span>
             </a>
@@ -63,8 +64,8 @@
 
         <div class="sidebar-footer">
             <div class="status-pill" style="width:100%; justify-content:center;">
-                <div class="status-dot" id="mqtt-dot"></div>
-                <span id="mqtt-status-text" style="font-family:var(--font-mono);font-size:10px;">CONNECTING</span>
+                <div class="status-dot standby" id="mqtt-dot"></div>
+                <span id="mqtt-status-text" style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.04em;">CONNECTING</span>
             </div>
         </div>
     </aside>
@@ -79,21 +80,20 @@
                     <i data-lucide="menu"></i>
                 </button>
                 <span class="nav-page-title">Overview</span>
-                <span class="nav-breadcrumb">/ Dashboard</span>
+                <span class="nav-breadcrumb">/ Operations Dashboard</span>
             </div>
             <div class="nav-right">
                 <div class="status-pill" id="rover-status-pill">
                     <div class="status-dot" id="rover-conn-dot"></div>
-                    <span>Rover Online</span>
+                    <span style="font-family:var(--font-mono);font-size:10px;">Unit ARES-1</span>
                 </div>
                 <div class="status-pill">
-                    <i data-lucide="clock" style="width:11px;height:11px;"></i>
-                    <span id="mission-clock" style="font-family:var(--font-mono);">--:--:--</span>
+                    <i data-lucide="clock" style="width:10px;height:10px;"></i>
+                    <span id="mission-clock" style="font-family:var(--font-mono);font-size:10px;">--:--:--</span>
                 </div>
                 <button class="icon-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
                     <i data-lucide="moon"></i>
                 </button>
-                <div class="icon-btn" style="background:var(--accent);color:#fff;font-weight:700;font-size:11px;cursor:default;border-color:var(--accent);">PB</div>
             </div>
         </header>
 
@@ -113,13 +113,16 @@
                     </div>
                     <div>
                         <div class="status-title" id="rover-status-text">Rover Online</div>
-                        <div class="status-sub">ESP32-CAM &middot; ARES-1</div>
+                        <div class="status-sub">ESP32-CAM &middot; Unit ARES-1</div>
                     </div>
-                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <div class="status-badges-row">
                         <span class="badge badge-green" id="rover-badge">Online</span>
                         <span class="badge badge-blue">MQTT Linked</span>
                     </div>
-                    <div class="tele-sub">Mission Timer: <span class="mono-val" id="mission-timer" style="color:var(--accent);">00:00:00</span></div>
+                    <div class="data-stamp">
+                        <i data-lucide="timer"></i>
+                        Mission: <span class="mono-val" id="mission-timer" style="color:var(--accent);">00:00:00</span>
+                    </div>
                 </div>
 
                 <!-- GPS Card -->
@@ -141,7 +144,7 @@
                     <div class="gps-bottom">
                         <div class="gps-mini-stat">
                             <div class="coord-label-sm">Speed</div>
-                            <div class="coord-val" id="val-speed">0.0 <span style="font-size:10px;color:var(--text-muted);">km/h</span></div>
+                            <div class="coord-val" id="val-speed">0.0 <span style="font-size:9px;color:var(--text-muted);">km/h</span></div>
                         </div>
                         <div class="gps-mini-stat">
                             <div class="coord-label-sm">Satellites</div>
@@ -154,59 +157,67 @@
                     </div>
                 </div>
 
-                <!-- Battery Card -->
+                <!-- Power System Card -->
                 <div class="glass-card battery-card">
                     <div class="card-header" style="width:100%">
                         <span class="card-label">Power System</span>
-                        <span class="badge badge-green" id="batt-status">Charging</span>
+                        <span class="badge badge-green" id="batt-status">Nominal</span>
                     </div>
-                    <div class="battery-ring-wrap">
-                        <svg width="96" height="96" viewBox="0 0 100 100">
-                            <circle class="battery-ring-bg" cx="50" cy="50" r="40" fill="none" stroke-width="7"/>
-                            <circle class="battery-ring-fill" cx="50" cy="50" r="40" fill="none" stroke-width="7"
-                                stroke-dasharray="251.2" stroke-dashoffset="62.8" id="batt-ring"/>
-                        </svg>
-                        <div class="battery-center-text">
-                            <span class="battery-pct" id="val-battery">75%</span>
-                            <span class="battery-label-sm">Power</span>
+                    <div class="battery-body">
+                        <div class="battery-ring-wrap">
+                            <svg width="80" height="80" viewBox="0 0 100 100">
+                                <circle class="battery-ring-bg" cx="50" cy="50" r="40" fill="none" stroke-width="8"/>
+                                <circle class="battery-ring-fill" cx="50" cy="50" r="40" fill="none" stroke-width="8"
+                                    stroke-dasharray="251.2" stroke-dashoffset="62.8" id="batt-ring"/>
+                            </svg>
+                            <div class="battery-center-text">
+                                <span class="battery-pct" id="val-battery">75%</span>
+                                <span class="battery-label-sm">Charge</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="battery-info-row">
-                        <div class="batt-info-item">
-                            <div class="batt-info-val" id="val-voltage">-- V</div>
-                            <div class="batt-info-lbl">Voltage</div>
-                        </div>
-                        <div class="batt-info-item">
-                            <div class="batt-info-val" id="val-rssi">-- dBm</div>
-                            <div class="batt-info-lbl">Wi-Fi RSSI</div>
+                        <div class="battery-meta">
+                            <div class="battery-info-row">
+                                <div class="batt-info-item">
+                                    <span class="batt-info-lbl">Voltage</span>
+                                    <span class="batt-info-val" id="val-voltage">-- V</span>
+                                </div>
+                                <div class="batt-info-item">
+                                    <span class="batt-info-lbl">Wi-Fi RSSI</span>
+                                    <span class="batt-info-val" id="val-rssi">-- dBm</span>
+                                </div>
+                                <div class="batt-info-item">
+                                    <span class="batt-info-lbl">Cell</span>
+                                    <span class="batt-info-val">LiPo 3S</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Alerts Mini -->
+                <!-- Active Alerts -->
                 <div class="glass-card alert-mini-card">
                     <div class="card-header">
                         <span class="card-label">Active Alerts</span>
-                        <a href="../alerts/alerts.html" style="color:var(--accent);font-size:11px;text-decoration:none;font-weight:500;">View all</a>
+                        <a href="../alerts/alerts.html" style="color:var(--accent);font-size:var(--text-xs);text-decoration:none;font-weight:var(--fw-medium);">View all</a>
                     </div>
                     <div class="alert-mini-list">
                         <div class="alert-mini-item ok">
-                            <i data-lucide="thermometer" style="width:14px;height:14px;color:var(--status-ok);flex-shrink:0;"></i>
+                            <i data-lucide="thermometer" style="width:13px;height:13px;color:var(--status-ok);flex-shrink:0;"></i>
                             <span class="alert-mini-text">Temperature Normal</span>
                             <span class="badge badge-green">OK</span>
                         </div>
                         <div class="alert-mini-item ok">
-                            <i data-lucide="wind" style="width:14px;height:14px;color:var(--status-ok);flex-shrink:0;"></i>
+                            <i data-lucide="wind" style="width:13px;height:13px;color:var(--status-ok);flex-shrink:0;"></i>
                             <span class="alert-mini-text" id="alert-gas-text">Gas Level Normal</span>
                             <span class="badge badge-green" id="alert-gas-badge">OK</span>
                         </div>
                         <div class="alert-mini-item ok">
-                            <i data-lucide="flame" style="width:14px;height:14px;color:var(--status-ok);flex-shrink:0;"></i>
+                            <i data-lucide="flame" style="width:13px;height:13px;color:var(--status-ok);flex-shrink:0;"></i>
                             <span class="alert-mini-text" id="alert-fire-text">No Fire Detected</span>
                             <span class="badge badge-green" id="alert-fire-badge">Clear</span>
                         </div>
                         <div class="alert-mini-item ok">
-                            <i data-lucide="eye" style="width:14px;height:14px;color:var(--status-ok);flex-shrink:0;"></i>
+                            <i data-lucide="eye" style="width:13px;height:13px;color:var(--status-ok);flex-shrink:0;"></i>
                             <span class="alert-mini-text" id="alert-pir-text">Motion: Clear</span>
                             <span class="badge badge-green" id="alert-pir-badge">Clear</span>
                         </div>
@@ -222,7 +233,10 @@
                             <i data-lucide="map-pin"></i>
                             Live GPS Position
                         </span>
-                        <a href="../map/map.html" class="btn btn-ghost" style="padding:4px 10px;font-size:11px;">Open Map</a>
+                        <a href="../map/map.html" class="btn btn-ghost" style="padding:4px 10px;font-size:var(--text-xs);">
+                            <i data-lucide="external-link"></i>
+                            Full Map
+                        </a>
                     </div>
                     <div id="mini-map-container"></div>
                 </div>
@@ -231,9 +245,12 @@
                     <div class="mini-cam-header">
                         <div class="live-indicator">
                             <div class="live-dot standby" id="cam-live-dot"></div>
-                            <span id="cam-live-label">Offline</span>
+                            <span id="cam-live-label">Standby</span>
                         </div>
-                        <a href="../camera/camera.html" class="btn btn-ghost" style="padding:4px 10px;font-size:11px;">Open Feed</a>
+                        <a href="../camera/camera.html" class="btn btn-ghost" style="padding:4px 10px;font-size:var(--text-xs);">
+                            <i data-lucide="external-link"></i>
+                            Open Feed
+                        </a>
                     </div>
                     <div class="cam-body">
                         <img id="cam-stream-thumb" src="" alt="Camera Stream" crossorigin="anonymous" style="display:none;width:100%;height:100%;object-fit:cover;">
@@ -251,13 +268,13 @@
                 <!-- Environment -->
                 <div class="glass-card env-card">
                     <div class="card-header">
-                        <span class="card-label">Environment</span>
+                        <span class="card-label">Environmental</span>
                         <span class="badge badge-blue">Live</span>
                     </div>
                     <div class="env-items">
                         <div class="env-item">
-                            <div class="env-icon">
-                                <i data-lucide="thermometer" style="width:14px;height:14px;color:var(--status-danger);"></i>
+                            <div class="env-icon" style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);">
+                                <i data-lucide="thermometer" style="color:var(--status-danger);"></i>
                             </div>
                             <div class="env-info">
                                 <div class="env-name">Temperature</div>
@@ -265,12 +282,12 @@
                                     <span class="env-value" id="val-temp">--</span>
                                     <span class="env-unit">°C</span>
                                 </div>
+                                <div class="env-bar"><div class="env-bar-fill" id="bar-temp" style="width:40%;background:var(--status-danger);"></div></div>
                             </div>
-                            <div class="env-bar"><div class="env-bar-fill" id="bar-temp" style="width:40%;background:var(--status-danger);"></div></div>
                         </div>
                         <div class="env-item">
-                            <div class="env-icon">
-                                <i data-lucide="droplets" style="width:14px;height:14px;color:var(--accent);"></i>
+                            <div class="env-icon" style="background:var(--accent-muted);border-color:var(--accent-border);">
+                                <i data-lucide="droplets" style="color:var(--accent);"></i>
                             </div>
                             <div class="env-info">
                                 <div class="env-name">Humidity</div>
@@ -278,21 +295,21 @@
                                     <span class="env-value" id="val-humidity">--</span>
                                     <span class="env-unit">%</span>
                                 </div>
+                                <div class="env-bar"><div class="env-bar-fill" id="bar-hum" style="width:60%;background:var(--accent);"></div></div>
                             </div>
-                            <div class="env-bar"><div class="env-bar-fill" id="bar-hum" style="width:60%;background:var(--accent);"></div></div>
                         </div>
                         <div class="env-item">
-                            <div class="env-icon">
-                                <i data-lucide="wind" style="width:14px;height:14px;color:var(--status-warn);"></i>
+                            <div class="env-icon" style="background:var(--status-warn-bg);border-color:var(--status-warn-bd);">
+                                <i data-lucide="wind" style="color:var(--status-warn);"></i>
                             </div>
                             <div class="env-info">
-                                <div class="env-name">Gas Level</div>
+                                <div class="env-name">Gas Level (MQ-2)</div>
                                 <div class="env-val-row">
                                     <span class="env-value" id="val-gas">--</span>
                                     <span class="env-unit">ppm</span>
                                 </div>
+                                <div class="env-bar"><div class="env-bar-fill" id="bar-gas" style="width:15%;background:var(--status-warn);"></div></div>
                             </div>
-                            <div class="env-bar"><div class="env-bar-fill" id="bar-gas" style="width:15%;background:var(--status-warn);"></div></div>
                         </div>
                     </div>
                 </div>
@@ -300,13 +317,14 @@
                 <!-- Quick Actions -->
                 <div class="glass-card quick-actions-card">
                     <div class="card-header">
-                        <span class="card-label">Quick Actions</span>
+                        <span class="card-label">Command Dispatch</span>
                     </div>
+                    <!-- E-STOP: Prominent, Full-width -->
+                    <button class="estop-btn" id="btn-estop">
+                        <i data-lucide="octagon"></i>
+                        Emergency Stop
+                    </button>
                     <div class="actions-grid">
-                        <button class="action-btn danger" id="btn-estop">
-                            <i data-lucide="octagon"></i>
-                            E-Stop
-                        </button>
                         <button class="action-btn primary" id="btn-auto">
                             <i data-lucide="cpu"></i>
                             Auto Mode
@@ -315,9 +333,9 @@
                             <i data-lucide="video"></i>
                             Camera
                         </button>
-                        <button class="action-btn" id="btn-home">
+                        <button class="action-btn" id="btn-home" style="grid-column: span 2;">
                             <i data-lucide="home"></i>
-                            Return Base
+                            Return to Base
                         </button>
                     </div>
                 </div>
@@ -331,33 +349,39 @@
                         <span class="tele-label">Motion / PIR</span>
                     </div>
                     <div class="tele-val" id="val-pir" style="color:var(--status-ok);">Clear</div>
-                    <div class="tele-sub" style="margin-top:var(--space-3);">Proximity Distance</div>
-                    <div class="tele-val" style="font-size:1.25rem;margin-top:4px;">
+                    <hr class="card-divider">
+                    <div class="tele-sub">Proximity Distance</div>
+                    <div class="tele-val" style="font-size:var(--text-xl);margin-top:3px;">
                         <span id="val-ultrasonic">--</span>
                         <span class="tele-unit">cm</span>
                     </div>
+                    <div class="data-stamp" style="margin-top:var(--space-2);">
+                        <i data-lucide="timer"></i>
+                        HC-SR04 &middot; HC-SR501
+                    </div>
                 </div>
 
-                <!-- Vibration + Tilt -->
+                <!-- Vibration + IMU -->
                 <div class="glass-card tele-card">
                     <div class="tele-icon-label">
-                        <div class="tele-icon" style="background:rgba(139,92,246,0.1);border-color:rgba(139,92,246,0.25);">
+                        <div class="tele-icon" style="background:rgba(139,92,246,0.1);border-color:rgba(139,92,246,0.22);">
                             <i data-lucide="activity" style="color:#8B5CF6;"></i>
                         </div>
-                        <span class="tele-label">MPU6050</span>
+                        <span class="tele-label">IMU &middot; MPU6050</span>
                     </div>
                     <div class="tele-val">
                         <span id="val-vib">-.-</span>
                         <span class="tele-unit">g</span>
                     </div>
-                    <div class="tele-sub" style="margin-top:var(--space-3);">Orientation</div>
-                    <div style="display:flex;gap:var(--space-3);margin-top:4px;">
+                    <hr class="card-divider">
+                    <div class="tele-sub">Orientation</div>
+                    <div style="display:flex;gap:var(--space-4);margin-top:4px;">
                         <div>
-                            <div class="tele-val" style="font-size:1.1rem;"><span id="val-tilt">0</span><span class="tele-unit">°</span></div>
+                            <div class="tele-val" style="font-size:var(--text-lg);"><span id="val-tilt">0</span><span class="tele-unit">°</span></div>
                             <div class="tele-sub">Tilt</div>
                         </div>
                         <div>
-                            <div class="tele-val" style="font-size:1.1rem;"><span id="val-gyro">0</span><span class="tele-unit">°/s</span></div>
+                            <div class="tele-val" style="font-size:var(--text-lg);"><span id="val-gyro">0</span><span class="tele-unit">°/s</span></div>
                             <div class="tele-sub">Gyro</div>
                         </div>
                     </div>

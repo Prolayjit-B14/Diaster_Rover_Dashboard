@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rescue Intel | Alerts &amp; Notifications</title>
+    <title>Rescue Intel | Alert Center</title>
+    <meta name="description" content="Priority-classified emergency alert monitoring and incident response coordination.">
     <link rel="icon" type="image/png" href="../assets/favicon.png">
     <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('rescuebot-theme') || 'dark');</script>
     <link rel="stylesheet" href="../shared/shared.css">
@@ -43,9 +44,9 @@
                 <i data-lucide="activity"></i>
                 <span class="nav-label">Field Sensors</span>
             </a>
-            <a href="./alerts.html" class="nav-item active" data-tooltip="Alerts">
+            <a href="./alerts.html" class="nav-item active" data-tooltip="Alert Center">
                 <i data-lucide="bell-ring"></i>
-                <span class="nav-label">Alerts</span>
+                <span class="nav-label">Alert Center</span>
             </a>
 
             <div class="nav-section-label" style="margin-top:8px;">System</div>
@@ -53,7 +54,7 @@
                 <i data-lucide="home"></i>
                 <span class="nav-label">Home</span>
             </a>
-            <a href="#" class="nav-item" aria-disabled="true" title="Coming Soon" data-tooltip="Settings" style="opacity:0.35;cursor:not-allowed;pointer-events:none;">
+            <a href="#" class="nav-item" aria-disabled="true" data-tooltip="Settings" style="opacity:0.3;cursor:not-allowed;pointer-events:none;">
                 <i data-lucide="settings"></i>
                 <span class="nav-label">Settings</span>
             </a>
@@ -61,8 +62,8 @@
 
         <div class="sidebar-footer">
             <div class="status-pill" style="width:100%; justify-content:center;">
-                <div class="status-dot" id="mqtt-dot"></div>
-                <span id="mqtt-status-text" class="mqtt-status-text" style="font-family:var(--font-mono);font-size:10px;">CONNECTING</span>
+                <div class="status-dot standby" id="mqtt-dot"></div>
+                <span id="mqtt-status-text" class="mqtt-status-text" style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.04em;">CONNECTING</span>
             </div>
         </div>
     </aside>
@@ -76,22 +77,21 @@
                 <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open navigation">
                     <i data-lucide="menu"></i>
                 </button>
-                <span class="nav-page-title">Alerts &amp; Notifications</span>
-                <span class="nav-breadcrumb">/ Alerts</span>
+                <span class="nav-page-title">Alert Center</span>
+                <span class="nav-breadcrumb">/ Incident Monitoring</span>
             </div>
             <div class="nav-right">
                 <div class="status-pill">
                     <div class="status-dot"></div>
-                    <span>Rover Online</span>
+                    <span style="font-family:var(--font-mono);font-size:10px;">Unit ARES-1</span>
                 </div>
                 <div class="status-pill">
-                    <i data-lucide="clock" style="width:11px;height:11px;"></i>
-                    <span id="mission-clock" style="font-family:var(--font-mono);">--:--:--</span>
+                    <i data-lucide="clock" style="width:10px;height:10px;"></i>
+                    <span id="mission-clock" style="font-family:var(--font-mono);font-size:10px;">--:--:--</span>
                 </div>
                 <button class="icon-btn" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">
                     <i data-lucide="moon"></i>
                 </button>
-                <div class="icon-btn" style="background:var(--accent);color:#fff;font-weight:700;font-size:11px;cursor:default;border-color:var(--accent);">PB</div>
             </div>
         </header>
 
@@ -101,19 +101,10 @@
             <!-- SECTION HEADER -->
             <div class="section-header">
                 <div>
-                    <div class="section-title">Emergency Alerts</div>
-                    <div class="section-subtitle">Priority-classified incident monitoring and response</div>
+                    <div class="section-title">Emergency Alert Center</div>
+                    <div class="section-subtitle">Priority-classified incident monitoring and field response coordination</div>
                 </div>
                 <div style="display:flex; align-items:center; gap:var(--space-3);">
-                    <button class="sound-toggle" id="sound-toggle" title="Toggle sound alerts" style="width:auto;padding:7px 14px;">
-                        <span class="sound-toggle-label">
-                            <i data-lucide="bell"></i>
-                            Sound Alerts
-                        </span>
-                        <div class="toggle-track" style="margin-left:var(--space-3);">
-                            <div class="toggle-thumb"></div>
-                        </div>
-                    </button>
                     <span class="badge badge-red" id="critical-count-badge" style="display:none;">0 Critical</span>
                 </div>
             </div>
@@ -124,9 +115,36 @@
                 <!-- LEFT: MAIN ALERTS PANEL -->
                 <div class="alerts-main">
 
+                    <!-- Stats Summary Bar -->
+                    <div class="alert-stats-bar">
+                        <div class="alert-stat-item">
+                            <div class="alert-stat-val" id="stat-total" style="color:var(--text-primary);">0</div>
+                            <div class="alert-stat-key">Total</div>
+                        </div>
+                        <div class="alert-stat-sep"></div>
+                        <div class="alert-stat-item">
+                            <div class="alert-stat-val" id="stat-critical" style="color:var(--status-danger);">0</div>
+                            <div class="alert-stat-key">Critical</div>
+                        </div>
+                        <div class="alert-stat-sep"></div>
+                        <div class="alert-stat-item">
+                            <div class="alert-stat-val" id="stat-resolved" style="color:var(--status-ok);">0</div>
+                            <div class="alert-stat-key">Resolved</div>
+                        </div>
+                        <div class="alert-stat-sep"></div>
+                        <div class="alert-stat-item" style="flex:1;">
+                            <div class="alert-stat-val" id="stat-uptime" style="color:var(--accent);font-size:var(--text-base);">00:00:00</div>
+                            <div class="alert-stat-key">System Uptime</div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:var(--space-2);">
+                            <div class="status-dot"></div>
+                            <span style="font-size:var(--text-xs);color:var(--text-muted);font-family:var(--font-mono);">ALL SYSTEMS NOMINAL</span>
+                        </div>
+                    </div>
+
                     <!-- Filter Tabs -->
                     <div class="alert-filter-row">
-                        <button class="filter-tab active" id="tab-all" data-filter="all">All</button>
+                        <button class="filter-tab active" id="tab-all" data-filter="all">All Alerts</button>
                         <button class="filter-tab" id="tab-critical" data-filter="critical">
                             Critical
                             <span class="count" id="cnt-critical">0</span>
@@ -151,10 +169,10 @@
                     <!-- Empty State -->
                     <div class="empty-alerts" id="empty-alerts" style="display:none;">
                         <span class="empty-icon">
-                            <i data-lucide="check-circle-2" style="width:40px;height:40px;color:var(--status-ok);"></i>
+                            <i data-lucide="check-circle-2" style="width:36px;height:36px;color:var(--status-ok);"></i>
                         </span>
                         <h3>No Active Alerts</h3>
-                        <p>All systems nominal — monitoring continues</p>
+                        <p>All systems nominal — continuous monitoring active</p>
                     </div>
 
                 </div>
@@ -164,39 +182,16 @@
 
                     <!-- SOS Panel -->
                     <div class="glass-card sos-panel">
-                        <h3 class="section-title-sm" style="margin-bottom:0;">Emergency SOS</h3>
+                        <h3 class="section-title-sm">Emergency SOS Broadcast</h3>
                         <button class="sos-btn" id="sos-btn">SOS</button>
-                        <p style="color:var(--text-muted);font-size:12px;line-height:1.6;">
-                            Triggers an immediate emergency broadcast via MQTT to all connected systems.
+                        <p style="color:var(--text-muted);font-size:var(--text-sm);line-height:1.6;text-align:center;">
+                            Triggers immediate emergency broadcast via MQTT to all connected response systems.
                         </p>
-                    </div>
-
-                    <!-- Alert Statistics -->
-                    <div class="glass-card">
-                        <div class="section-title-sm">Alert Statistics</div>
-                        <div class="stats-row-alerts">
-                            <div class="alert-stat-box">
-                                <div class="alert-stat-num" id="stat-total" style="color:var(--text-primary);">0</div>
-                                <div class="alert-stat-lbl">Total</div>
-                            </div>
-                            <div class="alert-stat-box">
-                                <div class="alert-stat-num" id="stat-critical" style="color:var(--status-danger);">0</div>
-                                <div class="alert-stat-lbl">Critical</div>
-                            </div>
-                            <div class="alert-stat-box">
-                                <div class="alert-stat-num" id="stat-resolved" style="color:var(--status-ok);">0</div>
-                                <div class="alert-stat-lbl">Resolved</div>
-                            </div>
-                            <div class="alert-stat-box">
-                                <div class="alert-stat-num" id="stat-uptime" style="color:var(--accent);font-size:14px;">00:00:00</div>
-                                <div class="alert-stat-lbl">Uptime</div>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Sound Settings -->
                     <div class="glass-card">
-                        <div class="sound-settings-header">Sound Settings</div>
+                        <div class="sound-settings-header">Audio Notifications</div>
                         <button class="sound-toggle" id="sound-toggle-card">
                             <span class="sound-toggle-label">
                                 <i data-lucide="volume-2"></i>
@@ -206,8 +201,8 @@
                                 <div class="toggle-thumb"></div>
                             </div>
                         </button>
-                        <p style="font-size:12px;color:var(--text-muted);margin-top:var(--space-3);line-height:1.6;">
-                            Enable audio notifications for critical and high-priority alerts.
+                        <p style="font-size:var(--text-xs);color:var(--text-muted);margin-top:var(--space-3);line-height:1.7;">
+                            Enable audio notifications for critical and high-priority incidents.
                         </p>
                     </div>
 
