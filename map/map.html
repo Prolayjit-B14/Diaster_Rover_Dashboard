@@ -647,7 +647,7 @@
         if (window.lucide) window.lucide.createIcons();
         startMissionTimer();
         setupSidebarThemeEvents();
-        initializeMap();
+        initializeMap(); // Initialize Leaflet map directly, no keys/wizards needed
     });
 
     // ── INITIALIZE LEAFLET MAP ───────────────────────────────────────────────
@@ -658,11 +658,12 @@
                 attributionControl: false
             }).setView([20.5937, 78.9629], 16); // Center on Nagoya/India initially
             
-            // Tile layers
+            // Free standard OpenStreetMap vector tiles (requires no API keys)
             osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19
             });
             
+            // Free Esri satellite imagery tiles (requires no API keys)
             esriLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 maxZoom: 19
             });
