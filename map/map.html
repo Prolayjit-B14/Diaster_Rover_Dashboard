@@ -438,12 +438,7 @@
 </head>
 <body>
 
-<!-- GEOFENCE ALERT SYSTEM OVERLAYS -->
-<div class="emergency-overlay" id="emergency-flash-overlay"></div>
-<div class="geofence-alert-banner" id="geofence-alert-banner">
-    <i data-lucide="alert-triangle"></i>
-    <span>Geofence Alert: Entering Hazard Zone!</span>
-</div>
+
 
 <div class="app-shell">
 
@@ -632,11 +627,7 @@
     let pathLine = null;
     let pathGlow = null;
     
-    // Danger Geofence Zone coordinates (initialized dynamically around first received coordinates)
-    let geofencePolygon = [];
-    let geofenceLayer = null;
-    let isInsideGeofence = false;
-    let geofenceInitialized = false;
+
     
     // Custom landmarks array
     let landmarks = [];
@@ -650,20 +641,6 @@
     let esriLayer = null;
     let activeLayerName = 'streets'; // 'streets' or 'satellite'
     
-    // ── GEOFENCE ENTRY DETECTION (RAY CASTING ALGORITHM) ────────────────────
-    function isPointInPolygon(point, polygon) {
-        if (!polygon || polygon.length < 3) return false;
-        const x = point[0], y = point[1]; // lat, lng
-        let inside = false;
-        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-            const xi = polygon[i][0], yi = polygon[i][1];
-            const xj = polygon[j][0], yj = polygon[j][1];
-            const intersect = ((yi > y) !== (yj > y))
-                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-            if (intersect) inside = !inside;
-        }
-        return inside;
-    }
 
     // ── INITIALIZATION ───────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
@@ -736,42 +713,12 @@
         }
     }
 
-    // ── DEFINE DYNAMIC GEOFENCE AROUND Rover's first actual fix coordinate ──
-    function initializeDynamicGeofence(lat, lng) {
-        // Create an 80m x 80m hazard geofence offset slightly to the North-East of starting coordinates
-        const size = 0.0004; // roughly 40m half-width
-        const offset = 0.0003; // offset center North-East by 30m
-        
-        const centerLat = lat + offset;
-        const centerLng = lng + offset;
-
-        geofencePolygon = [
-            [centerLat - size, centerLng - size],
-            [centerLat + size, centerLng - size],
-            [centerLat + size, centerLng + size],
-            [centerLat - size, centerLng + size]
-        ];
-        
-        // Draw Geofence on map
-        geofenceLayer = L.polygon(geofencePolygon, {
-            color: '#EF4444',
-            fillColor: '#EF4444',
-            fillOpacity: 0.16,
-            weight: 2.5,
-            dashArray: '4, 4'
-        }).addTo(map);
-        
-        geofenceInitialized = true;
-    }
 
     // ── CORE FUNCTION: updateRoverLocation (lat, lng parameter order) ──
     window.updateRoverLocation = function(lat, lng) {
         // Rover GPS location has been updated
 
-        // Initialize geofence relative to actual GPS location on the first packet
-        if (!geofenceInitialized) {
-            initializeDynamicGeofence(lat, lng);
-        }
+
 
         currentPos = [lat, lng];
         
@@ -784,29 +731,7 @@
         if (breadcrumbCoords.length > 1000) {
             breadcrumbCoords.shift();
         }
-        
-        // GEOFENCE ALERT ENTRY DETECTION
-        const inside = isPointInPolygon(currentPos, geofencePolygon);
-        const flashOverlay = document.getElementById('emergency-flash-overlay');
-        const alertBanner = document.getElementById('geofence-alert-banner');
-        
-        if (inside) {
-            if (!isInsideGeofence) {
-                isInsideGeofence = true;
-                console.log("🚨 GEOFENCE ALERT: Rover entered dangerous hot zone!");
-                if (flashOverlay) flashOverlay.classList.add('active');
-                if (alertBanner) alertBanner.classList.add('active');
-                window.RESCUEBOT_UI?.toast('⚠️ CRITICAL: Rover crossed Danger Geofence!', 'error');
-            }
-        } else {
-            if (isInsideGeofence) {
-                isInsideGeofence = false;
-                console.log("ℹ️ Rover cleared geofence area.");
-                if (flashOverlay) flashOverlay.className = 'emergency-overlay';
-                if (alertBanner) alertBanner.className = 'geofence-alert-banner';
-                window.RESCUEBOT_UI?.toast('Rover returned to safe path', 'success');
-            }
-        }
+
 
         // Update breadcrumb trails on the Leaflet map
         if (!pathLine) {
