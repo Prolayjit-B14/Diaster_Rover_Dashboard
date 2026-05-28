@@ -1,12 +1,12 @@
 /* ============================================================
-   SENSORS PAGE — Premium High-Density Sensory Dashboard
+   SENSORS PAGE — Ultra High-Density Single-Screen Telemetry
    ============================================================ */
 
 /* ── SENSOR GRID ─────────────────────────────────────────────── */
 .sensor-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(3, 1fr); /* Enforces 3x3 on desktop */
+    gap: 8px !important;
 }
 
 /* ── SENSOR CARD ─────────────────────────────────────────────── */
@@ -16,11 +16,11 @@
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.05) !important;
     border-radius: var(--radius-md) !important;
-    padding: 12px 14px !important;
+    padding: 10px 12px !important;
     display: flex;
     flex-direction: column;
-    gap: 8px !important;
-    min-height: 195px;
+    gap: 6px !important;
+    min-height: 155px; /* Shrunk for single-screen containment */
     transition: border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
     position: relative;
     overflow: hidden;
@@ -39,19 +39,15 @@
     transition: opacity var(--t-fast);
 }
 
+/* REMOVED LEFT-SIDE COLORED BORDER ACCENT TO KEEP LOOK CLEAN AND UNIFORM */
 .sensor-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; bottom: 0;
-    width: 2px !important;
-    background: var(--card-color, var(--accent));
-    opacity: 0.85;
+    display: none !important;
 }
 
 .sensor-card:hover {
-    border-color: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
     box-shadow: 0 8px 30px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-    transform: translateY(-2px);
+    transform: translateY(-1.5px);
 }
 
 .sensor-card:hover::after {
@@ -64,9 +60,6 @@
     background: rgba(239, 68, 68, 0.04) !important;
     box-shadow: 0 0 24px -6px rgba(239, 68, 68, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
-.sensor-card.alert-state::before {
-    background: #EF4444 !important;
-}
 .sensor-card.alert-state::after {
     box-shadow: 0 0 24px -2px #EF4444;
     opacity: 0.25;
@@ -76,9 +69,6 @@
     border-color: rgba(245, 158, 11, 0.4) !important;
     background: rgba(245, 158, 11, 0.04) !important;
     box-shadow: 0 0 24px -6px rgba(245, 158, 11, 0.2) , inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
-}
-.sensor-card.warning-state::before {
-    background: #F59E0B !important;
 }
 .sensor-card.warning-state::after {
     box-shadow: 0 0 24px -2px #F59E0B;
@@ -96,21 +86,21 @@
 .sensor-icon-label {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .sensor-icon {
-    width: 26px; height: 26px;
+    width: 24px; height: 24px;
     border-radius: var(--radius-sm);
     display: flex; align-items: center; justify-content: center;
     border: 1px solid rgba(255, 255, 255, 0.06);
     flex-shrink: 0;
 }
 
-.sensor-icon i, .sensor-icon svg { width: 12px; height: 12px; }
+.sensor-icon i, .sensor-icon svg { width: 11px; height: 11px; }
 
 .sensor-name {
-    font-size: var(--text-sm);
+    font-size: 12px !important;
     font-weight: var(--fw-semibold);
     color: var(--text-primary);
     letter-spacing: -0.015em;
@@ -129,13 +119,14 @@
 .sensor-value-section {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px !important;
     flex: 1;
+    justify-content: center;
 }
 
 .sensor-big-val {
     font-family: var(--font-mono);
-    font-size: 1.45rem;
+    font-size: 1.25rem !important; /* Scaled down values */
     font-weight: var(--fw-semibold);
     color: var(--text-primary);
     line-height: 1;
@@ -144,7 +135,7 @@
 
 .sensor-unit {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 9px !important;
     color: var(--text-muted);
     margin-left: 2px;
 }
@@ -154,12 +145,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: 6px;
+    padding-top: 5px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .sensor-footer-key {
-    font-size: 8px;
+    font-size: 7.5px !important;
     color: var(--text-muted);
     font-weight: var(--fw-bold);
     text-transform: uppercase;
@@ -168,14 +159,14 @@
 
 .sensor-footer-val {
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: 8.5px !important;
     color: var(--text-secondary);
 }
 
 /* ── ① CAMERA VIEWPORT ───────────────────────────────────────── */
 .camera-viewport-wrap {
     width: 100%;
-    height: 98px;
+    height: 80px; /* Compressed */
     border-radius: var(--radius-sm);
     overflow: hidden;
     position: relative;
@@ -201,7 +192,7 @@
 
 .camera-crosshairs {
     position: absolute;
-    inset: 15px;
+    inset: 12px;
     border: 1px dashed rgba(255, 255, 255, 0.1);
     border-radius: 50%;
     pointer-events: none;
@@ -213,13 +204,13 @@
     position: absolute;
     background: rgba(255, 255, 255, 0.2);
 }
-.camera-crosshairs::before { top: 50%; left: -6px; right: -6px; height: 1px; }
-.camera-crosshairs::after { left: 50%; top: -6px; bottom: -6px; width: 1px; }
+.camera-crosshairs::before { top: 50%; left: -4px; right: -4px; height: 1px; }
+.camera-crosshairs::after { left: 50%; top: -4px; bottom: -4px; width: 1px; }
 
 .camera-rec-dot {
     position: absolute;
-    top: 6px; left: 6px;
-    width: 5px; height: 5px;
+    top: 5px; left: 5px;
+    width: 4px; height: 4px;
     border-radius: 50%;
     background: var(--status-danger);
     animation: pulseOnline 1.5s infinite;
@@ -229,7 +220,7 @@
 .camera-meta-grid {
     display: flex;
     justify-content: space-between;
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
 .camera-meta-grid .meta-item {
@@ -245,18 +236,18 @@
 
 .camera-meta-grid .meta-val {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 9.5px;
     color: var(--text-secondary);
 }
 
-/* ── ② GPS navigatION HUD ────────────────────────────────────── */
+/* ── ② GPS NAVIGATION HUD ────────────────────────────────────── */
 .gps-coordinates-hud {
     background: rgba(0, 0, 0, 0.25);
     border-radius: var(--radius-sm);
-    padding: 6px 10px;
+    padding: 4px 8px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
     border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
@@ -274,7 +265,7 @@
 }
 
 .coord-val {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--accent-bright);
 }
 
@@ -282,7 +273,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 4px;
-    margin-top: 4px;
+    margin-top: 2px;
 }
 
 .gps-stat {
@@ -291,7 +282,7 @@
 }
 
 .gps-stat-lbl {
-    font-size: 8px;
+    font-size: 7.5px;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.01em;
@@ -299,22 +290,22 @@
 
 .gps-stat-val {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 9.5px;
     color: var(--text-primary);
 }
 
 /* ── ③ MPU-6050 6-DOF IMU ────────────────────────────────────── */
 .mpu-layout {
     display: grid;
-    grid-template-columns: 66px 1fr;
-    gap: 10px;
+    grid-template-columns: 54px 1fr; /* Compacted bubble width */
+    gap: 8px;
     align-items: center;
-    min-height: 100px;
+    min-height: 80px;
 }
 
 .bubble-level-wrap {
-    width: 66px;
-    height: 66px;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: radial-gradient(circle, rgba(236,72,153,0.03) 0%, rgba(0,0,0,0.3) 100%);
@@ -337,30 +328,30 @@
     border: 1px dashed rgba(255, 255, 255, 0.05);
     border-radius: 50%;
 }
-.bubble-level-ring.ring-1 { width: 28px; height: 28px; }
-.bubble-level-ring.ring-2 { width: 48px; height: 48px; }
+.bubble-level-ring.ring-1 { width: 20px; height: 20px; }
+.bubble-level-ring.ring-2 { width: 38px; height: 38px; }
 
 .bubble-dot {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: radial-gradient(circle, #ff60b5 0%, #d81b60 100%);
-    box-shadow: 0 0 8px rgba(236, 72, 153, 0.8);
+    box-shadow: 0 0 6px rgba(236, 72, 153, 0.8);
     position: absolute;
-    top: calc(50% - 4px);
-    left: calc(50% - 4px);
+    top: calc(50% - 3px);
+    left: calc(50% - 3px);
     transition: transform 0.25s cubic-bezier(0.1, 0.8, 0.3, 1) !important;
 }
 
 .mpu-measurements {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
 }
 
 .mpu-group {
     border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-    padding-bottom: 2px;
+    padding-bottom: 1px;
 }
 .mpu-group:last-child {
     border-bottom: none;
@@ -379,7 +370,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     font-family: var(--font-mono);
-    font-size: 9.5px;
+    font-size: 9px;
     color: var(--text-secondary);
 }
 
@@ -387,7 +378,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     font-family: var(--font-mono);
-    font-size: 9.5px;
+    font-size: 9px;
     color: var(--text-secondary);
 }
 
@@ -405,14 +396,14 @@
 
 .seismic-wave-wrap {
     width: 100%;
-    height: 66px;
+    height: 48px; /* Compressed wave graph */
     background: rgba(0, 0, 0, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.04);
     border-radius: var(--radius-sm);
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    padding: 6px;
+    padding: 4px;
     overflow: hidden;
     position: relative;
     box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
@@ -421,19 +412,9 @@
 .seismic-bar {
     width: 5%;
     background: linear-gradient(180deg, #10B981 0%, rgba(16, 185, 129, 0.2) 100%);
-    border-radius: 1.5px 1.5px 0 0;
+    border-radius: 1px 1px 0 0;
     min-height: 2px;
     transition: height 0.15s cubic-bezier(0.1, 0.8, 0.3, 1) !important;
-}
-
-@keyframes rippleWave {
-    0%, 100% { transform: scaleY(0.7); }
-    50% { transform: scaleY(1.3); }
-}
-
-.seismic-bar.sim-wave {
-    animation: rippleWave 1.2s ease-in-out infinite;
-    transform-origin: bottom;
 }
 
 /* ── ⑤ IR FLAME DETECTOR ─────────────────────────────────────── */
@@ -442,14 +423,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    height: 94px;
+    gap: 8px;
+    height: 76px;
     position: relative;
 }
 
 .fire-icon-pulsar {
-    width: 48px;
-    height: 48px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     background: rgba(239, 68, 68, 0.04);
     border: 1px solid rgba(239, 68, 68, 0.12);
@@ -505,11 +486,6 @@
     animation: blink 0.5s infinite alternate;
 }
 
-@keyframes blink {
-    from { opacity: 1; }
-    to { opacity: 0.3; }
-}
-
 /* ── ⑥ MQ-2 COMBUSTIBLE GAS ──────────────────────────────────── */
 .gas-value-row {
     display: flex;
@@ -519,12 +495,12 @@
 
 .gas-equalizer {
     width: 100%;
-    height: 16px;
+    height: 12px; /* Compressed meter */
     background: rgba(0, 0, 0, 0.25);
     border-radius: var(--radius-sm);
     display: flex;
-    gap: 3px;
-    padding: 3px;
+    gap: 2px;
+    padding: 2px;
     border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
@@ -532,14 +508,14 @@
     flex: 1;
     height: 100%;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 1px;
+    border-radius: 0.5px;
     transition: background-color 0.2s !important;
 }
 
 /* ── ⑦ PIR MOTION SENSOR ─────────────────────────────────────── */
 .radar-sweep-wrap {
-    width: 70px;
-    height: 70px;
+    width: 54px; /* Compressed radar size */
+    height: 54px;
     border-radius: 50%;
     border: 1px solid rgba(6, 182, 212, 0.15);
     background: radial-gradient(circle, rgba(6,182,212,0.02) 0%, rgba(0,0,0,0.3) 100%);
@@ -572,8 +548,8 @@
 .radar-crosshair-h { left: 0; right: 0; height: 1px; top: 50%; }
 
 .radar-dot {
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
     background: #06B6D4;
     box-shadow: 0 0 8px #06B6D4;
@@ -585,10 +561,10 @@
 
 .radar-sweep-wrap .radar-icon {
     position: absolute;
-    top: calc(50% - 6px);
-    left: calc(50% - 6px);
-    width: 12px;
-    height: 12px;
+    top: calc(50% - 5px);
+    left: calc(50% - 5px);
+    width: 10px;
+    height: 10px;
     color: rgba(6, 182, 212, 0.3);
 }
 
@@ -597,20 +573,20 @@
     justify-content: space-between;
     align-items: center;
     background: rgba(0, 0, 0, 0.18);
-    padding: 3px 6px;
+    padding: 2.5px 5px;
     border-radius: var(--radius-sm);
     border: 1px solid rgba(255, 255, 255, 0.02);
 }
 
 .presence-label {
-    font-size: 7.5px;
+    font-size: 7px;
     color: var(--text-muted);
     font-weight: var(--fw-bold);
 }
 
 .presence-val {
     font-family: var(--font-mono);
-    font-size: 9.5px;
+    font-size: 9px;
     color: var(--text-primary);
 }
 
@@ -627,7 +603,7 @@
 /* ── ⑧ ULTRASONIC RANGE SENSOR ───────────────────────────────── */
 .proximity-visual-container {
     width: 100%;
-    height: 48px;
+    height: 36px; /* Highly compressed safety arch */
     position: relative;
     background: rgba(0, 0, 0, 0.22);
     border-radius: var(--radius-sm);
@@ -648,28 +624,33 @@
 }
 
 .proximity-arch.arch-green {
-    width: 66px; height: 66px;
+    width: 50px; height: 50px;
     border-top-color: #10B981;
     border-right-color: #10B981;
-    top: 14px;
+    top: 10px;
 }
 .proximity-arch.arch-amber {
-    width: 48px; height: 48px;
+    width: 36px; height: 36px;
     border-top-color: #F59E0B;
     border-right-color: #F59E0B;
-    top: 24px;
+    top: 18px;
 }
 .proximity-arch.arch-red {
-    width: 30px; height: 30px;
+    width: 22px; height: 22px;
     border-top-color: #EF4444;
     border-right-color: #EF4444;
-    top: 34px;
+    top: 25px;
 }
 
 .proximity-rover-symbol {
     position: absolute;
-    bottom: 0px;
+    bottom: -1px;
     z-index: 2;
+}
+
+.proximity-rover-symbol i {
+    width: 14px !important;
+    height: 14px !important;
 }
 
 .proximity-value-display {
@@ -687,14 +668,14 @@
 
 .temp-track-wrap {
     width: 100%;
-    height: 8px;
+    height: 6px; /* Shrunk track */
     background: rgba(0, 0, 0, 0.25);
     border-radius: var(--radius-full);
     position: relative;
     border: 1px solid rgba(255, 255, 255, 0.03);
     overflow: visible;
-    margin-top: 12px;
-    margin-bottom: 8px;
+    margin-top: 8px;
+    margin-bottom: 6px;
 }
 
 .temp-track-fill {
@@ -707,23 +688,19 @@
 .temp-track-indicator {
     position: absolute;
     top: -4px;
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background: #FFFFFF;
-    border: 3px solid #EF4444;
-    box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+    border: 2px solid #EF4444;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
     transform: translateX(-50%);
     transition: left 0.8s cubic-bezier(0.1, 0.8, 0.3, 1) !important;
     z-index: 2;
 }
 
 /* ── RESPONSIVE ──────────────────────────────────────────────── */
-@media (max-width: 1400px) {
-    .sensor-grid { grid-template-columns: repeat(3, 1fr); }
-}
-
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
     .sensor-grid { grid-template-columns: repeat(2, 1fr); }
 }
 

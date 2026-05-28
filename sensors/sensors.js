@@ -1,20 +1,14 @@
 /**
- * RescueBOT — Optimized Sensor Telemetry Array v3.0
+ * RescueBOT — Live Real-Time Sensor Telemetry Array v4.0
  * sensors/sensors.js
  *
- * Direct binding to the rover's 8 physical sensors:
- * - Camera Stream (ESP32-CAM)
- * - GPS Navigation (NEO-6M)
- * - MPU-6050 IMU Suite (Tilt, Gyro, Accel)
- * - Seismic Vibration (Analog Piezo)
- * - IR Flame Sensor (Thermal digital)
- * - Combustible Gas (MQ-2 Analog)
- * - PIR Motion Detector (HC-SR501 Digital)
- * - Proximity Range (HC-SR04 Ultrasonic)
+ * Direct binding to the rover's physical hardware telemetry stream.
+ * ZERO mock telemetry loops or simulated background values.
+ * Telemetry nodes update EXCLUSIVELY via actual MQTT transmissions.
  */
 
 /* ============================================================
-   GLOBAL/STATE HELPERS
+   GLOBAL TELEMETRY STATES
    ============================================================ */
 
 window.mpuState = {
@@ -28,12 +22,11 @@ window.mpuState = {
     az: 1.00
 };
 
-// Seed coordinates (drifts slightly over time)
 window.gpsState = {
     lat: 37.77492,
     lng: -122.41941,
-    sats: 10,
-    status: '3D FIX'
+    sats: 0,
+    status: 'ACQUIRING'
 };
 
 /**
@@ -81,7 +74,7 @@ function renderBubbleLevel() {
     const dot = document.getElementById('bubble-level-dot');
     if (!dot) return;
     
-    const maxDisp = 24; // boundary limit
+    const maxDisp = 20; // bounding boundary limit (scaled down for 54px ring)
     const dx = Math.min(maxDisp, Math.max(-maxDisp, (window.mpuState.roll / 45) * maxDisp));
     const dy = Math.min(maxDisp, Math.max(-maxDisp, (window.mpuState.pitch / 45) * maxDisp));
     
@@ -164,9 +157,9 @@ function renderSeismicWave(vibVal) {
     if (bars.length === 0) return;
 
     bars.forEach(bar => {
-        const noise = Math.random() * 12;
+        const noise = Math.random() * 10;
         // Scale 0-2g range to 0-100% height
-        const pctHeight = Math.min(100, Math.max(5, (vibVal / 2) * 80 + noise));
+        const pctHeight = Math.min(100, Math.max(5, (vibVal / 2) * 85 + noise));
         bar.style.height = `${pctHeight.toFixed(0)}%`;
 
         if (vibVal > 1.2) {
@@ -180,90 +173,14 @@ function renderSeismicWave(vibVal) {
 }
 
 /* ============================================================
-   ACTIVE TELEMETRY SIMULATION LOOP (RUNS OFFLINE FALLBACK)
-   ============================================================ */
-
-function startSimulatedTelemetry() {
-    setInterval(() => {
-        // Only run simulation steps if we aren't getting live values on these sensors
-        
-        // 1. MPU-6050 Precision Drift
-        if (Math.random() > 0.4) {
-            window.mpuState.pitch += (Math.random() - 0.5) * 2.5;
-            window.mpuState.roll  += (Math.random() - 0.5) * 2.5;
-            // Bound angles to normal operational levels
-            window.mpuState.pitch = Math.min(15, Math.max(-15, window.mpuState.pitch));
-            window.mpuState.roll  = Math.min(15, Math.max(-15, window.mpuState.roll));
-            
-            // Randomize tiny Gyro spikes
-            window.mpuState.gx = (Math.random() - 0.5) * 8;
-            window.mpuState.gy = (Math.random() - 0.5) * 8;
-            window.mpuState.gz = (Math.random() - 0.5) * 3;
-            
-            // Randomize accel coordinates
-            window.mpuState.ax = parseFloat(((Math.random() - 0.5) * 0.1).toFixed(2));
-            window.mpuState.ay = parseFloat(((Math.random() - 0.5) * 0.1).toFixed(2));
-            window.mpuState.az = parseFloat((1.0 + (Math.random() - 0.5) * 0.05).toFixed(2));
-            
-            // Update MPU GUI
-            updateSensor('val-pitch', `${window.mpuState.pitch.toFixed(1)}°`);
-            updateSensor('val-roll',  `${window.mpuState.roll.toFixed(1)}°`);
-            updateSensor('val-gyro-x', window.mpuState.gx.toFixed(1));
-            updateSensor('val-gyro-y', window.mpuState.gy.toFixed(1));
-            updateSensor('val-gyro-z', window.mpuState.gz.toFixed(1));
-            updateSensor('val-accel-x', window.mpuState.ax.toFixed(2));
-            updateSensor('val-accel-y', window.mpuState.ay.toFixed(2));
-            updateSensor('val-accel-z', window.mpuState.az.toFixed(2));
-            renderBubbleLevel();
-        }
-
-        // 2. GPS Navigation Precision Drift (Coordinate simulation loop)
-        if (Math.random() > 0.6) {
-            window.gpsState.lat += (Math.random() - 0.5) * 0.00002;
-            window.gpsState.lng += (Math.random() - 0.5) * 0.00002;
-            updateSensor('val-gps-lat', `${window.gpsState.lat.toFixed(5)}° N`);
-            updateSensor('val-gps-lng', `${window.gpsState.lng.toFixed(5)}° W`);
-        }
-
-        // 3. Vibration Piezo Flutter
-        const simVib = 0.05 + Math.random() * 0.08;
-        updateSensor('val-vib', simVib.toFixed(2));
-        renderSeismicWave(simVib);
-
-        // 4. Proximity / Ultrasonic Drift
-        const simDist = 120 + Math.random() * 80;
-        updateSensor('val-ultrasonic', Math.round(simDist));
-        renderProximityArch(simDist);
-        
-        // 5. Gas PPM simulation
-        const simGas = 200 + Math.round(Math.random() * 120);
-        updateSensor('val-gas', simGas);
-        renderGasEqualizer(simGas);
-
-        // 6. Temperature simulation
-        const simTemp = 23.5 + Math.random() * 2.0;
-        updateSensor('val-temp', simTemp.toFixed(1));
-        const tPct = Math.min(100, Math.max(0, (simTemp / 50) * 100));
-        const tFill = document.getElementById('temp-track-fill');
-        const tInd = document.getElementById('temp-track-indicator');
-        if (tFill) tFill.style.width = `${tPct}%`;
-        if (tInd) tInd.style.left = `${tPct}%`;
-
-    }, 1500);
-}
-
-/* ============================================================
-   DOM READY & MQTT CONNECTOR
+   DOM READY & MQTT CONNECTOR (PURE LIVE BINDINGS ONLY)
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
     const mc = window.mqttController;
 
-    // Start baseline visual loops immediately
-    startSimulatedTelemetry();
-
     if (!mc) {
-        console.warn('[Sensors] mqttController not found. Sensor updates running on internal simulations.');
+        console.warn('[Sensors] mqttController not found. Ensure active EMQX broker pipeline connection.');
         return;
     }
 
@@ -274,7 +191,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
         switch (d.sensor) {
 
-            /* ① FLAME DETECTION (Digital Pin 15) ────────────────── */
+            /* ① Ambient Temperature (DHT11) ─────────────────────── */
+            case 'temp': {
+                const tempVal = parseFloat(v);
+                if (isNaN(tempVal)) break;
+                
+                updateSensor('val-temp', tempVal.toFixed(1));
+                
+                // Scale 0-50 °C to 0-100% slider position
+                const pct = Math.min(100, Math.max(0, (tempVal / 50) * 100));
+                const fillEl = document.getElementById('temp-track-fill');
+                const indEl = document.getElementById('temp-track-indicator');
+                if (fillEl) fillEl.style.width = `${pct}%`;
+                if (indEl) indEl.style.left = `${pct}%`;
+
+                if (tempVal > 40) {
+                    updateStatus('status-temp', 'CRITICAL', 'red');
+                    setCardState('card-temp', 'alert');
+                } else if (tempVal > 30) {
+                    updateStatus('status-temp', 'WARNING', 'amber');
+                    setCardState('card-temp', 'warning');
+                } else {
+                    updateStatus('status-temp', 'OPTIMAL', 'green');
+                    setCardState('card-temp', 'normal');
+                }
+                break;
+            }
+
+            /* ② FLAME DETECTION (Digital Pin 15) ────────────────── */
             case 'fire': {
                 const detected = v === 'FIRE DETECTED' || v === 'DETECTED' || v === '1' || v === 1 || v === true;
                 const fireText = detected ? 'FIRE DETECTED' : 'CLEAR';
@@ -290,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             }
 
-            /* ② MQ-2 GAS & SMOKE (Analog Pin 12) ────────────────── */
+            /* ③ MQ-2 GAS & SMOKE (Analog Pin 12) ────────────────── */
             case 'gas': {
                 const gasVal = parseInt(v, 10);
                 if (isNaN(gasVal)) break;
@@ -311,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             }
 
-            /* ③ PIR MOTION (Digital Pin 14) ─────────────────────── */
+            /* ④ PIR MOTION (Digital Pin 14) ─────────────────────── */
             case 'pir': {
                 const detected = v === 1 || v === '1' || v === true || v === 'true' || v === 'DETECTED';
                 const presenceText = detected ? 'DETECTED' : 'ABSENT';
@@ -327,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             }
 
-            /* ④ ULTRASONIC RANGE (TRIG/ECHO GPIO 2/16) ──────────── */
+            /* ⑤ ULTRASONIC RANGE (TRIG/ECHO GPIO 2/16) ──────────── */
             case 'ultrasonic': {
                 const uVal = parseFloat(v);
                 if (isNaN(uVal)) break;
@@ -337,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             }
 
-            /* ⑤ SEISMIC VIBRATION (Analog Pin 13) ────────────────── */
+            /* ⑥ SEISMIC VIBRATION (Analog Pin 13) ────────────────── */
             case 'vibration': {
                 const vibVal = parseFloat(v);
                 if (isNaN(vibVal)) break;
@@ -358,11 +302,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             }
 
-            /* ⑥ MPU-6050 IMU TRIGGERS ───────────────────────────── */
+            /* ⑦ MPU-6050 IMU TRIGGERS ───────────────────────────── */
             case 'tilt': {
                 const tiltVal = parseFloat(v);
                 if (isNaN(tiltVal)) break;
-                // Bind to Pitch, offset roll slightly for 3D realism
+
                 window.mpuState.pitch = tiltVal;
                 updateSensor('val-pitch', `${tiltVal.toFixed(1)}°`);
                 renderBubbleLevel();
@@ -384,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             }
 
-            /* ⑦ GPS NAVIGATION MODULE (NEO-6M) ──────────────────── */
+            /* ⑧ GPS NAVIGATION MODULE (NEO-6M) ──────────────────── */
             case 'gps': {
                 // If structured coordinate JSON is sent
                 if (typeof v === 'object' && v !== null) {
@@ -415,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             }
 
-            /* ⑧ CAMERA STREAM FPS / RESOLUTION ─────────────────── */
+            /* ⑨ CAMERA STREAM FPS / RESOLUTION ─────────────────── */
             case 'fps': {
                 const fpsVal = parseFloat(v);
                 if (isNaN(fpsVal)) break;
@@ -430,33 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     updateStatus('status-cam', 'LAGGING', 'red');
                     setCardState('card-cam', 'alert');
-                }
-                break;
-            }
-
-            /* ⑨ DHT11 TEMPERATURE ───────────────────────────────── */
-            case 'temp': {
-                const tempVal = parseFloat(v);
-                if (isNaN(tempVal)) break;
-                
-                updateSensor('val-temp', tempVal.toFixed(1));
-                
-                // Scale 0-50 °C to 0-100% position
-                const pct = Math.min(100, Math.max(0, (tempVal / 50) * 100));
-                const fillEl = document.getElementById('temp-track-fill');
-                const indEl = document.getElementById('temp-track-indicator');
-                if (fillEl) fillEl.style.width = `${pct}%`;
-                if (indEl) indEl.style.left = `${pct}%`;
-
-                if (tempVal > 40) {
-                    updateStatus('status-temp', 'CRITICAL', 'red');
-                    setCardState('card-temp', 'alert');
-                } else if (tempVal > 30) {
-                    updateStatus('status-temp', 'WARNING', 'amber');
-                    setCardState('card-temp', 'warning');
-                } else {
-                    updateStatus('status-temp', 'OPTIMAL', 'green');
-                    setCardState('card-temp', 'normal');
                 }
                 break;
             }

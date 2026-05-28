@@ -112,7 +112,7 @@
   --radius-full: 9999px;
 
   /* ── Layout ─────────────────────────────────── */
-  --sidebar-w:   52px;
+  --sidebar-w:   72px;
   --nav-h:       52px;
 
   /* ── Transitions ────────────────────────────── */
@@ -486,17 +486,17 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 var(--space-3);
+  padding: 0 var(--space-4);
   border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
   gap: var(--space-2);
 }
 
 .logo-mark {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  border-radius: var(--radius-sm);
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -509,7 +509,7 @@ html, body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   display: block;
 }
 
@@ -518,7 +518,7 @@ html, body {
 
 .sidebar-nav {
   flex: 1;
-  padding: var(--space-2) 0;
+  padding: var(--space-3) 0;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -529,76 +529,51 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 0;
+  padding: 14px 0;
   cursor: pointer;
   border-radius: 0;
   position: relative;
   white-space: nowrap;
   text-decoration: none;
-  color: var(--text-muted);
-  border-left: 2px solid transparent;
-  width: 100%;
-}
-
-/* Only color-related props animate (no layout jitter) */
-.nav-item {
-  transition: background-color var(--t-fast), color var(--t-fast), border-color var(--t-fast);
-}
-
-.nav-item:hover {
-  background: rgba(255, 255, 255, 0.04);
   color: var(--text-secondary);
-  border-left-color: rgba(59, 130, 246, 0.28);
-}
-
-.nav-item.active {
-  background: var(--accent-muted);
-  color: var(--accent);
-  border-left-color: var(--accent);
+  border-left: 3px solid transparent;
+  width: 100%;
+  transition: background-color var(--t-fast), color var(--t-fast), border-color var(--t-fast);
 }
 
 .nav-item svg,
 .nav-item i {
-  width: 17px;
-  height: 17px;
-  min-width: 17px;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
   flex-shrink: 0;
+  color: var(--text-secondary);
+  transition: color var(--t-fast), transform var(--t-fast), filter var(--t-fast);
 }
 
-/* ── SIDEBAR NAV ICON COLORFUL CONFIG ────────────────────────── */
-.nav-item[data-tooltip="Overview"] i,
-.nav-item[data-tooltip="Overview"] svg {
-  color: #60A5FA;
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+  border-left-color: rgba(59, 130, 246, 0.4);
 }
 
-.nav-item[data-tooltip="Live Monitoring"] i,
-.nav-item[data-tooltip="Live Monitoring"] svg {
-  color: #F87171;
+.nav-item:hover svg,
+.nav-item:hover i {
+  color: var(--accent-bright) !important;
+  filter: drop-shadow(0 0 6px rgba(96, 165, 250, 0.4));
+  transform: scale(1.05);
 }
 
-.nav-item[data-tooltip="Incident Map"] i,
-.nav-item[data-tooltip="Incident Map"] svg {
-  color: #4ADE80;
+.nav-item.active {
+  background: var(--accent-muted);
+  color: var(--accent-bright);
+  border-left-color: var(--accent);
 }
 
-.nav-item[data-tooltip="Field Sensors"] i,
-.nav-item[data-tooltip="Field Sensors"] svg {
-  color: #A78BFA;
-}
-
-.nav-item[data-tooltip="Alert Center"] i,
-.nav-item[data-tooltip="Alert Center"] svg {
-  color: #FBBF24;
-}
-
-.nav-item[data-tooltip="Home"] i,
-.nav-item[data-tooltip="Home"] svg {
-  color: #94A3B8;
-}
-
-.nav-item[data-tooltip="Settings"] i,
-.nav-item[data-tooltip="Settings"] svg {
-  color: #94A3B8;
+.nav-item.active svg,
+.nav-item.active i {
+  color: var(--accent-bright) !important;
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
 }
 
 .nav-label  { display: none; }
