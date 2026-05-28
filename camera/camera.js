@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnStreamToggle  = document.getElementById('btn-stream-toggle');
     const btnSnapshot      = document.getElementById('btn-snapshot');
     const btnFullscreen    = document.getElementById('btn-fullscreen');
-    const btnFitToggle     = document.getElementById('btn-fit-toggle');
 
     // Navbar
     const camRecDot        = document.getElementById('cam-rec-dot');
@@ -244,28 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── Aspect Ratio Fit Toggle ────────────────────────────────
-    if (btnFitToggle && streamImg) {
-        btnFitToggle.addEventListener('click', () => {
-            const isImmersive = streamImg.classList.toggle('immersive');
-            
-            // Update icon
-            const icon = btnFitToggle.querySelector('i') || btnFitToggle.querySelector('svg');
-            if (icon) {
-                const iconName = isImmersive ? 'shrink' : 'expand';
-                icon.setAttribute('data-lucide', iconName);
-                if (window.lucide) window.lucide.createIcons({ nodes: [btnFitToggle] });
-            }
-            
-            // Re-render dynamic bounding boxes instantly
-            if (lastScene) {
-                const survivors = lastScene.survivors || [];
-                const fire      = lastScene.fire      || {};
-                const smoke     = lastScene.smoke     || {};
-                renderBoundingBoxes(survivors, fire, smoke);
-            }
-        });
-    }
+
 
     // ── Clear Buttons ─────────────────────────────────────────
     if (btnClearSurvivors) {

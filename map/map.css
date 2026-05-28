@@ -353,10 +353,27 @@
 /* Mobile adjustment for HUD overlays */
 @media (max-width: 900px) {
     .map-floating-tools {
-        max-width: calc(100vw - 32px);
+        left: 16px !important;
+        right: 16px !important;
+        transform: none !important;
+        max-width: calc(100vw - 32px) !important;
         overflow-x: auto;
         white-space: nowrap;
         justify-content: flex-start;
         padding: 4px;
+    }
+    .map-hud-bottom {
+        left: 16px !important;
+        right: 16px !important;
+        transform: none !important;
+        max-width: calc(100vw - 32px) !important;
+        overflow-x: auto;
+        white-space: nowrap;
+        justify-content: flex-start;
+        padding: 4px;
+        bottom: calc(var(--space-4) + 12px) !important;
+    }
+    .map-hud-card {
+        flex-shrink: 0;
     }
 }

@@ -56,24 +56,40 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ── Apply saved theme icon state ─────────────────────────── */
     updateThemeIcons(getCurrentTheme());
 
-    /* ── MOBILE MENU + BACKDROP ──────────────────────────────── */
+    /* ── MOBILE MENU + BACKDROP + COLLAPSE ───────────────────── */
     const sidebarEl = document.getElementById('sidebar');
     const mobileBtn = document.getElementById('mobile-menu-btn');
     const backdrop  = document.getElementById('sidebar-backdrop');
 
-    if (sidebarEl && mobileBtn && backdrop) {
+    // Restore desktop collapsed state on page load
+    if (sidebarEl && window.innerWidth > 900) {
+        const isCollapsed = localStorage.getItem('rescuebot-sidebar-collapsed') === 'true';
+        if (isCollapsed) {
+            sidebarEl.classList.add('collapsed');
+        }
+    }
+
+    if (sidebarEl && mobileBtn) {
         mobileBtn.addEventListener('click', () => {
-            sidebarEl.classList.add('mobile-open');
-            backdrop.classList.add('visible');
+            if (window.innerWidth <= 900) {
+                sidebarEl.classList.add('mobile-open');
+                if (backdrop) backdrop.classList.add('visible');
+            } else {
+                sidebarEl.classList.toggle('collapsed');
+                const isCollapsed = sidebarEl.classList.contains('collapsed');
+                localStorage.setItem('rescuebot-sidebar-collapsed', isCollapsed ? 'true' : 'false');
+            }
         });
-        backdrop.addEventListener('click', () => {
-            sidebarEl.classList.remove('mobile-open');
-            backdrop.classList.remove('visible');
-        });
+        if (backdrop) {
+            backdrop.addEventListener('click', () => {
+                sidebarEl.classList.remove('mobile-open');
+                backdrop.classList.remove('visible');
+            });
+        }
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => {
                 sidebarEl.classList.remove('mobile-open');
-                backdrop.classList.remove('visible');
+                if (backdrop) backdrop.classList.remove('visible');
             });
         });
     }
@@ -82,16 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('#theme-toggle, #landing-theme-toggle, .theme-toggle-btn, .nav-theme-btn').forEach(btn => {
         btn.addEventListener('click', toggleTheme);
     });
-
-
-    /* ── SIDEBAR COLLAPSE (not used in icon-only mode) ─────────── */
-    const collapseBtn = document.getElementById('sidebar-collapse-btn');
-    if (sidebarEl && collapseBtn) {
-        collapseBtn.addEventListener('click', () => {
-            sidebarEl.classList.toggle('collapsed');
-            setTimeout(() => { if (window.lucide) window.lucide.createIcons(); }, 50);
-        });
-    }
 
     /* ── ACTIVE NAV ITEM ─────────────────────────────────────── */
     const currentPath = window.location.pathname.toLowerCase();
