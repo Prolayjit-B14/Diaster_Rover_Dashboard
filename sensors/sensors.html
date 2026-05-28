@@ -106,7 +106,7 @@
             <!-- SENSOR GRID -->
             <div class="sensor-grid">
 
-                <!-- ① CAMERA STREAM VIEWPORT -->
+                <!-- ① CAMERA STREAM DIAGNOSTICS -->
                 <div class="sensor-card camera-card" id="card-cam" style="--card-color:#3B82F6;">
                     <div class="sensor-card-header">
                         <div class="sensor-icon-label">
@@ -118,29 +118,33 @@
                                 <div class="sensor-model">ESP32-CAM</div>
                             </div>
                         </div>
-                        <span class="badge badge-green" id="status-cam">Streaming</span>
+                        <span class="badge badge-standby" id="status-cam">STANDBY</span>
                     </div>
                     <div class="sensor-value-section">
-                        <div class="camera-viewport-wrap">
-                            <div class="camera-scanlines"></div>
-                            <div class="camera-crosshairs"></div>
-                            <div class="camera-rec-dot"></div>
-                            <img src="../assets/cam_feed.png" id="camera-stream-img" class="camera-stream-img" alt="Rover Live Stream">
-                        </div>
-                        <div class="camera-meta-grid">
-                            <div class="meta-item">
-                                <span class="meta-label">Uptime Stats</span>
-                                <span class="meta-val" id="val-fps">-- FPS</span>
+                        <div class="camera-stats-grid">
+                            <div class="cam-main-val">
+                                <span class="sensor-big-val" id="val-fps">--</span>
+                                <span class="sensor-unit">FPS</span>
                             </div>
-                            <div class="meta-item" style="text-align:right;">
-                                <span class="meta-label">Resolution</span>
-                                <span class="meta-val">VGA 640×480</span>
+                            <div class="cam-diag-rows">
+                                <div class="diag-row">
+                                    <span class="diag-label">Resolution</span>
+                                    <span class="diag-val">VGA 640×480</span>
+                                </div>
+                                <div class="diag-row">
+                                    <span class="diag-label">Module Lens</span>
+                                    <span class="diag-val">OV2640 (2.0 MP)</span>
+                                </div>
+                                <div class="diag-row">
+                                    <span class="diag-label">Link Latency</span>
+                                    <span class="diag-val" id="val-cam-latency">-- ms</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ② GPS NAVIGATION HUD -->
+                <!-- ② GPS NAVIGATION HUD (TERMINAL STYLE) -->
                 <div class="sensor-card gps-card" id="card-gps" style="--card-color:#A78BFA;">
                     <div class="sensor-card-header">
                         <div class="sensor-icon-label">
@@ -152,17 +156,17 @@
                                 <div class="sensor-model">NEO-6M</div>
                             </div>
                         </div>
-                        <span class="badge badge-green" id="status-gps">Fixed</span>
+                        <span class="badge badge-standby" id="status-gps">STANDBY</span>
                     </div>
                     <div class="sensor-value-section">
-                        <div class="gps-coordinates-hud">
+                        <div class="gps-coordinates-hud terminal-theme">
                             <div class="coord-row">
                                 <span class="coord-label">LATITUDE</span>
-                                <span class="coord-val font-mono" id="val-gps-lat">37.77492° N</span>
+                                <span class="coord-val font-mono" id="val-gps-lat">--</span>
                             </div>
                             <div class="coord-row">
                                 <span class="coord-label">LONGITUDE</span>
-                                <span class="coord-val font-mono" id="val-gps-lng">-122.41941° W</span>
+                                <span class="coord-val font-mono" id="val-gps-lng">--</span>
                             </div>
                         </div>
                         <div class="gps-stats-grid">
@@ -172,11 +176,11 @@
                             </div>
                             <div class="gps-stat">
                                 <span class="gps-stat-lbl">Fix Mode</span>
-                                <span class="gps-stat-val" id="val-gps-status">3D Fix</span>
+                                <span class="gps-stat-val" id="val-gps-status">--</span>
                             </div>
                             <div class="gps-stat" style="text-align:right;">
                                 <span class="gps-stat-lbl">HDOP</span>
-                                <span class="gps-stat-val">1.2</span>
+                                <span class="gps-stat-val" id="val-gps-hdop">--</span>
                             </div>
                         </div>
                     </div>
@@ -194,12 +198,12 @@
                                 <div class="sensor-model">6-Axis Motion</div>
                             </div>
                         </div>
-                        <span class="badge badge-green" id="status-mpu">Level</span>
+                        <span class="badge badge-standby" id="status-mpu">STANDBY</span>
                     </div>
                     <div class="sensor-value-section mpu-layout">
-                        <div class="bubble-level-wrap">
-                            <div class="bubble-crosshair-v"></div>
-                            <div class="bubble-crosshair-h"></div>
+                        <div class="bubble-level-wrap" id="bubble-level-wrap">
+                            <div class="bubble-crosshair-v" id="bubble-cross-v"></div>
+                            <div class="bubble-crosshair-h" id="bubble-cross-h"></div>
                             <div class="bubble-level-ring ring-1"></div>
                             <div class="bubble-level-ring ring-2"></div>
                             <div class="bubble-dot" id="bubble-level-dot"></div>
@@ -244,7 +248,7 @@
                                 <div class="sensor-model">Piezo Sensor</div>
                             </div>
                         </div>
-                        <span class="badge badge-green" id="status-vib">Stable</span>
+                        <span class="badge badge-standby" id="status-vib">STANDBY</span>
                     </div>
                     <div class="sensor-value-section">
                         <div class="vib-value-row">
@@ -252,21 +256,21 @@
                             <span class="sensor-unit">g Force</span>
                         </div>
                         <div class="seismic-wave-wrap" id="seismic-wave-wrap">
-                            <div class="seismic-bar" style="height: 15%"></div>
-                            <div class="seismic-bar" style="height: 20%"></div>
-                            <div class="seismic-bar" style="height: 12%"></div>
-                            <div class="seismic-bar" style="height: 25%"></div>
-                            <div class="seismic-bar" style="height: 30%"></div>
-                            <div class="seismic-bar" style="height: 15%"></div>
-                            <div class="seismic-bar" style="height: 8%"></div>
-                            <div class="seismic-bar" style="height: 20%"></div>
-                            <div class="seismic-bar" style="height: 40%"></div>
-                            <div class="seismic-bar" style="height: 22%"></div>
-                            <div class="seismic-bar" style="height: 35%"></div>
                             <div class="seismic-bar" style="height: 10%"></div>
-                            <div class="seismic-bar" style="height: 15%"></div>
-                            <div class="seismic-bar" style="height: 25%"></div>
-                            <div class="seismic-bar" style="height: 5%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
+                            <div class="seismic-bar" style="height: 10%"></div>
                         </div>
                     </div>
                 </div>
@@ -283,14 +287,14 @@
                                 <div class="sensor-model">Thermal IR</div>
                             </div>
                         </div>
-                        <span class="badge badge-green" id="status-fire">Clear</span>
+                        <span class="badge badge-standby" id="status-fire">STANDBY</span>
                     </div>
                     <div class="sensor-value-section">
                         <div class="fire-threat-wrap">
                             <div class="fire-icon-pulsar" id="fire-icon-pulsar">
-                                <i data-lucide="flame" style="color:#EF4444; width:28px; height:28px;"></i>
+                                <i data-lucide="flame" style="color:#EF4444; width:22px; height:22px;"></i>
                             </div>
-                            <div class="fire-text-status" id="val-fire">CLEAR</div>
+                            <div class="fire-text-status" id="val-fire">--</div>
                         </div>
                     </div>
                 </div>
@@ -307,7 +311,7 @@
                                 <div class="sensor-model">MQ-2 Sensor</div>
                             </div>
                         </div>
-                        <span class="badge badge-green" id="status-gas">Normal</span>
+                        <span class="badge badge-standby" id="status-gas">STANDBY</span>
                     </div>
                     <div class="sensor-value-section">
                         <div class="gas-value-row">
@@ -347,7 +351,7 @@
                                 <div class="sensor-model">HC-SR501</div>
                             </div>
                         </div>
-                        <span class="badge badge-green" id="status-pir">Clear</span>
+                        <span class="badge badge-standby" id="status-pir">STANDBY</span>
                     </div>
                     <div class="sensor-value-section">
                         <div class="radar-sweep-wrap">
@@ -359,7 +363,7 @@
                         </div>
                         <div class="pir-presence-bar">
                             <span class="presence-label">RADAR SCANNER:</span>
-                            <span class="presence-val" id="val-pir">ABSENT</span>
+                            <span class="presence-val" id="val-pir">--</span>
                         </div>
                     </div>
                 </div>
@@ -376,7 +380,7 @@
                                 <div class="sensor-model">HC-SR04</div>
                             </div>
                         </div>
-                        <span class="badge badge-green" id="status-ultrasonic">Clear</span>
+                        <span class="badge badge-standby" id="status-ultrasonic">STANDBY</span>
                     </div>
                     <div class="sensor-value-section">
                         <div class="proximity-visual-container">
@@ -406,7 +410,7 @@
                                 <div class="sensor-model">DHT11 Sensor</div>
                             </div>
                         </div>
-                        <span class="badge badge-green" id="status-temp">Optimal</span>
+                        <span class="badge badge-standby" id="status-temp">STANDBY</span>
                     </div>
                     <div class="sensor-value-section">
                         <div class="temp-value-row">

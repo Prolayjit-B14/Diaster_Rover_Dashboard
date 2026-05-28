@@ -82,6 +82,18 @@ function renderBubbleLevel() {
 
     const absPitch = Math.abs(window.mpuState.pitch);
     const absRoll = Math.abs(window.mpuState.roll);
+    
+    // Toggle active glowing crosshairs when perfectly level
+    const crossV = document.getElementById('bubble-cross-v');
+    const crossH = document.getElementById('bubble-cross-h');
+    if (absPitch === 0 && absRoll === 0) {
+        if (crossV) crossV.classList.add('active');
+        if (crossH) crossH.classList.add('active');
+    } else {
+        if (crossV) crossV.classList.remove('active');
+        if (crossH) crossH.classList.remove('active');
+    }
+
     if (absPitch > 35 || absRoll > 35) {
         updateStatus('status-mpu', 'DANGER', 'red');
         setCardState('card-mpu', 'alert');
