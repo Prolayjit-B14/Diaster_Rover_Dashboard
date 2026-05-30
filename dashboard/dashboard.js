@@ -101,7 +101,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (sensor === 'gas')        updateGas(val);
             if (sensor === 'fire')       updateFire(val);
             if (sensor === 'pir')        updatePIR(val);
-            if (sensor === 'ultrasonic') setText('val-ultrasonic', parseFloat(val).toFixed(0));
+            if (sensor === 'ultrasonic') {
+                const dist = parseFloat(val).toFixed(0);
+                setText('val-ultrasonic', dist);
+                setText('val-ultrasonic-big', dist);
+                // Update range badge
+                const badge = document.getElementById('ultrasonic-range-badge');
+                const alertEl = document.getElementById('alert-ultrasonic-text');
+                const alertPill = alertEl ? alertEl.closest('.alert-pill') : null;
+                if (parseFloat(val) < 20) {
+                    if (badge) { badge.textContent = 'TOO CLOSE'; badge.className = 'badge badge-red'; }
+                    if (alertEl) alertEl.textContent = 'Obstacle Close!';
+                    if (alertPill) alertPill.className = 'alert-pill critical';
+                } else {
+                    if (badge) { badge.textContent = 'CLEAR'; badge.className = 'badge badge-blue'; }
+                    if (alertEl) alertEl.textContent = 'Distance OK';
+                    if (alertPill) alertPill.className = 'alert-pill ok';
+                }
+            }
             if (sensor === 'vibration')  setText('val-vib', parseFloat(val).toFixed(2));
             if (sensor === 'tilt')       setText('val-tilt', parseFloat(val).toFixed(1));
             if (sensor === 'gyro')       setText('val-gyro', parseFloat(val).toFixed(1));
@@ -210,10 +227,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const v = parseInt(val, 10);
         if (isNaN(v)) return;
         setText('val-gas', v);
-        setBar('bar-gas', (v / 4095) * 100);
-        const isBad       = v > 2500;
-        const alertText   = document.getElementById('alert-gas-text');
-        
+        // Drive MQ-2 progress bar (0–4095 ADC range)
+        const pct = Math.min(100, (v / 4095) * 100);
+        const bar = document.getElementById('bar-gas-mq2');
+        if (bar) bar.style.width = pct + '%';
+
+        // Smoke detection threshold (MQ-2 typically ~1500+ ppm for smoke)
+        const isSmoke   = v > 1500;
+        const smokeBadge = document.getElementById('smoke-status-badge');
+        if (smokeBadge) {
+            smokeBadge.textContent = isSmoke ? 'DETECTED' : 'CLEAR';
+            smokeBadge.className   = 'badge ' + (isSmoke ? 'badge-red' : 'badge-green');
+        }
+        const smokeAlert = document.getElementById('alert-smoke-text');
+        if (smokeAlert) {
+            smokeAlert.textContent = isSmoke ? 'Smoke Detected!' : 'Smoke Clear';
+            const smokePill = smokeAlert.closest('.alert-pill');
+            if (smokePill) {
+                smokePill.className = 'alert-pill ' + (isSmoke ? 'critical' : 'ok');
+                const icon = smokePill.querySelector('i, svg');
+                if (icon) {
+                    icon.setAttribute('data-lucide', isSmoke ? 'cloud-fog' : 'check-circle-2');
+                    if (window.lucide) window.lucide.createIcons({ nodes: [smokePill] });
+                }
+            }
+        }
+
+        // Gas level alert
+        const isBad     = v > 2500;
+        const alertText = document.getElementById('alert-gas-text');
         if (alertText) {
             alertText.textContent = isBad ? 'HIGH GAS LEVEL!' : 'Gas Level Normal';
             const alertPill = alertText.closest('.alert-pill');
@@ -222,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const icon = alertPill.querySelector('i, svg');
                 if (icon) {
                     icon.setAttribute('data-lucide', isBad ? 'alert-triangle' : 'check-circle-2');
-                    if (window.lucide) window.lucide.createIcons({nodes: [alertPill]});
+                    if (window.lucide) window.lucide.createIcons({ nodes: [alertPill] });
                 }
             }
         }

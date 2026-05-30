@@ -160,27 +160,47 @@
                     </div>
                 </div>
 
-                <!-- ENVIRONMENTAL -->
+                <!-- ULTRASONIC DISTANCE SENSOR -->
                 <div class="bento-card bento-env">
                     <div class="bento-header">
-                        <span class="bento-title">Environment</span>
-                        <i data-lucide="thermometer-sun" style="color: var(--accent);"></i>
+                        <span class="bento-title">Ultrasonic Distance</span>
+                        <i data-lucide="radar" style="color: var(--accent);"></i>
+                    </div>
+                    <div class="bento-content centered-content" style="gap: 6px;">
+                        <div style="display:flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:50%;background:var(--accent-muted);border:2px solid var(--accent-border);margin-bottom:4px;">
+                            <i data-lucide="radio" style="width:28px;height:28px;color:var(--accent);"></i>
+                        </div>
+                        <div style="font-family:var(--font-mono);font-size:2rem;font-weight:700;color:var(--accent-bright);line-height:1;" id="val-ultrasonic-big">--</div>
+                        <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);">centimeters</div>
+                        <div class="badges" style="margin-top:6px;">
+                            <span class="badge badge-blue" id="ultrasonic-range-badge">MEASURING</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MQ-2 GAS & SMOKE SENSOR -->
+                <div class="bento-card bento-telemetry">
+                    <div class="bento-header">
+                        <span class="bento-title">MQ-2 Gas &amp; Smoke</span>
+                        <i data-lucide="wind" style="color: var(--status-warn);"></i>
                     </div>
                     <div class="bento-content list-content">
                         <div class="env-row">
-                            <i data-lucide="thermometer" style="color: var(--status-danger);"></i>
-                            <span class="env-lbl">Temp</span>
-                            <span class="env-val"><span id="val-temp">--</span>°C</span>
+                            <i data-lucide="flame" style="color:var(--status-warn);flex-shrink:0;"></i>
+                            <span class="env-lbl">Gas (ppm)</span>
+                            <span class="env-val" style="font-family:var(--font-mono);font-weight:700;color:var(--accent-bright);"><span id="val-gas">--</span></span>
+                        </div>
+                        <div style="margin:2px 0 6px;">
+                            <div style="height:4px;background:var(--bg-elevated);border-radius:2px;overflow:hidden;">
+                                <div id="bar-gas-mq2" style="height:100%;width:0%;background:linear-gradient(90deg,var(--status-ok),var(--status-warn),var(--status-danger));border-radius:2px;transition:width 0.4s ease;"></div>
+                            </div>
                         </div>
                         <div class="env-row">
-                            <i data-lucide="droplets" style="color: var(--accent);"></i>
-                            <span class="env-lbl">Hum</span>
-                            <span class="env-val"><span id="val-humidity">--</span>%</span>
-                        </div>
-                        <div class="env-row">
-                            <i data-lucide="wind" style="color: var(--status-warn);"></i>
-                            <span class="env-lbl">Gas</span>
-                            <span class="env-val"><span id="val-gas">--</span> ppm</span>
+                            <i data-lucide="cloud-fog" style="color:var(--text-muted);flex-shrink:0;"></i>
+                            <span class="env-lbl">Smoke</span>
+                            <span class="env-val">
+                                <span class="badge" id="smoke-status-badge" style="font-size:10px;">CLEAR</span>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -201,7 +221,7 @@
                             <span class="env-val"><span id="val-tilt">0</span>°</span>
                         </div>
                         <div class="env-row">
-                            <span class="env-lbl">Proximity</span>
+                            <span class="env-lbl">Distance</span>
                             <span class="env-val"><span id="val-ultrasonic">--</span> cm</span>
                         </div>
                     </div>
@@ -228,8 +248,9 @@
                     </div>
                     <div class="bento-content alerts-list">
                         <div class="alert-pill ok"><i data-lucide="check-circle-2"></i> <span id="alert-gas-text">Gas Normal</span></div>
+                        <div class="alert-pill ok"><i data-lucide="check-circle-2"></i> <span id="alert-smoke-text">Smoke Clear</span></div>
                         <div class="alert-pill ok"><i data-lucide="check-circle-2"></i> <span id="alert-fire-text">No Fire</span></div>
-                        <div class="alert-pill ok"><i data-lucide="check-circle-2"></i> <span id="alert-pir-text">Motion Clear</span></div>
+                        <div class="alert-pill ok"><i data-lucide="radio"></i> <span id="alert-ultrasonic-text">Distance OK</span></div>
                     </div>
                 </div>
 
